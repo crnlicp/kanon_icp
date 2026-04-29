@@ -30,6 +30,7 @@ interface Slide {
 
 interface Props {
   token: string;
+  readOnly?: boolean;
 }
 
 const emptyForm = {
@@ -45,7 +46,7 @@ const emptyForm = {
   sortOrder: 0,
 };
 
-export default function AdminSlides({ token }: Props) {
+export default function AdminSlides({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopicId, setSelectedTopicId] = useState<number>(0);
@@ -144,9 +145,9 @@ export default function AdminSlides({ token }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">{t("heroSlides")}</h2>
-        <motion.button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm" whileTap={{ scale: 0.98 }}>
+        {!readOnly && <motion.button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm" whileTap={{ scale: 0.98 }}>
           <Plus size={16} /> {t("addSlide")}
-        </motion.button>
+        </motion.button>}
       </div>
 
       {/* Topic Selector */}
@@ -233,8 +234,8 @@ export default function AdminSlides({ token }: Props) {
               </div>
             </div>
             <div className="flex items-center gap-2 ml-4 shrink-0">
-              <button onClick={() => startEdit(slide)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
-              <button onClick={() => handleDelete(slide.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button>
+              {!readOnly && <><button onClick={() => startEdit(slide)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
+              <button onClick={() => handleDelete(slide.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button></>}
             </div>
           </motion.div>
         ))}

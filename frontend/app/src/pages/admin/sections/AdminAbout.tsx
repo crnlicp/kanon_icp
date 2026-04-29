@@ -8,9 +8,10 @@ import type { AboutContentReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
+  readOnly?: boolean;
 }
 
-export default function AdminAbout({ token }: Props) {
+export default function AdminAbout({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [form, setForm] = useState({
     headerImageUrl: "",
@@ -63,7 +64,7 @@ export default function AdminAbout({ token }: Props) {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-white">{t("aboutContent")}</h2>
-        <motion.button
+        {!readOnly && <motion.button
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm"
@@ -72,7 +73,7 @@ export default function AdminAbout({ token }: Props) {
         >
           <Save size={16} />
           {saving ? t("saving") : t("save")}
-        </motion.button>
+        </motion.button>}
       </div>
 
       <div className="glass rounded-2xl p-6 space-y-6">

@@ -74,7 +74,7 @@ module {
     }
   };
 
-  public func settingsToReturn(s : T.SiteSettings) : T.SiteSettingsReturn {
+  public func settingsToReturn(s : T.SiteSettings, mock : Bool) : T.SiteSettingsReturn {
     {
       logoUrl = s.logoUrl;
       title_fa = s.title.fa;
@@ -83,6 +83,7 @@ module {
       subtitle_sv = s.subtitle.sv;
       landingBackgroundUrl = s.landingBackgroundUrl;
       topicsBackgroundUrl = s.topicsBackgroundUrl;
+      mockMode = mock;
     }
   };
 

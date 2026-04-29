@@ -21,6 +21,7 @@ interface Topic {
 
 interface Props {
   token: string;
+  readOnly?: boolean;
 }
 
 const emptyForm = {
@@ -34,7 +35,7 @@ const emptyForm = {
   sortOrder: 0,
 };
 
-export default function AdminTopics({ token }: Props) {
+export default function AdminTopics({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,7 +133,7 @@ export default function AdminTopics({ token }: Props) {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-white">{t("topics")}</h2>
-        <motion.button
+        {!readOnly && <motion.button
           onClick={() => { resetForm(); setShowForm(true); }}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm"
           whileHover={{ scale: 1.02 }}
@@ -140,7 +141,7 @@ export default function AdminTopics({ token }: Props) {
         >
           <Plus size={16} />
           {t("addTopic")}
-        </motion.button>
+        </motion.button>}
       </div>
 
       {/* Modal Form */}
@@ -220,12 +221,12 @@ export default function AdminTopics({ token }: Props) {
               <p className="text-white/40 text-sm truncate" dir="rtl">{topic.title_fa}</p>
             </div>
             <div className="flex items-center gap-2 ml-4 shrink-0">
-              <button onClick={() => startEdit(topic)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
+              {!readOnly && <><button onClick={() => startEdit(topic)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
                 <Pencil size={16} />
               </button>
               <button onClick={() => handleDelete(topic.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors">
                 <Trash2 size={16} />
-              </button>
+              </button></>}
             </div>
           </motion.div>
         ))}

@@ -67,6 +67,7 @@ export interface SiteSettingsReturn {
   'subtitle_fa' : string,
   'subtitle_sv' : string,
   'logoUrl' : string,
+  'mockMode' : boolean,
   'title_fa' : string,
   'title_sv' : string,
 }
@@ -178,6 +179,7 @@ export interface _SERVICE {
    */
   'getTopics' : ActorMethod<[], Array<TopicReturn>>,
   'listAssets' : ActorMethod<[], Array<string>>,
+  'setMockMode' : ActorMethod<[string, boolean], boolean>,
   /**
    * Contact Messages
    */

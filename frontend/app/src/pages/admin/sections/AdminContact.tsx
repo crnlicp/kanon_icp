@@ -7,6 +7,7 @@ import type { ContactMessageReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
+  readOnly?: boolean;
 }
 
 interface ContactMsg {
@@ -18,7 +19,7 @@ interface ContactMsg {
   createdAt: number;
 }
 
-export default function AdminContact({ token }: Props) {
+export default function AdminContact({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<ContactMsg[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,14 +136,14 @@ export default function AdminContact({ token }: Props) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-white/30">{formatDate(msg.createdAt)}</span>
-                  <motion.button
+                  {!readOnly && <motion.button
                     onClick={() => handleDelete(msg.id)}
                     className="p-2 rounded-lg text-white/30 hover:text-accent hover:bg-accent/10 transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
                     <Trash2 size={16} />
-                  </motion.button>
+                  </motion.button>}
                 </div>
               </div>
 

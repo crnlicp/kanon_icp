@@ -84,6 +84,7 @@ export const idlFactory = ({ IDL }) => {
     'subtitle_fa' : IDL.Text,
     'subtitle_sv' : IDL.Text,
     'logoUrl' : IDL.Text,
+    'mockMode' : IDL.Bool,
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
   });
@@ -195,6 +196,7 @@ export const idlFactory = ({ IDL }) => {
     'getTopicBySlug' : IDL.Func([IDL.Text], [IDL.Opt(TopicReturn)], ['query']),
     'getTopics' : IDL.Func([], [IDL.Vec(TopicReturn)], ['query']),
     'listAssets' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'setMockMode' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Bool], []),
     'submitContactMessage' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Opt(ContactMessageReturn)],

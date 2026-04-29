@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, FlaskConical } from "lucide-react";
 import Toast from "../../../components/Toast";
 import FileUpload from "../../../components/FileUpload";
 import { useI18n } from "../../../i18n";
@@ -21,6 +21,8 @@ export default function AdminSettings({ token }: Props) {
     landingBackgroundUrl: "",
     topicsBackgroundUrl: "",
   });
+  const [mockMode, setMockMode] = useState(false);
+  const [togglingMock, setTogglingMock] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({ message: "", type: "success", visible: false });
@@ -37,10 +39,31 @@ export default function AdminSettings({ token }: Props) {
           landingBackgroundUrl: s.landingBackgroundUrl,
           topicsBackgroundUrl: s.topicsBackgroundUrl,
         });
+        setMockMode(s.mockMode);
         setLoading(false);
       });
     });
   }, []);
+
+  const handleToggleMockMode = async () => {
+    setTogglingMock(true);
+    try {
+      const { backend, refreshMockMode } = await import("../../../actor");
+      await backend.setMockMode(token, !mockMode);
+      const newState = await refreshMockMode();
+      setMockMode(newState);
+      setToast({
+        message: newState ? t("mockModeEnabled") : t("mockModeDisabled"),
+        type: "success",
+        visible: true,
+      });
+      // Reload the page after a brief delay so all components pick up the new state
+      setTimeout(() => window.location.reload(), 800);
+    } catch {
+      setToast({ message: t("mockModeFailed"), type: "error", visible: true });
+    }
+    setTogglingMock(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -88,6 +111,36 @@ export default function AdminSettings({ token }: Props) {
           <Save size={16} />
           {saving ? t("saving") : t("save")}
         </motion.button>
+      </div>
+
+      {/* Mock Mode Toggle */}
+      <div className={`rounded-2xl p-5 mb-6 border ${mockMode ? "bg-amber-500/10 border-amber-500/30" : "bg-white/5 border-white/10"}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FlaskConical size={20} className={mockMode ? "text-amber-400" : "text-white/40"} />
+            <div>
+              <h3 className={`font-semibold text-sm ${mockMode ? "text-amber-300" : "text-white/70"}`}>
+                {t("mockMode")}
+              </h3>
+              <p className="text-xs text-white/40 mt-0.5 max-w-md">
+                {t("mockModeDescription")}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleToggleMockMode}
+            disabled={togglingMock}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
+              mockMode ? "bg-amber-500" : "bg-white/20"
+            } ${togglingMock ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
+                mockMode ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="glass rounded-2xl p-6 space-y-6">

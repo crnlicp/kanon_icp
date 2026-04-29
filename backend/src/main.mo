@@ -57,6 +57,9 @@ persistent actor {
     topicsBackgroundUrl = "";
   };
 
+  // Mock mode flag (separate from SiteSettings to preserve upgrade compatibility)
+  var mockMode : Bool = false;
+
   // Admin password hash (SHA-256 hex). Default: "password"
   var adminPasswordHash : Text = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
 
@@ -129,7 +132,7 @@ persistent actor {
   // ─── Site Settings ────────────────────────────────────────────────────────
 
   public query func getSettings() : async SiteSettingsReturn {
-    H.settingsToReturn(siteSettings)
+    H.settingsToReturn(siteSettings, mockMode)
   };
 
   public func updateSettings(
@@ -150,7 +153,13 @@ persistent actor {
       landingBackgroundUrl;
       topicsBackgroundUrl;
     };
-    H.settingsToReturn(siteSettings)
+    H.settingsToReturn(siteSettings, mockMode)
+  };
+
+  public func setMockMode(token : Text, enabled : Bool) : async Bool {
+    requireAuth(token);
+    mockMode := enabled;
+    true
   };
 
   // ─── Topics CRUD ──────────────────────────────────────────────────────────

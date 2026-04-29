@@ -15,6 +15,7 @@ interface SocialLink {
 
 interface Props {
   token: string;
+  readOnly?: boolean;
 }
 
 const emptyForm = {
@@ -25,7 +26,7 @@ const emptyForm = {
 
 const platformOptions = ["instagram", "facebook", "youtube", "twitter", "website", "email"];
 
-export default function AdminSocialLinks({ token }: Props) {
+export default function AdminSocialLinks({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,9 +100,9 @@ export default function AdminSocialLinks({ token }: Props) {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-white">{t("socialLinks")}</h2>
-        <motion.button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm" whileTap={{ scale: 0.98 }}>
+        {!readOnly && <motion.button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm" whileTap={{ scale: 0.98 }}>
           <Plus size={16} /> {t("addLink")}
-        </motion.button>
+        </motion.button>}
       </div>
 
       <Modal
@@ -146,8 +147,8 @@ export default function AdminSocialLinks({ token }: Props) {
               <p className="text-white/40 text-sm truncate">{link.url}</p>
             </div>
             <div className="flex items-center gap-2 ml-4 shrink-0">
-              <button onClick={() => startEdit(link)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
-              <button onClick={() => handleDelete(link.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button>
+              {!readOnly && <><button onClick={() => startEdit(link)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
+              <button onClick={() => handleDelete(link.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button></>}
             </div>
           </motion.div>
         ))}

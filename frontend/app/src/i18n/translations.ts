@@ -144,6 +144,16 @@ export const translations = {
     compressedImage: "تصویر فشرده‌شده",
     sizeReduced: "حجم کاهش یافت",
     acceptUpload: "تأیید و بارگذاری",
+
+    // Mock mode
+    mockMode: "حالت نمایشی",
+    mockModeDescription: "حالت نمایشی را فعال کنید تا سایت را با داده‌های نمونه مشاهده کنید. داده‌های واقعی حفظ شده و تغییر نمی‌کنند.",
+    mockModeEnabled: "حالت نمایشی فعال شد!",
+    mockModeDisabled: "حالت نمایشی غیرفعال شد!",
+    mockModeFailed: "خطا در تغییر حالت نمایشی",
+    mockModeBanner: "حالت نمایشی فعال است — داده‌های نمونه نمایش داده می‌شود. تغییرات ذخیره نمی‌شوند.",
+    disableMockMode: "غیرفعال کردن",
+    mockData: "داده نمایشی",
   },
   sv: {
     // Landing
@@ -290,6 +300,16 @@ export const translations = {
     compressedImage: "Komprimerad bild",
     sizeReduced: "Storleken minskade med",
     acceptUpload: "Godkänn och ladda upp",
+
+    // Mock mode
+    mockMode: "Demodata-läge",
+    mockModeDescription: "Aktivera demodata-läge för att förhandsgranska webbplatsen med exempeldata. Produktionsdata bevaras och ändras inte.",
+    mockModeEnabled: "Demodata-läge aktiverat!",
+    mockModeDisabled: "Demodata-läge inaktiverat!",
+    mockModeFailed: "Det gick inte att ändra demodata-läge",
+    mockModeBanner: "Demodata-läge aktivt — Visar exempeldata. Ändringar sparas inte.",
+    disableMockMode: "Inaktivera",
+    mockData: "Demodata",
   },
 } as const;
 

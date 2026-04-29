@@ -117,6 +117,7 @@ export interface SiteSettingsReturn {
     subtitle_fa: string;
     subtitle_sv: string;
     logoUrl: string;
+    mockMode: boolean;
     title_fa: string;
     title_sv: string;
 }
@@ -181,6 +182,7 @@ export interface backendInterface {
      */
     getTopics(): Promise<Array<TopicReturn>>;
     listAssets(): Promise<Array<string>>;
+    setMockMode(token: string, enabled: boolean): Promise<boolean>;
     /**
      * Contact Messages
      */
@@ -321,6 +323,10 @@ export class Backend implements backendInterface {
     }
     async listAssets(): Promise<Array<string>> {
         const result = await this.actor.listAssets();
+        return result;
+    }
+    async setMockMode(arg0: string, arg1: boolean): Promise<boolean> {
+        const result = await this.actor.setMockMode(arg0, arg1);
         return result;
     }
     async submitContactMessage(arg0: string, arg1: string, arg2: string, arg3: string): Promise<ContactMessageReturn | null> {

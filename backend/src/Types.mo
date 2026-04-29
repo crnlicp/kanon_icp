@@ -148,6 +148,7 @@ module {
     subtitle_sv : Text;
     landingBackgroundUrl : Text;
     topicsBackgroundUrl : Text;
+    mockMode : Bool;
   };
 
   public type SocialLinkReturn = {

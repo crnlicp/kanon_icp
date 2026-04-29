@@ -60,6 +60,7 @@ type SiteSettingsReturn = record {
   subtitle_sv : text;
   landingBackgroundUrl : text;
   topicsBackgroundUrl : text;
+  mockMode : bool;
 };
 
 type SocialLinkReturn = record {
@@ -94,6 +95,7 @@ service : {
   // Site Settings
   getSettings : () -> (SiteSettingsReturn) query;
   updateSettings : (token : text, logoUrl : text, title_fa : text, title_sv : text, subtitle_fa : text, subtitle_sv : text, landingBackgroundUrl : text, topicsBackgroundUrl : text) -> (SiteSettingsReturn);
+  setMockMode : (token : text, enabled : bool) -> (bool);
 
   // Topics
   getTopics : () -> (vec TopicReturn) query;

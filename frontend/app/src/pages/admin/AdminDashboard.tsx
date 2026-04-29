@@ -14,9 +14,11 @@ import {
   Info,
   MessageSquare,
   LayoutDashboard,
+  FlaskConical,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
+import { isMockMode, refreshMockMode } from "../../actor";
 import type { Language } from "../../i18n/translations";
 import AdminOverview from "./sections/AdminOverview";
 import AdminSettings from "./sections/AdminSettings";
@@ -45,10 +47,24 @@ export default function AdminDashboard() {
   const { t, lang, setLang, isRtl } = useI18n();
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mockActive, setMockActive] = useState(isMockMode());
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [activeSection]);
+
+  useEffect(() => {
+    refreshMockMode().then((enabled) => setMockActive(enabled));
+  }, []);
+
+  const handleDisableMock = async () => {
+    try {
+      const { backend } = await import("../../actor");
+      await backend.setMockMode(token!, false);
+      await refreshMockMode();
+      window.location.reload();
+    } catch { /* ignore */ }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy via-[#1a1a2e] to-navy flex">
@@ -136,14 +152,26 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 p-6 sm:p-10 md:p-12 pt-18 md:pt-12 overflow-y-auto min-h-screen">
         <div className="max-w-5xl mx-auto">
+          {mockActive && (
+            <div className="mb-6 flex items-center gap-3 rounded-xl bg-amber-500/15 border border-amber-500/30 px-5 py-3">
+              <FlaskConical size={18} className="text-amber-400 shrink-0" />
+              <p className="text-sm text-amber-200 flex-1">{t("mockModeBanner")}</p>
+              <button
+                onClick={handleDisableMock}
+                className="text-xs font-semibold text-amber-300 hover:text-amber-100 underline underline-offset-2 shrink-0"
+              >
+                {t("disableMockMode")}
+              </button>
+            </div>
+          )}
           {activeSection === "dashboard" && <AdminOverview token={token!} />}
           {activeSection === "settings" && <AdminSettings token={token!} />}
-          {activeSection === "topics" && <AdminTopics token={token!} />}
-          {activeSection === "slides" && <AdminSlides token={token!} />}
-          {activeSection === "activities" && <AdminActivities token={token!} />}
-          {activeSection === "about" && <AdminAbout token={token!} />}
-          {activeSection === "contact" && <AdminContact token={token!} />}
-          {activeSection === "social" && <AdminSocialLinks token={token!} />}
+          {activeSection === "topics" && <AdminTopics token={token!} readOnly={mockActive} />}
+          {activeSection === "slides" && <AdminSlides token={token!} readOnly={mockActive} />}
+          {activeSection === "activities" && <AdminActivities token={token!} readOnly={mockActive} />}
+          {activeSection === "about" && <AdminAbout token={token!} readOnly={mockActive} />}
+          {activeSection === "contact" && <AdminContact token={token!} readOnly={mockActive} />}
+          {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}
         </div>
       </main>
     </div>
