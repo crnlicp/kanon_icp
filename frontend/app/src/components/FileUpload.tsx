@@ -214,11 +214,15 @@ export default function FileUpload({ value, onChange, token, label, accept = "im
       {/* Current value or preview */}
       {value && (
         <div className="mb-2 flex items-center gap-2">
-          {(value.match(/\.(jpe?g|png|gif|webp|svg)$/i) || value.startsWith("/uploads/")) ? (
+          {(value.match(/\.(jpe?g|png|gif|webp|svg|mp4|webm|ogg)$/i) || value.startsWith("/uploads/")) ? (
             <div className="relative group shrink-0">
               <div className="w-20 h-14 rounded-lg bg-white/5 border border-white/10 overflow-hidden">
                 {resolvedValue ? (
-                  <img src={resolvedValue} alt="" className="w-full h-full object-cover" />
+                  value.match(/\.(mp4|webm|ogg)$/i) ? (
+                    <video src={resolvedValue} muted className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={resolvedValue} alt="" className="w-full h-full object-cover" />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <ImageIcon size={16} className="text-white/30" />

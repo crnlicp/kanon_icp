@@ -5,13 +5,17 @@ interface BackgroundProps {
   overlay?: boolean;
 }
 
+function isVideo(path?: string): boolean {
+  return !!path?.match(/\.(mp4|webm|ogg)$/i);
+}
+
 export default function Background({ url, overlay = true }: BackgroundProps) {
   const resolved = useAssetUrl(url);
   return (
     <div className="fixed inset-0 -z-10">
       {resolved ? (
         <>
-          {resolved.match(/\.(mp4|webm|ogg)$/i) ? (
+          {isVideo(url) ? (
             <video
               autoPlay
               loop
