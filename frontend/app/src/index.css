@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00D4C8;
+  --color-primary-dark: #00B3A8;
+  --color-accent: #FF6B6B;
+  --color-accent-dark: #E05555;
+  --color-navy: #0F172A;
+  --color-navy-light: #1E293B;
+  --color-offwhite: #F8FAFC;
+  --font-sans: 'Bricolage Grotesque', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-ltr: 'Bricolage Grotesque', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-rtl: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Bricolage Grotesque', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-navy);
+    color: var(--color-offwhite);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+  }
+
+  [dir="ltr"] body,
+  [dir="ltr"] {
+    font-family: 'Bricolage Grotesque', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 200, 0.3);
+    border-radius: 3px;
+  }
+
+  /* Better focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid rgba(0, 212, 200, 0.5);
+    outline-offset: 2px;
+  }
+
+  /* Smooth transitions for interactive elements */
+  button, a, input, select, textarea {
+    transition: all 0.2s ease;
+  }
+
+  /* Section spacing */
+  section + section {
+    margin-top: 4rem;
+  }
+}
+
+@layer components {
+  .glass {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-strong {
+    backdrop-filter: blur(60px);
+    -webkit-backdrop-filter: blur(60px);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .glass-dark {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 40px rgba(0, 212, 200, 0.3);
+  }
+}

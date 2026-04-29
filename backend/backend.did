@@ -1,0 +1,146 @@
+type TopicReturn = record {
+  id : nat;
+  slug : text;
+  title_fa : text;
+  title_sv : text;
+  description_fa : text;
+  description_sv : text;
+  icon : text;
+  backgroundUrl : text;
+  sortOrder : nat;
+  createdAt : int;
+};
+
+type HeroSlideReturn = record {
+  id : nat;
+  topicId : nat;
+  imageUrl : text;
+  title_fa : text;
+  title_sv : text;
+  subtitle_fa : text;
+  subtitle_sv : text;
+  ctaText_fa : text;
+  ctaText_sv : text;
+  ctaLink : text;
+  sortOrder : nat;
+};
+
+type ActivityReturn = record {
+  id : nat;
+  topicId : nat;
+  slug : text;
+  title_fa : text;
+  title_sv : text;
+  excerpt_fa : text;
+  excerpt_sv : text;
+  body_fa : text;
+  body_sv : text;
+  icon : text;
+  imageUrl : text;
+  hasRegistration : bool;
+  sortOrder : nat;
+  createdAt : int;
+};
+
+type RegistrationReturn = record {
+  id : nat;
+  activityId : nat;
+  name : text;
+  email : text;
+  phone : text;
+  message : text;
+  createdAt : int;
+};
+
+type SiteSettingsReturn = record {
+  logoUrl : text;
+  title_fa : text;
+  title_sv : text;
+  subtitle_fa : text;
+  subtitle_sv : text;
+  landingBackgroundUrl : text;
+  topicsBackgroundUrl : text;
+};
+
+type SocialLinkReturn = record {
+  id : nat;
+  platform : text;
+  url : text;
+  sortOrder : nat;
+};
+
+type AboutContentReturn = record {
+  headerImageUrl : text;
+  body_fa : text;
+  body_sv : text;
+};
+
+type ContactMessageReturn = record {
+  id : nat;
+  name : text;
+  email : text;
+  phone : text;
+  message : text;
+  createdAt : int;
+};
+
+service : {
+  // Auth
+  adminLogin : (passwordHash : text) -> (opt text);
+  adminLogout : (token : text) -> ();
+  checkSession : (token : text) -> (bool) query;
+  changePassword : (token : text, newPasswordHash : text) -> (bool);
+
+  // Site Settings
+  getSettings : () -> (SiteSettingsReturn) query;
+  updateSettings : (token : text, logoUrl : text, title_fa : text, title_sv : text, subtitle_fa : text, subtitle_sv : text, landingBackgroundUrl : text, topicsBackgroundUrl : text) -> (SiteSettingsReturn);
+
+  // Topics
+  getTopics : () -> (vec TopicReturn) query;
+  getTopic : (id : nat) -> (opt TopicReturn) query;
+  getTopicBySlug : (slug : text) -> (opt TopicReturn) query;
+  createTopic : (token : text, slug : text, title_fa : text, title_sv : text, description_fa : text, description_sv : text, icon : text, backgroundUrl : text, sortOrder : nat) -> (TopicReturn);
+  updateTopic : (token : text, id : nat, slug : text, title_fa : text, title_sv : text, description_fa : text, description_sv : text, icon : text, backgroundUrl : text, sortOrder : nat) -> (opt TopicReturn);
+  deleteTopic : (token : text, id : nat) -> (bool);
+
+  // Hero Slides
+  getSlidesByTopic : (topicId : nat) -> (vec HeroSlideReturn) query;
+  createSlide : (token : text, topicId : nat, imageUrl : text, title_fa : text, title_sv : text, subtitle_fa : text, subtitle_sv : text, ctaText_fa : text, ctaText_sv : text, ctaLink : text, sortOrder : nat) -> (HeroSlideReturn);
+  updateSlide : (token : text, id : nat, topicId : nat, imageUrl : text, title_fa : text, title_sv : text, subtitle_fa : text, subtitle_sv : text, ctaText_fa : text, ctaText_sv : text, ctaLink : text, sortOrder : nat) -> (opt HeroSlideReturn);
+  deleteSlide : (token : text, id : nat) -> (bool);
+
+  // Activities
+  getActivitiesByTopic : (topicId : nat) -> (vec ActivityReturn) query;
+  getActivityBySlug : (topicId : nat, slug : text) -> (opt ActivityReturn) query;
+  getActivity : (id : nat) -> (opt ActivityReturn) query;
+  getAllActivities : () -> (vec ActivityReturn) query;
+  createActivity : (token : text, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, sortOrder : nat) -> (ActivityReturn);
+  updateActivity : (token : text, id : nat, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, sortOrder : nat) -> (opt ActivityReturn);
+  deleteActivity : (token : text, id : nat) -> (bool);
+
+  // Registrations
+  submitRegistration : (activityId : nat, name : text, email : text, phone : text, message : text) -> (opt RegistrationReturn);
+  getRegistrations : (token : text, activityId : nat) -> (vec RegistrationReturn) query;
+  getAllRegistrations : (token : text) -> (vec RegistrationReturn) query;
+
+  // Social Links
+  getSocialLinks : () -> (vec SocialLinkReturn) query;
+  createSocialLink : (token : text, platform : text, url : text, sortOrder : nat) -> (SocialLinkReturn);
+  updateSocialLink : (token : text, id : nat, platform : text, url : text, sortOrder : nat) -> (opt SocialLinkReturn);
+  deleteSocialLink : (token : text, id : nat) -> (bool);
+
+  // About Us
+  getAboutContent : () -> (AboutContentReturn) query;
+  updateAboutContent : (token : text, headerImageUrl : text, body_fa : text, body_sv : text) -> (AboutContentReturn);
+
+  // Contact Messages
+  submitContactMessage : (name : text, email : text, phone : text, message : text) -> (opt ContactMessageReturn);
+  getContactMessages : (token : text) -> (vec ContactMessageReturn) query;
+  deleteContactMessage : (token : text, id : nat) -> (bool);
+
+  // Assets
+  uploadAsset : (token : text, name : text, contentType : text, data : blob) -> (text);
+  getAsset : (key : text) -> (opt blob) query;
+  listAssets : () -> (vec text) query;
+  deleteAsset : (token : text, key : text) -> (bool);
+}
