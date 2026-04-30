@@ -80,5 +80,10 @@ export default defineConfig(({ command }) => ({
       outDir: "./src/backend/api",
     }),
   ],
-  ...(command === "serve" ? { server: getDevServerConfig() } : {}),
+  ...(command === "serve" ? { 
+    server: {
+      ...getDevServerConfig(), 
+      allowedHosts: true
+    }
+   } : {}),
 }));
