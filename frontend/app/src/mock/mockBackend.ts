@@ -8,6 +8,7 @@ import {
   mockContactMessages,
   mockSocialLinks,
   mockRegistrations,
+  mockFormTemplates,
 } from "./mockData";
 
 /**
@@ -77,6 +78,25 @@ export const mockBackend: backendInterface = {
     return mockRegistrations;
   },
 
+  async getFormTemplates() {
+    return mockFormTemplates;
+  },
+
+  async getFormTemplate(id) {
+    return mockFormTemplates.find((t) => t.id === id) ?? null;
+  },
+
+  async getActivityFormFields(activityId) {
+    const activity = mockActivities.find((a) => a.id === activityId);
+    if (!activity || !activity.hasRegistration) return null;
+    if (activity.customFormFields.length > 0) return activity.customFormFields;
+    if (activity.formTemplateId) {
+      const template = mockFormTemplates.find((t) => t.id === activity.formTemplateId);
+      if (template) return template.fields;
+    }
+    return null;
+  },
+
   async getAsset() {
     return null;
   },
@@ -103,22 +123,35 @@ export const mockBackend: backendInterface = {
 
   async deleteTopic() { return true; },
 
-  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, sortOrder) {
+  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId, customFormFields, sortOrder) {
     return {
       id: BigInt(Date.now()), topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, sortOrder,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId: formTemplateId ?? undefined, customFormFields, sortOrder,
       createdAt: BigInt(Date.now()) * 1_000_000n,
     };
   },
 
-  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, sortOrder) {
+  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId, customFormFields, sortOrder) {
     return {
       id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, sortOrder, createdAt: 0n,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId: formTemplateId ?? undefined, customFormFields, sortOrder, createdAt: 0n,
     };
   },
 
   async deleteActivity() { return true; },
+
+  async createFormTemplate(_token, name_fa, name_sv, description_fa, description_sv, fields) {
+    return {
+      id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, fields,
+      createdAt: BigInt(Date.now()) * 1_000_000n,
+    };
+  },
+
+  async updateFormTemplate(_token, id, name_fa, name_sv, description_fa, description_sv, fields) {
+    return { id, name_fa, name_sv, description_fa, description_sv, fields, createdAt: 0n };
+  },
+
+  async deleteFormTemplate() { return true; },
 
   async createSlide(_token, topicId, imageUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, ctaText_fa, ctaText_sv, ctaLink, sortOrder) {
     return {
@@ -158,8 +191,8 @@ export const mockBackend: backendInterface = {
     return { id: BigInt(Date.now()), name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
-  async submitRegistration(activityId, name, email, phone, message) {
-    return { id: BigInt(Date.now()), activityId, name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
+  async submitRegistration(activityId, name, email, phone, message, _fieldValues) {
+    return { id: BigInt(Date.now()), activityId, name, email, phone, message, fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
   async deleteContactMessage() { return true; },

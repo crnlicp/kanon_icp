@@ -17,12 +17,14 @@ export interface AboutContentReturn {
 }
 export interface ActivityReturn {
   'id' : bigint,
+  'formTemplateId' : [] | [bigint],
   'body_fa' : string,
   'body_sv' : string,
   'sortOrder' : bigint,
   'icon' : string,
   'createdAt' : bigint,
   'slug' : string,
+  'customFormFields' : Array<FormFieldReturn>,
   'imageUrl' : string,
   'excerpt_fa' : string,
   'excerpt_sv' : string,
@@ -39,6 +41,28 @@ export interface ContactMessageReturn {
   'message' : string,
   'phone' : string,
 }
+export interface FieldValueInput { 'value' : string, 'fieldId' : bigint }
+export interface FormFieldOptionReturn { 'fa' : string, 'sv' : string }
+export interface FormFieldReturn {
+  'id' : bigint,
+  'sortOrder' : bigint,
+  'label_fa' : string,
+  'label_sv' : string,
+  'placeholder_fa' : string,
+  'placeholder_sv' : string,
+  'required' : boolean,
+  'options' : Array<FormFieldOptionReturn>,
+  'fieldType' : string,
+}
+export interface FormTemplateReturn {
+  'id' : bigint,
+  'description_fa' : string,
+  'description_sv' : string,
+  'createdAt' : bigint,
+  'fields' : Array<FormFieldReturn>,
+  'name_fa' : string,
+  'name_sv' : string,
+}
 export interface HeroSlideReturn {
   'id' : bigint,
   'ctaText_fa' : string,
@@ -52,10 +76,16 @@ export interface HeroSlideReturn {
   'title_sv' : string,
   'topicId' : bigint,
 }
+export interface RegistrationFieldValueReturn {
+  'value' : string,
+  'fieldLabel' : string,
+  'fieldId' : bigint,
+}
 export interface RegistrationReturn {
   'id' : bigint,
   'name' : string,
   'createdAt' : bigint,
+  'fieldValues' : Array<RegistrationFieldValueReturn>,
   'activityId' : bigint,
   'email' : string,
   'message' : string,
@@ -111,9 +141,15 @@ export interface _SERVICE {
       string,
       string,
       boolean,
+      [] | [bigint],
+      Array<FormFieldReturn>,
       bigint,
     ],
     ActivityReturn
+  >,
+  'createFormTemplate' : ActorMethod<
+    [string, string, string, string, string, Array<FormFieldReturn>],
+    FormTemplateReturn
   >,
   'createSlide' : ActorMethod<
     [
@@ -142,6 +178,7 @@ export interface _SERVICE {
   'deleteActivity' : ActorMethod<[string, bigint], boolean>,
   'deleteAsset' : ActorMethod<[string, string], boolean>,
   'deleteContactMessage' : ActorMethod<[string, bigint], boolean>,
+  'deleteFormTemplate' : ActorMethod<[string, bigint], boolean>,
   'deleteSlide' : ActorMethod<[string, bigint], boolean>,
   'deleteSocialLink' : ActorMethod<[string, bigint], boolean>,
   'deleteTopic' : ActorMethod<[string, bigint], boolean>,
@@ -155,10 +192,22 @@ export interface _SERVICE {
   'getActivitiesByTopic' : ActorMethod<[bigint], Array<ActivityReturn>>,
   'getActivity' : ActorMethod<[bigint], [] | [ActivityReturn]>,
   'getActivityBySlug' : ActorMethod<[bigint, string], [] | [ActivityReturn]>,
+  /**
+   * Activity Form Fields
+   */
+  'getActivityFormFields' : ActorMethod<
+    [bigint],
+    [] | [Array<FormFieldReturn>]
+  >,
   'getAllActivities' : ActorMethod<[], Array<ActivityReturn>>,
   'getAllRegistrations' : ActorMethod<[string], Array<RegistrationReturn>>,
   'getAsset' : ActorMethod<[string], [] | [Uint8Array]>,
   'getContactMessages' : ActorMethod<[string], Array<ContactMessageReturn>>,
+  'getFormTemplate' : ActorMethod<[bigint], [] | [FormTemplateReturn]>,
+  /**
+   * Form Templates
+   */
+  'getFormTemplates' : ActorMethod<[], Array<FormTemplateReturn>>,
   'getRegistrations' : ActorMethod<[string, bigint], Array<RegistrationReturn>>,
   /**
    * Site Settings
@@ -191,7 +240,7 @@ export interface _SERVICE {
    * Registrations
    */
   'submitRegistration' : ActorMethod<
-    [bigint, string, string, string, string],
+    [bigint, string, string, string, string, Array<FieldValueInput>],
     [] | [RegistrationReturn]
   >,
   'updateAboutContent' : ActorMethod<
@@ -213,9 +262,15 @@ export interface _SERVICE {
       string,
       string,
       boolean,
+      [] | [bigint],
+      Array<FormFieldReturn>,
       bigint,
     ],
     [] | [ActivityReturn]
+  >,
+  'updateFormTemplate' : ActorMethod<
+    [string, bigint, string, string, string, string, Array<FormFieldReturn>],
+    [] | [FormTemplateReturn]
   >,
   'updateSettings' : ActorMethod<
     [string, string, string, string, string, string, string, string],

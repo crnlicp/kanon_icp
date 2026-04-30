@@ -30,6 +30,38 @@ module {
     sortOrder : Nat;
   };
 
+  // ─── Form Builder Types ───────────────────────────────────────────────────
+
+  public type FormFieldType = {
+    #text;
+    #textarea;
+    #email;
+    #phone;
+    #number;
+    #select;
+    #radio;
+    #checkbox;
+    #date;
+  };
+
+  public type FormField = {
+    id : Nat;
+    fieldType : FormFieldType;
+    fieldLabel : LocalizedText;
+    placeholder : LocalizedText;
+    required : Bool;
+    options : [LocalizedText]; // For select/radio/checkbox
+    sortOrder : Nat;
+  };
+
+  public type FormTemplate = {
+    id : Nat;
+    name : LocalizedText;
+    description : LocalizedText;
+    fields : [FormField];
+    createdAt : Int;
+  };
+
   public type Activity = {
     id : Nat;
     topicId : Nat;
@@ -40,8 +72,16 @@ module {
     icon : Text;
     imageUrl : Text;
     hasRegistration : Bool;
+    formTemplateId : ?Nat;
+    customFormFields : [FormField];
     sortOrder : Nat;
     createdAt : Int;
+  };
+
+  public type RegistrationFieldValue = {
+    fieldId : Nat;
+    fieldLabel : Text;
+    value : Text;
   };
 
   public type Registration = {
@@ -51,6 +91,7 @@ module {
     email : Text;
     phone : Text;
     message : Text;
+    fieldValues : [RegistrationFieldValue];
     createdAt : Int;
   };
 
@@ -113,6 +154,28 @@ module {
     sortOrder : Nat;
   };
 
+  public type FormFieldReturn = {
+    id : Nat;
+    fieldType : Text; // "text", "textarea", "email", "phone", "number", "select", "radio", "checkbox", "date"
+    label_fa : Text;
+    label_sv : Text;
+    placeholder_fa : Text;
+    placeholder_sv : Text;
+    required : Bool;
+    options : [{ fa : Text; sv : Text }];
+    sortOrder : Nat;
+  };
+
+  public type FormTemplateReturn = {
+    id : Nat;
+    name_fa : Text;
+    name_sv : Text;
+    description_fa : Text;
+    description_sv : Text;
+    fields : [FormFieldReturn];
+    createdAt : Int;
+  };
+
   public type ActivityReturn = {
     id : Nat;
     topicId : Nat;
@@ -126,8 +189,16 @@ module {
     icon : Text;
     imageUrl : Text;
     hasRegistration : Bool;
+    formTemplateId : ?Nat;
+    customFormFields : [FormFieldReturn];
     sortOrder : Nat;
     createdAt : Int;
+  };
+
+  public type RegistrationFieldValueReturn = {
+    fieldId : Nat;
+    fieldLabel : Text;
+    value : Text;
   };
 
   public type RegistrationReturn = {
@@ -137,6 +208,7 @@ module {
     email : Text;
     phone : Text;
     message : Text;
+    fieldValues : [RegistrationFieldValueReturn];
     createdAt : Int;
   };
 

@@ -9,14 +9,31 @@
 import { IDL } from '@icp-sdk/core/candid';
 
 export const idlFactory = ({ IDL }) => {
+  const FormFieldOptionReturn = IDL.Record({
+    'fa' : IDL.Text,
+    'sv' : IDL.Text,
+  });
+  const FormFieldReturn = IDL.Record({
+    'id' : IDL.Nat,
+    'sortOrder' : IDL.Nat,
+    'label_fa' : IDL.Text,
+    'label_sv' : IDL.Text,
+    'placeholder_fa' : IDL.Text,
+    'placeholder_sv' : IDL.Text,
+    'required' : IDL.Bool,
+    'options' : IDL.Vec(FormFieldOptionReturn),
+    'fieldType' : IDL.Text,
+  });
   const ActivityReturn = IDL.Record({
     'id' : IDL.Nat,
+    'formTemplateId' : IDL.Opt(IDL.Nat),
     'body_fa' : IDL.Text,
     'body_sv' : IDL.Text,
     'sortOrder' : IDL.Nat,
     'icon' : IDL.Text,
     'createdAt' : IDL.Int,
     'slug' : IDL.Text,
+    'customFormFields' : IDL.Vec(FormFieldReturn),
     'imageUrl' : IDL.Text,
     'excerpt_fa' : IDL.Text,
     'excerpt_sv' : IDL.Text,
@@ -24,6 +41,15 @@ export const idlFactory = ({ IDL }) => {
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
     'topicId' : IDL.Nat,
+  });
+  const FormTemplateReturn = IDL.Record({
+    'id' : IDL.Nat,
+    'description_fa' : IDL.Text,
+    'description_sv' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'fields' : IDL.Vec(FormFieldReturn),
+    'name_fa' : IDL.Text,
+    'name_sv' : IDL.Text,
   });
   const HeroSlideReturn = IDL.Record({
     'id' : IDL.Nat,
@@ -61,10 +87,16 @@ export const idlFactory = ({ IDL }) => {
     'body_fa' : IDL.Text,
     'body_sv' : IDL.Text,
   });
+  const RegistrationFieldValueReturn = IDL.Record({
+    'value' : IDL.Text,
+    'fieldLabel' : IDL.Text,
+    'fieldId' : IDL.Nat,
+  });
   const RegistrationReturn = IDL.Record({
     'id' : IDL.Nat,
     'name' : IDL.Text,
     'createdAt' : IDL.Int,
+    'fieldValues' : IDL.Vec(RegistrationFieldValueReturn),
     'activityId' : IDL.Nat,
     'email' : IDL.Text,
     'message' : IDL.Text,
@@ -88,6 +120,10 @@ export const idlFactory = ({ IDL }) => {
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
   });
+  const FieldValueInput = IDL.Record({
+    'value' : IDL.Text,
+    'fieldId' : IDL.Nat,
+  });
   
   return IDL.Service({
     'adminLogin' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], []),
@@ -108,9 +144,23 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Text,
           IDL.Bool,
+          IDL.Opt(IDL.Nat),
+          IDL.Vec(FormFieldReturn),
           IDL.Nat,
         ],
         [ActivityReturn],
+        [],
+      ),
+    'createFormTemplate' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Vec(FormFieldReturn),
+        ],
+        [FormTemplateReturn],
         [],
       ),
     'createSlide' : IDL.Func(
@@ -153,6 +203,7 @@ export const idlFactory = ({ IDL }) => {
     'deleteActivity' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteAsset' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'deleteContactMessage' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+    'deleteFormTemplate' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteSlide' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteSocialLink' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteTopic' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
@@ -168,6 +219,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(ActivityReturn)],
         ['query'],
       ),
+    'getActivityFormFields' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(IDL.Vec(FormFieldReturn))],
+        ['query'],
+      ),
     'getAllActivities' : IDL.Func([], [IDL.Vec(ActivityReturn)], ['query']),
     'getAllRegistrations' : IDL.Func(
         [IDL.Text],
@@ -180,6 +236,12 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ContactMessageReturn)],
         ['query'],
       ),
+    'getFormTemplate' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(FormTemplateReturn)],
+        ['query'],
+      ),
+    'getFormTemplates' : IDL.Func([], [IDL.Vec(FormTemplateReturn)], ['query']),
     'getRegistrations' : IDL.Func(
         [IDL.Text, IDL.Nat],
         [IDL.Vec(RegistrationReturn)],
@@ -203,7 +265,14 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'submitRegistration' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [
+          IDL.Nat,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Vec(FieldValueInput),
+        ],
         [IDL.Opt(RegistrationReturn)],
         [],
       ),
@@ -227,9 +296,24 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Text,
           IDL.Bool,
+          IDL.Opt(IDL.Nat),
+          IDL.Vec(FormFieldReturn),
           IDL.Nat,
         ],
         [IDL.Opt(ActivityReturn)],
+        [],
+      ),
+    'updateFormTemplate' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Nat,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Vec(FormFieldReturn),
+        ],
+        [IDL.Opt(FormTemplateReturn)],
         [],
       ),
     'updateSettings' : IDL.Func(

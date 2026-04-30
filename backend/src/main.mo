@@ -21,12 +21,16 @@ persistent actor {
   type Registration = T.Registration;
   type SiteSettings = T.SiteSettings;
   type SocialLink = T.SocialLink;
+  type FormField = T.FormField;
+  type FormTemplate = T.FormTemplate;
   type TopicReturn = T.TopicReturn;
   type HeroSlideReturn = T.HeroSlideReturn;
   type ActivityReturn = T.ActivityReturn;
   type RegistrationReturn = T.RegistrationReturn;
   type SiteSettingsReturn = T.SiteSettingsReturn;
   type SocialLinkReturn = T.SocialLinkReturn;
+  type FormFieldReturn = T.FormFieldReturn;
+  type FormTemplateReturn = T.FormTemplateReturn;
   type AboutContent = T.AboutContent;
   type AboutContentReturn = T.AboutContentReturn;
   type ContactMessage = T.ContactMessage;
@@ -45,6 +49,9 @@ persistent actor {
 
   let registrations = Map.empty<Nat, Registration>();
   var nextRegistrationId : Nat = 1;
+
+  let formTemplates = Map.empty<Nat, FormTemplate>();
+  var nextFormTemplateId : Nat = 1;
 
   let socialLinks = Map.empty<Nat, SocialLink>();
   var nextSocialLinkId : Nat = 1;
@@ -416,6 +423,8 @@ persistent actor {
     icon : Text,
     imageUrl : Text,
     hasRegistration : Bool,
+    formTemplateId : ?Nat,
+    customFormFields : [FormFieldReturn],
     sortOrder : Nat,
   ) : async ActivityReturn {
     requireAuth(token);
@@ -431,6 +440,23 @@ persistent actor {
       icon;
       imageUrl;
       hasRegistration;
+      formTemplateId;
+      customFormFields = Array.map<FormFieldReturn, FormField>(
+        customFormFields,
+        func (f) {
+          {
+            id = f.id;
+            fieldType = H.textToFieldType(f.fieldType);
+            fieldLabel = { fa = f.label_fa; sv = f.label_sv };
+            placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
+            required = f.required;
+            options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
+              f.options, func (o) { { fa = o.fa; sv = o.sv } }
+            );
+            sortOrder = f.sortOrder;
+          }
+        }
+      );
       sortOrder;
       createdAt = Time.now();
     };
@@ -452,6 +478,8 @@ persistent actor {
     icon : Text,
     imageUrl : Text,
     hasRegistration : Bool,
+    formTemplateId : ?Nat,
+    customFormFields : [FormFieldReturn],
     sortOrder : Nat,
   ) : async ?ActivityReturn {
     requireAuth(token);
@@ -467,6 +495,23 @@ persistent actor {
           icon;
           imageUrl;
           hasRegistration;
+          formTemplateId;
+          customFormFields = Array.map<FormFieldReturn, FormField>(
+            customFormFields,
+            func (f) {
+              {
+                id = f.id;
+                fieldType = H.textToFieldType(f.fieldType);
+                fieldLabel = { fa = f.label_fa; sv = f.label_sv };
+                placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
+                required = f.required;
+                options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
+                  f.options, func (o) { { fa = o.fa; sv = o.sv } }
+                );
+                sortOrder = f.sortOrder;
+              }
+            }
+          );
           sortOrder;
           createdAt = existing.createdAt;
         };
@@ -485,6 +530,139 @@ persistent actor {
     }
   };
 
+  // ─── Form Templates CRUD ────────────────────────────────────────────────
+
+  public query func getFormTemplates() : async [FormTemplateReturn] {
+    Iter.toArray(
+      Iter.map<(Nat, FormTemplate), FormTemplateReturn>(
+        Map.entries(formTemplates),
+        func ((_, t)) { H.templateToReturn(t) }
+      )
+    )
+  };
+
+  public query func getFormTemplate(id : Nat) : async ?FormTemplateReturn {
+    switch (Map.get(formTemplates, Nat.compare, id)) {
+      case (?t) { ?H.templateToReturn(t) };
+      case null { null };
+    }
+  };
+
+  public func createFormTemplate(
+    token : Text,
+    name_fa : Text,
+    name_sv : Text,
+    description_fa : Text,
+    description_sv : Text,
+    fields : [FormFieldReturn],
+  ) : async FormTemplateReturn {
+    requireAuth(token);
+    let id = nextFormTemplateId;
+    nextFormTemplateId += 1;
+    let template : FormTemplate = {
+      id;
+      name = { fa = name_fa; sv = name_sv };
+      description = { fa = description_fa; sv = description_sv };
+      fields = Array.map<FormFieldReturn, FormField>(
+        fields,
+        func (f) {
+          {
+            id = f.id;
+            fieldType = H.textToFieldType(f.fieldType);
+            fieldLabel = { fa = f.label_fa; sv = f.label_sv };
+            placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
+            required = f.required;
+            options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
+              f.options, func (o) { { fa = o.fa; sv = o.sv } }
+            );
+            sortOrder = f.sortOrder;
+          }
+        }
+      );
+      createdAt = Time.now();
+    };
+    Map.add(formTemplates, Nat.compare, id, template);
+    H.templateToReturn(template)
+  };
+
+  public func updateFormTemplate(
+    token : Text,
+    id : Nat,
+    name_fa : Text,
+    name_sv : Text,
+    description_fa : Text,
+    description_sv : Text,
+    fields : [FormFieldReturn],
+  ) : async ?FormTemplateReturn {
+    requireAuth(token);
+    switch (Map.get(formTemplates, Nat.compare, id)) {
+      case (?existing) {
+        let updated : FormTemplate = {
+          id;
+          name = { fa = name_fa; sv = name_sv };
+          description = { fa = description_fa; sv = description_sv };
+          fields = Array.map<FormFieldReturn, FormField>(
+            fields,
+            func (f) {
+              {
+                id = f.id;
+                fieldType = H.textToFieldType(f.fieldType);
+                fieldLabel = { fa = f.label_fa; sv = f.label_sv };
+                placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
+                required = f.required;
+                options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
+                  f.options, func (o) { { fa = o.fa; sv = o.sv } }
+                );
+                sortOrder = f.sortOrder;
+              }
+            }
+          );
+          createdAt = existing.createdAt;
+        };
+        Map.add(formTemplates, Nat.compare, id, updated);
+        ?H.templateToReturn(updated)
+      };
+      case null { null };
+    }
+  };
+
+  public func deleteFormTemplate(token : Text, id : Nat) : async Bool {
+    requireAuth(token);
+    switch (Map.get(formTemplates, Nat.compare, id)) {
+      case (?_) { ignore Map.delete(formTemplates, Nat.compare, id); true };
+      case null { false };
+    }
+  };
+
+  // ─── Activity Form Fields Resolution ──────────────────────────────────
+
+  public query func getActivityFormFields(activityId : Nat) : async ?[FormFieldReturn] {
+    switch (Map.get(activities, Nat.compare, activityId)) {
+      case (?activity) {
+        if (not activity.hasRegistration) {
+          return null;
+        };
+        // If custom fields defined, use them
+        if (activity.customFormFields.size() > 0) {
+          return ?Array.map<FormField, FormFieldReturn>(activity.customFormFields, H.fieldToReturn);
+        };
+        // If template linked, resolve it
+        switch (activity.formTemplateId) {
+          case (?tid) {
+            switch (Map.get(formTemplates, Nat.compare, tid)) {
+              case (?template) {
+                ?Array.map<FormField, FormFieldReturn>(template.fields, H.fieldToReturn)
+              };
+              case null { null }; // Template was deleted
+            }
+          };
+          case null { null }; // No template — use default form
+        };
+      };
+      case null { null };
+    }
+  };
+
   // ─── Registrations ────────────────────────────────────────────────────────
 
   // Input size limits to prevent unbounded storage growth.
@@ -492,6 +670,8 @@ persistent actor {
   let maxEmailLen : Nat = 200;
   let maxPhoneLen : Nat = 50;
   let maxMessageLen : Nat = 2000;
+  let maxFieldValueLen : Nat = 2000;
+  let maxFieldValues : Nat = 50;
 
   public func submitRegistration(
     activityId : Nat,
@@ -499,15 +679,23 @@ persistent actor {
     email : Text,
     phone : Text,
     message : Text,
+    fieldValues : [{ fieldId : Nat; value : Text }],
   ) : async ?RegistrationReturn {
     // Reject oversized input
     if (
       name.size() > maxNameLen or
       email.size() > maxEmailLen or
       phone.size() > maxPhoneLen or
-      message.size() > maxMessageLen
+      message.size() > maxMessageLen or
+      fieldValues.size() > maxFieldValues
     ) {
       return null;
+    };
+    // Validate field value sizes
+    for (fv in fieldValues.vals()) {
+      if (fv.value.size() > maxFieldValueLen) {
+        return null;
+      };
     };
     switch (Map.get(activities, Nat.compare, activityId)) {
       case (?activity) {
@@ -516,6 +704,42 @@ persistent actor {
         };
         let id = nextRegistrationId;
         nextRegistrationId += 1;
+
+        // Resolve form fields to snapshot labels
+        let resolvedFields = Array.map<{ fieldId : Nat; value : Text }, T.RegistrationFieldValue>(
+          fieldValues,
+          func (fv) {
+            // Try to find label from custom fields or template
+            var resolvedLabel = "Field " # Nat.toText(fv.fieldId);
+            var found = false;
+            for (cf in activity.customFormFields.vals()) {
+              if (not found and cf.id == fv.fieldId) {
+                resolvedLabel := cf.fieldLabel.fa # " / " # cf.fieldLabel.sv;
+                found := true;
+              };
+            };
+            if (not found and activity.customFormFields.size() == 0) {
+              switch (activity.formTemplateId) {
+                case (?tid) {
+                  switch (Map.get(formTemplates, Nat.compare, tid)) {
+                    case (?template) {
+                      for (tf in template.fields.vals()) {
+                        if (not found and tf.id == fv.fieldId) {
+                          resolvedLabel := tf.fieldLabel.fa # " / " # tf.fieldLabel.sv;
+                          found := true;
+                        };
+                      };
+                    };
+                    case null {};
+                  };
+                };
+                case null {};
+              };
+            };
+            { fieldId = fv.fieldId; fieldLabel = resolvedLabel; value = fv.value }
+          }
+        );
+
         let reg : Registration = {
           id;
           activityId;
@@ -523,6 +747,7 @@ persistent actor {
           email;
           phone;
           message;
+          fieldValues = resolvedFields;
           createdAt = Time.now();
         };
         Map.add(registrations, Nat.compare, id, reg);

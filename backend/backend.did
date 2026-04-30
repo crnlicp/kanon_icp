@@ -1,3 +1,30 @@
+type FormFieldOptionReturn = record {
+  fa : text;
+  sv : text;
+};
+
+type FormFieldReturn = record {
+  id : nat;
+  fieldType : text;
+  label_fa : text;
+  label_sv : text;
+  placeholder_fa : text;
+  placeholder_sv : text;
+  required : bool;
+  options : vec FormFieldOptionReturn;
+  sortOrder : nat;
+};
+
+type FormTemplateReturn = record {
+  id : nat;
+  name_fa : text;
+  name_sv : text;
+  description_fa : text;
+  description_sv : text;
+  fields : vec FormFieldReturn;
+  createdAt : int;
+};
+
 type TopicReturn = record {
   id : nat;
   slug : text;
@@ -38,8 +65,21 @@ type ActivityReturn = record {
   icon : text;
   imageUrl : text;
   hasRegistration : bool;
+  formTemplateId : opt nat;
+  customFormFields : vec FormFieldReturn;
   sortOrder : nat;
   createdAt : int;
+};
+
+type RegistrationFieldValueReturn = record {
+  fieldId : nat;
+  fieldLabel : text;
+  value : text;
+};
+
+type FieldValueInput = record {
+  fieldId : nat;
+  value : text;
 };
 
 type RegistrationReturn = record {
@@ -49,6 +89,7 @@ type RegistrationReturn = record {
   email : text;
   phone : text;
   message : text;
+  fieldValues : vec RegistrationFieldValueReturn;
   createdAt : int;
 };
 
@@ -116,12 +157,22 @@ service : {
   getActivityBySlug : (topicId : nat, slug : text) -> (opt ActivityReturn) query;
   getActivity : (id : nat) -> (opt ActivityReturn) query;
   getAllActivities : () -> (vec ActivityReturn) query;
-  createActivity : (token : text, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, sortOrder : nat) -> (ActivityReturn);
-  updateActivity : (token : text, id : nat, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, sortOrder : nat) -> (opt ActivityReturn);
+  createActivity : (token : text, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, formTemplateId : opt nat, customFormFields : vec FormFieldReturn, sortOrder : nat) -> (ActivityReturn);
+  updateActivity : (token : text, id : nat, topicId : nat, slug : text, title_fa : text, title_sv : text, excerpt_fa : text, excerpt_sv : text, body_fa : text, body_sv : text, icon : text, imageUrl : text, hasRegistration : bool, formTemplateId : opt nat, customFormFields : vec FormFieldReturn, sortOrder : nat) -> (opt ActivityReturn);
   deleteActivity : (token : text, id : nat) -> (bool);
 
+  // Form Templates
+  getFormTemplates : () -> (vec FormTemplateReturn) query;
+  getFormTemplate : (id : nat) -> (opt FormTemplateReturn) query;
+  createFormTemplate : (token : text, name_fa : text, name_sv : text, description_fa : text, description_sv : text, fields : vec FormFieldReturn) -> (FormTemplateReturn);
+  updateFormTemplate : (token : text, id : nat, name_fa : text, name_sv : text, description_fa : text, description_sv : text, fields : vec FormFieldReturn) -> (opt FormTemplateReturn);
+  deleteFormTemplate : (token : text, id : nat) -> (bool);
+
+  // Activity Form Fields
+  getActivityFormFields : (activityId : nat) -> (opt vec FormFieldReturn) query;
+
   // Registrations
-  submitRegistration : (activityId : nat, name : text, email : text, phone : text, message : text) -> (opt RegistrationReturn);
+  submitRegistration : (activityId : nat, name : text, email : text, phone : text, message : text, fieldValues : vec FieldValueInput) -> (opt RegistrationReturn);
   getRegistrations : (token : text, activityId : nat) -> (vec RegistrationReturn) query;
   getAllRegistrations : (token : text) -> (vec RegistrationReturn) query;
 

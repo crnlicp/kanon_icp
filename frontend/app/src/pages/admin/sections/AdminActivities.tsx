@@ -5,8 +5,9 @@ import Toast from "../../../components/Toast";
 import Modal from "../../../components/Modal";
 import FileUpload from "../../../components/FileUpload";
 import AssetImage from "../../../components/AssetImage";
+import FormBuilder from "../../../components/FormBuilder";
 import { useI18n } from "../../../i18n";
-import type { TopicReturn, ActivityReturn } from "../../../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn, FormTemplateReturn } from "../../../backend/api/backend";
 
 interface Topic {
   id: number;
@@ -27,8 +28,12 @@ interface ActivityItem {
   icon: string;
   imageUrl: string;
   hasRegistration: boolean;
+  formTemplateId?: number;
+  customFormFields: FormFieldReturn[];
   sortOrder: number;
 }
+
+type FormMode = "default" | "template" | "custom";
 
 interface Props {
   token: string;
@@ -47,14 +52,18 @@ const emptyForm = {
   icon: "Activity",
   imageUrl: "",
   hasRegistration: false,
+  formMode: "default" as FormMode,
+  formTemplateId: 0,
+  customFormFields: [] as FormFieldReturn[],
   sortOrder: 0,
 };
 
 export default function AdminActivities({ token, readOnly }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopicId, setSelectedTopicId] = useState<number>(0);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [templates, setTemplates] = useState<FormTemplateReturn[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -64,9 +73,13 @@ export default function AdminActivities({ token, readOnly }: Props) {
 
   useEffect(() => {
     import("../../../actor").then(({ backend }) => {
-      backend.getTopics().then((data: TopicReturn[]) => {
-        const ts = data.map((t: TopicReturn) => ({ id: Number(t.id), slug: t.slug, title_sv: t.title_sv }));
+      Promise.all([
+        backend.getTopics(),
+        backend.getFormTemplates(),
+      ]).then(([topicData, templateData]: [TopicReturn[], FormTemplateReturn[]]) => {
+        const ts = topicData.map((t: TopicReturn) => ({ id: Number(t.id), slug: t.slug, title_sv: t.title_sv }));
         setTopics(ts);
+        setTemplates(templateData);
         if (ts.length > 0) setSelectedTopicId(ts[0].id);
         setLoading(false);
       });
@@ -81,6 +94,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       ...a,
       id: Number(a.id),
       topicId: Number(a.topicId),
+      formTemplateId: a.formTemplateId != null ? Number(a.formTemplateId) : undefined,
       sortOrder: Number(a.sortOrder),
     })));
   }, [selectedTopicId]);
@@ -94,13 +108,21 @@ export default function AdminActivities({ token, readOnly }: Props) {
     try {
       const { backend } = await import("../../../actor");
       const tid = BigInt(form.topicId || selectedTopicId);
+      const templateId = form.hasRegistration && form.formMode === "template" && form.formTemplateId
+        ? BigInt(form.formTemplateId)
+        : null;
+      const customFields = form.hasRegistration && form.formMode === "custom"
+        ? form.customFormFields
+        : [];
       if (editing !== null) {
         await backend.updateActivity(
           token, BigInt(editing), tid, form.slug,
           form.title_fa, form.title_sv,
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
-          form.icon, form.imageUrl, form.hasRegistration, BigInt(form.sortOrder)
+          form.icon, form.imageUrl, form.hasRegistration,
+          templateId, customFields,
+          BigInt(form.sortOrder)
         );
         setToast({ message: t("activityUpdated"), type: "success", visible: true });
       } else {
@@ -109,7 +131,9 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.title_fa, form.title_sv,
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
-          form.icon, form.imageUrl, form.hasRegistration, BigInt(form.sortOrder)
+          form.icon, form.imageUrl, form.hasRegistration,
+          templateId, customFields,
+          BigInt(form.sortOrder)
         );
         setToast({ message: t("activityCreated"), type: "success", visible: true });
       }
@@ -135,6 +159,13 @@ export default function AdminActivities({ token, readOnly }: Props) {
 
   const startEdit = (act: ActivityItem) => {
     setEditing(act.id);
+    // Determine form mode from existing data
+    let formMode: FormMode = "default";
+    if (act.customFormFields.length > 0) {
+      formMode = "custom";
+    } else if (act.formTemplateId) {
+      formMode = "template";
+    }
     setForm({
       topicId: act.topicId,
       slug: act.slug,
@@ -147,6 +178,9 @@ export default function AdminActivities({ token, readOnly }: Props) {
       icon: act.icon,
       imageUrl: act.imageUrl,
       hasRegistration: act.hasRegistration,
+      formMode,
+      formTemplateId: act.formTemplateId ?? 0,
+      customFormFields: act.customFormFields,
       sortOrder: act.sortOrder,
     });
     setShowForm(true);
@@ -244,6 +278,71 @@ export default function AdminActivities({ token, readOnly }: Props) {
               <input type="checkbox" checked={form.hasRegistration} onChange={(e) => setForm({ ...form, hasRegistration: e.target.checked })} className="w-4 h-4 rounded accent-primary" />
               <span className="text-sm text-white/70">{t("enableRegistration")}</span>
             </label>
+            {/* Form mode selector - shown when registration is enabled */}
+            {form.hasRegistration && (
+              <div className="space-y-4 p-4 rounded-xl bg-white/[0.02] border border-white/10">
+                <div>
+                  <label className="block text-sm text-white/50 mb-2">{t("formMode")}</label>
+                  <div className="flex gap-2">
+                    {(["default", "template", "custom"] as FormMode[]).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setForm({ ...form, formMode: mode })}
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          form.formMode === mode
+                            ? "bg-primary/15 text-primary border border-primary/30"
+                            : "bg-white/5 text-white/40 border border-white/10 hover:text-white/70"
+                        }`}
+                      >
+                        {t(mode === "default" ? "defaultForm" : mode === "template" ? "useTemplate" : "customForm")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Template selector */}
+                {form.formMode === "template" && (
+                  <div>
+                    <label className="block text-sm text-white/50 mb-1.5">{t("selectTemplate")}</label>
+                    <select
+                      value={form.formTemplateId}
+                      onChange={(e) => setForm({ ...form, formTemplateId: Number(e.target.value) })}
+                      className={inputClass}
+                    >
+                      <option value={0} className="bg-navy">-- {t("selectTemplate")} --</option>
+                      {templates.map((tmpl) => (
+                        <option key={Number(tmpl.id)} value={Number(tmpl.id)} className="bg-navy">
+                          {lang === "fa" ? tmpl.name_fa : tmpl.name_sv} ({tmpl.fields.length} {t("fieldsCount")})
+                        </option>
+                      ))}
+                    </select>
+                    {/* Preview selected template fields */}
+                    {form.formTemplateId > 0 && (() => {
+                      const selectedTemplate = templates.find((t) => Number(t.id) === form.formTemplateId);
+                      if (!selectedTemplate) return null;
+                      return (
+                        <div className="mt-3">
+                          <p className="text-xs text-white/40 mb-1.5">{t("formPreview")}</p>
+                          <FormBuilder fields={selectedTemplate.fields} onChange={() => {}} readOnly />
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Custom form builder */}
+                {form.formMode === "custom" && (
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">{t("formBuilder")}</label>
+                    <FormBuilder
+                      fields={form.customFormFields}
+                      onChange={(fields) => setForm({ ...form, customFormFields: fields })}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex gap-3 pt-3">
               <motion.button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm" whileTap={{ scale: 0.98 }}>
                 <Save size={16} /> {saving ? t("saving") : t("save")}
@@ -262,7 +361,9 @@ export default function AdminActivities({ token, readOnly }: Props) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-xs text-primary/60 font-mono">{act.slug}</span>
-                  {act.hasRegistration && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary/70">Registration</span>}
+                  {act.hasRegistration && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary/70">
+                    {act.customFormFields.length > 0 ? t("customForm") : act.formTemplateId ? t("useTemplate") : t("defaultForm")}
+                  </span>}
                 </div>
                 <p className="text-white font-medium truncate">{act.title_sv}</p>
               </div>

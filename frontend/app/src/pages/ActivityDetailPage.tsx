@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
@@ -6,9 +6,10 @@ import { useI18n } from "../i18n";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import Background from "../components/Background";
 import GlassCard from "../components/GlassCard";
+import RegistrationForm from "../components/RegistrationForm";
 import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner";
-import type { TopicReturn, ActivityReturn } from "../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn } from "../backend/api/backend";
 
 interface Activity {
   id: number;
@@ -36,14 +37,8 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState<Activity | null>(null);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [formFields, setFormFields] = useState<FormFieldReturn[] | null>(null);
   const activityImage = useAssetUrl(activity?.imageUrl);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -66,40 +61,20 @@ export default function ActivityDetailPage() {
             navigate(`/${lang}/topics/${topicSlug}`);
             return;
           }
-          setActivity({ ...actData, id: Number(actData.id), topicId: Number(actData.topicId) });
+          const actId = Number(actData.id);
+          setActivity({ ...actData, id: actId, topicId: Number(actData.topicId) });
+
+          // Fetch dynamic form fields if registration is enabled
+          if (actData.hasRegistration) {
+            backend.getActivityFormFields(BigInt(actId)).then((fields: FormFieldReturn[] | null) => {
+              setFormFields(fields);
+            });
+          }
           setLoading(false);
         });
       });
     });
   }, [topicSlug, activitySlug, lang, navigate]);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!activity) return;
-      setSubmitting(true);
-      try {
-        const { backend } = await import("../actor");
-        const result = await backend.submitRegistration(
-          BigInt(activity.id),
-          formData.name,
-          formData.email,
-          formData.phone,
-          formData.message
-        );
-        if (result) {
-          setToast({ message: t("registrationSuccess"), type: "success", visible: true });
-          setFormData({ name: "", email: "", phone: "", message: "" });
-        } else {
-          setToast({ message: t("registrationError"), type: "error", visible: true });
-        }
-      } catch {
-        setToast({ message: t("registrationError"), type: "error", visible: true });
-      }
-      setSubmitting(false);
-    },
-    [activity, formData, t]
-  );
 
   const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
@@ -193,73 +168,12 @@ export default function ActivityDetailPage() {
               <h2 className="text-2xl font-bold text-white mb-6">
                 {t("registrationForm")}
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm text-white/50 mb-1.5">
-                    {t("name")}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-white/50 mb-1.5">
-                      {t("email")}
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/50 mb-1.5">
-                      {t("phone")}
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm text-white/50 mb-1.5">
-                    {t("message")}
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors resize-none"
-                  />
-                </div>
-                <motion.button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {submitting ? t("loading") : t("submit")}
-                </motion.button>
-              </form>
+              <RegistrationForm
+                activityId={activity.id}
+                formFields={formFields}
+                onSuccess={() => setToast({ message: t("registrationSuccess"), type: "success", visible: true })}
+                onError={() => setToast({ message: t("registrationError"), type: "error", visible: true })}
+              />
             </GlassCard>
           </motion.div>
         )}

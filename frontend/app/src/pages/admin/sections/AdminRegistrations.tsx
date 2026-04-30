@@ -16,6 +16,7 @@ interface RegItem {
   email: string;
   phone: string;
   message: string;
+  fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
   createdAt: number;
 }
 
@@ -76,6 +77,11 @@ export default function AdminRegistrations({ token }: Props) {
             email: r.email,
             phone: r.phone,
             message: r.message,
+            fieldValues: (r.fieldValues || []).map((fv) => ({
+              fieldId: Number(fv.fieldId),
+              fieldLabel: fv.fieldLabel,
+              value: fv.value,
+            })),
             createdAt: Number(r.createdAt),
           }))
           .sort((a, b) => b.createdAt - a.createdAt)
@@ -188,6 +194,18 @@ export default function AdminRegistrations({ token }: Props) {
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/5">
                   <MessageSquare size={14} className="text-white/20 mt-0.5 shrink-0" />
                   <p className="text-sm text-white/60 whitespace-pre-wrap break-words">{reg.message}</p>
+                </div>
+              )}
+
+              {/* Dynamic field values */}
+              {reg.fieldValues.length > 0 && (
+                <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                  {reg.fieldValues.map((fv, fvIdx) => (
+                    <div key={fvIdx} className="flex items-start gap-2 text-sm">
+                      <span className="text-white/40 shrink-0 min-w-[100px]">{fv.fieldLabel}:</span>
+                      <span className="text-white/70 break-words">{fv.value || "—"}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </motion.div>

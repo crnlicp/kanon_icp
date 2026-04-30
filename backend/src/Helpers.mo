@@ -1,7 +1,65 @@
 /// Pure conversion helpers: domain types → flat Candid return types.
 import T "./Types";
+import Array "mo:core/Array";
 
 module {
+
+  public func fieldTypeToText(ft : T.FormFieldType) : Text {
+    switch (ft) {
+      case (#text) { "text" };
+      case (#textarea) { "textarea" };
+      case (#email) { "email" };
+      case (#phone) { "phone" };
+      case (#number) { "number" };
+      case (#select) { "select" };
+      case (#radio) { "radio" };
+      case (#checkbox) { "checkbox" };
+      case (#date) { "date" };
+    }
+  };
+
+  public func textToFieldType(t : Text) : T.FormFieldType {
+    switch (t) {
+      case ("textarea") { #textarea };
+      case ("email") { #email };
+      case ("phone") { #phone };
+      case ("number") { #number };
+      case ("select") { #select };
+      case ("radio") { #radio };
+      case ("checkbox") { #checkbox };
+      case ("date") { #date };
+      case (_) { #text };
+    }
+  };
+
+  public func fieldToReturn(f : T.FormField) : T.FormFieldReturn {
+    {
+      id = f.id;
+      fieldType = fieldTypeToText(f.fieldType);
+      label_fa = f.fieldLabel.fa;
+      label_sv = f.fieldLabel.sv;
+      placeholder_fa = f.placeholder.fa;
+      placeholder_sv = f.placeholder.sv;
+      required = f.required;
+      options = Array.map<T.LocalizedText, { fa : Text; sv : Text }>(
+        f.options,
+        func (o) { { fa = o.fa; sv = o.sv } }
+      );
+      sortOrder = f.sortOrder;
+    }
+  };
+
+  public func templateToReturn(t : T.FormTemplate) : T.FormTemplateReturn {
+    {
+      id = t.id;
+      name_fa = t.name.fa;
+      name_sv = t.name.sv;
+      description_fa = t.description.fa;
+      description_sv = t.description.sv;
+      fields = Array.map<T.FormField, T.FormFieldReturn>(t.fields, fieldToReturn);
+      createdAt = t.createdAt;
+    }
+  };
 
   public func topicToReturn(t : T.Topic) : T.TopicReturn {
     {
@@ -48,6 +106,8 @@ module {
       icon = a.icon;
       imageUrl = a.imageUrl;
       hasRegistration = a.hasRegistration;
+      formTemplateId = a.formTemplateId;
+      customFormFields = Array.map<T.FormField, T.FormFieldReturn>(a.customFormFields, fieldToReturn);
       sortOrder = a.sortOrder;
       createdAt = a.createdAt;
     }
@@ -61,6 +121,10 @@ module {
       email = r.email;
       phone = r.phone;
       message = r.message;
+      fieldValues = Array.map<T.RegistrationFieldValue, T.RegistrationFieldValueReturn>(
+        r.fieldValues,
+        func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
+      );
       createdAt = r.createdAt;
     }
   };
