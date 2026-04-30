@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { icpBindgen } from "@icp-sdk/bindgen/plugins/vite";
 import { execSync } from "child_process";
+import type httpProxy from "http-proxy";
+import type { ClientRequest } from "http";
 
 const environment = process.env.ICP_ENVIRONMENT || "local";
 const CANISTER_NAMES = ["backend"];
@@ -52,7 +54,17 @@ function getDevServerConfig() {
   }
   if (networkStatus.api_url) {
     config.proxy = {
-      "/api": { target: networkStatus.api_url, changeOrigin: true },
+      "/api": {
+        target: networkStatus.api_url,
+        changeOrigin: true,
+        configure: (proxy: httpProxy) => {
+          proxy.on("proxyReq", (proxyReq: ClientRequest) => {
+            proxyReq.removeHeader("x-forwarded-host");
+            proxyReq.removeHeader("x-forwarded-proto");
+            proxyReq.removeHeader("x-forwarded-for");
+          });
+        },
+      },
     };
   }
 
