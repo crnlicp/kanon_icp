@@ -15,6 +15,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   FlaskConical,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
@@ -28,8 +29,9 @@ import AdminSocialLinks from "./sections/AdminSocialLinks";
 import AdminSlides from "./sections/AdminSlides";
 import AdminAbout from "./sections/AdminAbout";
 import AdminContact from "./sections/AdminContact";
+import AdminRegistrations from "./sections/AdminRegistrations";
 
-type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "social" | "about" | "contact";
+type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "social" | "about" | "contact";
 
 const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] = [
   { id: "dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -37,6 +39,7 @@ const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] =
   { id: "topics", labelKey: "topics", icon: Layers },
   { id: "slides", labelKey: "heroSlides", icon: Image },
   { id: "activities", labelKey: "activities", icon: Activity },
+  { id: "registrations", labelKey: "registrations", icon: ClipboardList },
   { id: "about", labelKey: "aboutUs", icon: Info },
   { id: "contact", labelKey: "contactMessages", icon: MessageSquare },
   { id: "social", labelKey: "socialLinks", icon: Link2 },
@@ -169,6 +172,7 @@ export default function AdminDashboard() {
           {activeSection === "topics" && <AdminTopics token={token!} readOnly={mockActive} />}
           {activeSection === "slides" && <AdminSlides token={token!} readOnly={mockActive} />}
           {activeSection === "activities" && <AdminActivities token={token!} readOnly={mockActive} />}
+          {activeSection === "registrations" && <AdminRegistrations token={token!} />}
           {activeSection === "about" && <AdminAbout token={token!} readOnly={mockActive} />}
           {activeSection === "contact" && <AdminContact token={token!} readOnly={mockActive} />}
           {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}

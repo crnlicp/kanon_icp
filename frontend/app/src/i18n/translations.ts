@@ -133,6 +133,13 @@ export const translations = {
     date: "تاریخ",
     sender: "فرستنده",
 
+    // Registrations
+    registrations: "ثبت‌نام‌ها",
+    registration: "ثبت‌نام",
+    allActivities: "همه فعالیت‌ها",
+    noRegistrations: "ثبت‌نامی وجود ندارد.",
+    failedToLoadRegistrations: "خطا در بارگذاری ثبت‌نام‌ها",
+
     // File upload
     uploading: "در حال بارگذاری...",
     dropOrClick: "فایل را اینجا رها کنید یا کلیک کنید",
@@ -288,6 +295,13 @@ export const translations = {
     failedToLoadMessages: "Det gick inte att ladda meddelanden",
     date: "Datum",
     sender: "Avsändare",
+
+    // Registrations
+    registrations: "Registreringar",
+    registration: "Registrering",
+    allActivities: "Alla aktiviteter",
+    noRegistrations: "Inga registreringar ännu.",
+    failedToLoadRegistrations: "Det gick inte att ladda registreringar",
 
     // File upload
     uploading: "Laddar upp...",
