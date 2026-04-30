@@ -191,7 +191,7 @@ export const mockBackend: backendInterface = {
     return { id: BigInt(Date.now()), name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
-  async submitRegistration(activityId, name, email, phone, message, _fieldValues) {
+  async submitRegistration(activityId, name, email, phone, message) {
     return { id: BigInt(Date.now()), activityId, name, email, phone, message, fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
