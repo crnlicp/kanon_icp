@@ -113,7 +113,6 @@ export default function Header({ logoUrl, title, topics = [] }: HeaderProps) {
                   speed={0.05}
                 />
               </div>
-              <span className="text-lg">🇮🇷</span>
               فارسی
             </motion.button>
             <motion.button
@@ -135,7 +134,6 @@ export default function Header({ logoUrl, title, topics = [] }: HeaderProps) {
                   speed={0.05}
                 />
               </div>
-              <span className="text-lg">🇸🇪</span>
               Svenska
             </motion.button>
           </div>
