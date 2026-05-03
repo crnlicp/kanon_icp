@@ -32,6 +32,7 @@ import AdminAbout from "./sections/AdminAbout";
 import AdminContact from "./sections/AdminContact";
 import AdminRegistrations from "./sections/AdminRegistrations";
 import AdminFormTemplates from "./sections/AdminFormTemplates";
+import WavingFlag from "../../components/WavingFlag";
 
 type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "formTemplates" | "social" | "about" | "contact";
 
@@ -95,9 +96,8 @@ export default function AdminDashboard() {
 
       {/* Sidebar */}
       <motion.aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 glass-strong z-40 flex flex-col transition-transform md:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed md:sticky top-0 left-0 h-screen w-64 glass-strong z-40 flex flex-col transition-transform md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
         initial={false}
       >
         <div className="p-6 border-b border-white/10">
@@ -112,11 +112,10 @@ export default function AdminDashboard() {
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                activeSection === section.id
-                  ? "bg-primary/15 text-primary border border-primary/20"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5"
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeSection === section.id
+                ? "bg-primary/15 text-primary border border-primary/20"
+                : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                }`}
             >
               <section.icon size={18} />
               {t(section.labelKey as Parameters<typeof t>[0])}
@@ -135,13 +134,37 @@ export default function AdminDashboard() {
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
-                  lang === l
-                    ? "bg-primary/20 text-primary border border-primary/30"
-                    : "text-white/40 hover:text-white/70 bg-white/5 border border-white/10"
-                }`}
+                className={`flex-1 p-2 rounded-lg text-xs font-medium transition-all ${lang === l
+                  ? "bg-primary/20 text-primary border border-primary/30"
+                  : "text-white/40 hover:text-white/70 bg-white/5 border border-white/10"
+                  }`}
               >
-                {l === "fa" ? "🇮🇷 فارسی" : "🇸🇪 Svenska"}
+                {l === "fa" ?
+                  <div className="h-3 flex items-center justify-center gap-2">
+                    <div className="w-5 h-5">
+                      <WavingFlag
+                        src="/assets/flag-iran.svg"
+                        alt="Sweden"
+                        amplitude={2}
+                        frequency={0.3}
+                        speed={0.05}
+                      />
+                    </div>
+                    فارسی
+                  </div>
+                  :
+                  <div className="h-3 flex items-center justify-center gap-2">
+                    <div className="w-5 h-5">
+                      <WavingFlag
+                        src="/assets/flag-sweden.svg"
+                        alt="Sweden"
+                        amplitude={2}
+                        frequency={0.3}
+                        speed={0.05}
+                      />
+                    </div>
+                    Svenska
+                  </div>}
               </button>
             ))}
           </div>
