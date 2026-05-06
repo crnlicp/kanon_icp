@@ -205,6 +205,14 @@ export const translations = {
     mockModeBanner: "حالت نمایشی فعال است — داده‌های نمونه نمایش داده می‌شود. تغییرات ذخیره نمی‌شوند.",
     disableMockMode: "غیرفعال کردن",
     mockData: "داده نمایشی",
+
+    // Demo areas
+    demoAreas: "حوزه‌های نمایشی",
+    demoAreasDescription: "یک حوزه نمایشی انتخاب کنید تا ببینید پلتفرم برای سازمان‌های مختلف چگونه به نظر می‌رسد",
+    activeArea: "حوزه فعال",
+    switchArea: "تغییر به این حوزه",
+    switchingArea: "در حال تغییر...",
+    demoAreaNote: "تغییر حوزه نمایشی صفحه را مجدداً بارگذاری می‌کند. اطلاعات واقعی تأثیر نمی‌پذیرد.",
   },
   sv: {
     // Landing
@@ -412,6 +420,14 @@ export const translations = {
     mockModeBanner: "Demodata-läge aktivt — Visar exempeldata. Ändringar sparas inte.",
     disableMockMode: "Inaktivera",
     mockData: "Demodata",
+
+    // Demo areas
+    demoAreas: "Demoområden",
+    demoAreasDescription: "Välj ett demoområde för att se hur plattformen ser ut för olika typer av organisationer",
+    activeArea: "Aktivt område",
+    switchArea: "Byt till detta område",
+    switchingArea: "Byter...",
+    demoAreaNote: "Att byta demoområde laddar om sidan. Verklig data påverkas inte.",
   },
 } as const;
 

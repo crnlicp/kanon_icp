@@ -91,6 +91,7 @@ export default function AdminSocialLinks({ token, readOnly }: Props) {
   };
 
   const inputClass = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm";
+  const selectClass = inputClass.replace("bg-white/5", "bg-[#0f172a]");
 
   if (loading) {
     return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="text-primary animate-spin" /></div>;
@@ -114,10 +115,10 @@ export default function AdminSocialLinks({ token, readOnly }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm text-white/50 mb-1.5">Platform</label>
-                <select value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className={inputClass}>
-                  <option value="" className="bg-navy">Select...</option>
+                <select value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className={selectClass}>
+                  <option value="" className="bg-[#0f172a] text-white">Select...</option>
                   {platformOptions.map((p) => (
-                    <option key={p} value={p} className="bg-navy">{p}</option>
+                    <option key={p} value={p} className="bg-[#0f172a] text-white">{p}</option>
                   ))}
                 </select>
               </div>

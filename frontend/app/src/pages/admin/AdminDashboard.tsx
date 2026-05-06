@@ -17,6 +17,7 @@ import {
   FlaskConical,
   ClipboardList,
   FileText,
+  Globe2,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
@@ -32,9 +33,10 @@ import AdminAbout from "./sections/AdminAbout";
 import AdminContact from "./sections/AdminContact";
 import AdminRegistrations from "./sections/AdminRegistrations";
 import AdminFormTemplates from "./sections/AdminFormTemplates";
+import AdminDemoAreas from "./sections/AdminDemoAreas";
 import WavingFlag from "../../components/WavingFlag";
 
-type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "formTemplates" | "social" | "about" | "contact";
+type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "formTemplates" | "social" | "about" | "contact" | "demoAreas";
 
 const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] = [
   { id: "dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -47,6 +49,7 @@ const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] =
   { id: "about", labelKey: "aboutUs", icon: Info },
   { id: "contact", labelKey: "contactMessages", icon: MessageSquare },
   { id: "social", labelKey: "socialLinks", icon: Link2 },
+  { id: "demoAreas", labelKey: "demoAreas", icon: Globe2 },
 ];
 
 export default function AdminDashboard() {
@@ -203,6 +206,7 @@ export default function AdminDashboard() {
           {activeSection === "about" && <AdminAbout token={token!} readOnly={mockActive} />}
           {activeSection === "contact" && <AdminContact token={token!} readOnly={mockActive} />}
           {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}
+          {activeSection === "demoAreas" && <AdminDemoAreas />}
         </div>
       </main>
     </div>

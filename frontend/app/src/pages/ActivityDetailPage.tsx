@@ -151,10 +151,9 @@ export default function ActivityDetailPage() {
           transition={{ delay: 0.3 }}
         >
           <div
-            className="text-white/80 leading-relaxed text-base sm:text-lg whitespace-pre-wrap"
-          >
-            {localized(activity.body_fa, activity.body_sv)}
-          </div>
+            className="text-white/80 leading-relaxed text-base sm:text-lg"
+            dangerouslySetInnerHTML={{ __html: localized(activity.body_fa, activity.body_sv) }}
+          />
         </motion.div>
 
         {/* Registration Form */}

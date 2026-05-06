@@ -130,11 +130,11 @@ export default function AdminRegistrations({ token }: Props) {
           <select
             value={selectedActivityId ?? ""}
             onChange={(e) => setSelectedActivityId(e.target.value ? Number(e.target.value) : null)}
-            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-primary/50"
+            className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
           >
-            <option value="">{t("allActivities")}</option>
+            <option value="" className="bg-[#0f172a] text-white">{t("allActivities")}</option>
             {activities.map((a) => (
-              <option key={a.id} value={a.id}>
+              <option key={a.id} value={a.id} className="bg-[#0f172a] text-white">
                 {lang === "fa" ? a.title_fa : a.title_sv}
               </option>
             ))}
