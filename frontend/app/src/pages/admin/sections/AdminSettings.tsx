@@ -136,7 +136,7 @@ export default function AdminSettings({ token }: Props) {
           >
             <span
               className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
-                mockMode ? "translate-x-6" : "translate-x-1"
+                mockMode ? "ltr:translate-x-6 rtl:-translate-x-6" : "ltr:translate-x-1 rtl:-translate-x-1"
               }`}
             />
           </button>
