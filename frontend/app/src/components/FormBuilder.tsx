@@ -16,7 +16,7 @@ interface Props {
 }
 
 const inputClass = "w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm";
-const selectClass = inputClass.replace("bg-white/5", "bg-[#0f172a]");
+
 
 export default function FormBuilder({ fields, onChange, readOnly }: Props) {
   const { t } = useI18n();
@@ -131,10 +131,10 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
                   <select
                     value={field.fieldType}
                     onChange={(e) => updateField(idx, { fieldType: e.target.value })}
-                    className={selectClass}
+                    className='w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors'
                   >
                     {FIELD_TYPES.map((ft) => (
-                      <option key={ft} value={ft} className="bg-[#0f172a] text-white">{fieldTypeLabel(ft)}</option>
+                      <option key={ft} value={ft} className="bg-black/70">{fieldTypeLabel(ft)}</option>
                     ))}
                   </select>
                 </div>

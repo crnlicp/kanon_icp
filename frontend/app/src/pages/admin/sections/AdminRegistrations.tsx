@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Loader2, Mail, Phone, MessageSquare, Inbox, Filter } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
-import type { RegistrationReturn, TopicReturn, ActivityReturn } from "../../../backend/api/backend";
+import type { RegistrationReturn, TopicReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
@@ -132,9 +132,9 @@ export default function AdminRegistrations({ token }: Props) {
             onChange={(e) => setSelectedActivityId(e.target.value ? Number(e.target.value) : null)}
             className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
           >
-            <option value="" className="bg-[#0f172a] text-white">{t("allActivities")}</option>
+            <option value="" className="bg-black/70">{t("allActivities")}</option>
             {activities.map((a) => (
-              <option key={a.id} value={a.id} className="bg-[#0f172a] text-white">
+              <option key={a.id} value={a.id} className="bg-black/70">
                 {lang === "fa" ? a.title_fa : a.title_sv}
               </option>
             ))}

@@ -86,11 +86,11 @@ export default function RegistrationForm({ activityId, formFields, onSuccess, on
                   required={field.required}
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
-                  className={inputClass.replace("bg-white/5", "bg-[#1a1a2e]")}
+                  className='w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors'
                 >
-                  <option value="" className="bg-[#1a1a2e] text-white">{placeholder || `-- ${label} --`}</option>
+                  <option value="" className="bg-black/70">{placeholder || `-- ${label} --`}</option>
                   {field.options.map((opt, i) => (
-                    <option key={i} value={localized(opt.fa, opt.sv)} className="bg-[#1a1a2e] text-white">
+                    <option key={i} value={localized(opt.fa, opt.sv)} className="bg-black/70">
                       {localized(opt.fa, opt.sv)}
                     </option>
                   ))}

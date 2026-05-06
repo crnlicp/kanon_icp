@@ -193,7 +193,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
   };
 
   const inputClass = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm";
-  const selectClass = inputClass.replace("bg-white/5", "bg-[#0f172a]");
 
   if (loading) {
     return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="text-primary animate-spin" /></div>;
@@ -210,9 +209,9 @@ export default function AdminActivities({ token, readOnly }: Props) {
 
       {/* Topic Selector */}
       <div className="mb-6">
-        <select value={selectedTopicId} onChange={(e) => setSelectedTopicId(Number(e.target.value))} className={selectClass}>
+        <select value={selectedTopicId} onChange={(e) => setSelectedTopicId(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors">
           {topics.map((t) => (
-            <option key={t.id} value={t.id} className="bg-[#0f172a] text-white">{t.title_sv} ({t.slug})</option>
+            <option key={t.id} value={t.id} className="bg-black/70">{t.title_sv} ({t.slug})</option>
           ))}
         </select>
       </div>
@@ -309,11 +308,11 @@ export default function AdminActivities({ token, readOnly }: Props) {
                     <select
                       value={form.formTemplateId}
                       onChange={(e) => setForm({ ...form, formTemplateId: Number(e.target.value) })}
-                      className={selectClass}
+                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
                     >
-                      <option value={0} className="bg-[#0f172a] text-white">-- {t("selectTemplate")} --</option>
+                      <option value={0} className="bg-black/70">-- {t("selectTemplate")} --</option>
                       {templates.map((tmpl) => (
-                        <option key={Number(tmpl.id)} value={Number(tmpl.id)} className="bg-[#0f172a] text-white">
+                        <option key={Number(tmpl.id)} value={Number(tmpl.id)} className="bg-black/70">
                           {lang === "fa" ? tmpl.name_fa : tmpl.name_sv} ({tmpl.fields.length} {t("fieldsCount")})
                         </option>
                       ))}
