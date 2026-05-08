@@ -198,6 +198,34 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
                   </label>
                 )}
 
+                {/* Min / Max (for number fields) */}
+                {field.fieldType === "number" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-white/40 mb-1">{t("fieldMinValue")}</label>
+                      <input
+                        type="number"
+                        dir="ltr"
+                        value={field.minValue != null ? String(field.minValue) : ""}
+                        onChange={(e) => updateField(idx, { minValue: e.target.value !== "" ? BigInt(e.target.value) : undefined })}
+                        className={inputClass}
+                        placeholder="—"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/40 mb-1">{t("fieldMaxValue")}</label>
+                      <input
+                        type="number"
+                        dir="ltr"
+                        value={field.maxValue != null ? String(field.maxValue) : ""}
+                        onChange={(e) => updateField(idx, { maxValue: e.target.value !== "" ? BigInt(e.target.value) : undefined })}
+                        className={inputClass}
+                        placeholder="—"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Options (for select/radio) */}
                 {TYPES_WITH_OPTIONS.has(field.fieldType) && (
                   <div>

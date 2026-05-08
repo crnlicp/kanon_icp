@@ -68,6 +68,7 @@ export interface EventSessionReturn {
 }
 export interface FormFieldReturn {
   'id' : bigint,
+  'minValue' : [] | [bigint],
   'sortOrder' : bigint,
   'label_fa' : string,
   'label_sv' : string,
@@ -75,6 +76,7 @@ export interface FormFieldReturn {
   'placeholder_fa' : string,
   'placeholder_sv' : string,
   'required' : boolean,
+  'maxValue' : [] | [bigint],
   'options' : Array<{ 'fa' : string, 'sv' : string }>,
   'fieldType' : string,
 }

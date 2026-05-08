@@ -5,6 +5,8 @@ import { useI18n } from "../i18n";
 import Toast from "../components/Toast";
 import GlassCard from "../components/GlassCard";
 
+const PHONE_PATTERN = "\\+[0-9]{11}";
+
 export default function ContactPage() {
   const { t, isRtl } = useI18n();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
@@ -81,8 +83,12 @@ export default function ContactPage() {
                 <div>
                   <label className="block text-sm text-white/50 mb-1.5">{t("phone")}</label>
                   <input
+                    type="tel"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder={t("phonePlaceholder")}
+                    pattern={PHONE_PATTERN}
+                    title={t("phoneFormat")}
                     className={inputClass}
                     dir="ltr"
                   />

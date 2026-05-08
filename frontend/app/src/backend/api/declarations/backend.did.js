@@ -11,6 +11,7 @@ import { IDL } from '@icp-sdk/core/candid';
 export const idlFactory = ({ IDL }) => {
   const FormFieldReturn = IDL.Record({
     'id' : IDL.Nat,
+    'minValue' : IDL.Opt(IDL.Int),
     'sortOrder' : IDL.Nat,
     'label_fa' : IDL.Text,
     'label_sv' : IDL.Text,
@@ -18,6 +19,7 @@ export const idlFactory = ({ IDL }) => {
     'placeholder_fa' : IDL.Text,
     'placeholder_sv' : IDL.Text,
     'required' : IDL.Bool,
+    'maxValue' : IDL.Opt(IDL.Int),
     'options' : IDL.Vec(IDL.Record({ 'fa' : IDL.Text, 'sv' : IDL.Text })),
     'fieldType' : IDL.Text,
   });

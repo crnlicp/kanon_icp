@@ -5,6 +5,8 @@ import { useI18n } from "../i18n";
 import SessionSelector from "./SessionSelector";
 import type { RegistrationWithStatusReturn, SessionAvailabilityReturn } from "../backend/api/backend";
 
+const PHONE_PATTERN = "\\+[0-9]{11}";
+
 interface LookupField {
   fieldId: bigint;
   label_fa: string;
@@ -174,6 +176,7 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                       <label className="block text-xs text-white/40 mb-1">{t("registrationId")}</label>
                       <input
                         type="number"
+                        dir="ltr"
                         min={1}
                         value={lookupId}
                         onChange={(e) => setLookupId(e.target.value)}
@@ -186,6 +189,10 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                       <label className="block text-xs text-white/40 mb-1">{lookupLabel}</label>
                       <input
                         type={lookupField ? "text" : "tel"}
+                        dir={lookupField ? undefined : "ltr"}
+                        pattern={lookupField ? undefined : PHONE_PATTERN}
+                        title={lookupField ? undefined : t("phoneFormat")}
+                        placeholder={lookupField ? undefined : t("phonePlaceholder")}
                         value={lookupValue}
                         onChange={(e) => setLookupValue(e.target.value)}
                         className={inputClass}

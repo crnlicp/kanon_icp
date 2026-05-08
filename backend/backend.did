@@ -135,13 +135,15 @@ type FormTemplateReturn =
    name_fa: text;
    name_sv: text;
  };
-type FormFieldReturn = 
+type FormFieldReturn =
  record {
    fieldType: text;
    id: nat;
    isLookupField: bool;
    label_fa: text;
    label_sv: text;
+   maxValue: opt int;
+   minValue: opt int;
    options: vec record {
                   fa: text;
                   sv: text;

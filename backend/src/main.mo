@@ -406,6 +406,8 @@ persistent actor {
         );
         sortOrder = f.sortOrder;
         isLookupField = f.isLookupField;
+        minValue = f.minValue;
+        maxValue = f.maxValue;
       }
     })
   };

@@ -59,7 +59,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("سفالگری کودکان", "Keramik för barn"),
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "text", label_fa: "آلرژی به مواد", label_sv: "Allergi mot material", placeholder_fa: "مثلاً لاتکس، رنگ‌های خاص", placeholder_sv: "T.ex. latex, specifika färger", required: false, options: [], isLookupField: false, sortOrder: 5n },
@@ -121,7 +121,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("تئاتر بداهه", "Improvisationsteater"),
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "radio", label_fa: "تجربه قبلی نمایش", label_sv: "Tidigare teatererfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "هیچ تجربه‌ای ندارم", sv: "Ingen erfarenhet" }, { fa: "کمی تجربه دارم", sv: "Lite erfarenhet" }, { fa: "در گروه نمایشی بوده‌ام", sv: "Har medverkat i teatergrupp" }], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
     ],
@@ -143,7 +143,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مهارت‌های بقا در طبیعت", "Överlevnadskunskaper"),
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "radio", label_fa: "تجربه در طبیعت", label_sv: "Utomhuserfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بدون تجربه قبلی", sv: "Ingen tidigare erfarenhet" }, { fa: "چند سفر کمپینگ", sv: "Några campingresor" }, { fa: "تجربه پیاده‌روی و کمپینگ زیاد", sv: "Stor erfarenhet av vandring och camping" }], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 5n },
@@ -176,7 +176,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     description_fa: "فرم استاندارد با اطلاعات کودک، والدین و تماس اضطراری", description_sv: "Standardformulär med barnuppgifter, föräldrar och nödkontakt",
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "radio", label_fa: "جنسیت", label_sv: "Kön", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "پسر", sv: "Pojke" }, { fa: "دختر", sv: "Flicka" }, { fa: "ترجیح نمی‌دهم بگویم", sv: "Föredrar att inte ange" }], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefonnummer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
@@ -192,7 +192,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     description_fa: "فرم با اطلاعات پایه تحصیلی و رضایت ایمنی آزمایشگاه", description_sv: "Formulär med skolklass och laboratoriesäkerhetsmedgivande",
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "select", label_fa: "پایه تحصیلی", label_sv: "Skolklass", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "کلاس اول و دوم", sv: "Klass 1–2" }, { fa: "کلاس سوم و چهارم", sv: "Klass 3–4" }, { fa: "کلاس پنجم و ششم", sv: "Klass 5–6" }, { fa: "راهنمایی / کلاس ۷–۹", sv: "Klass 7–9" }], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
@@ -277,7 +277,7 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
     ],
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "phone", label_fa: "تلفن والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 4n },
     ],

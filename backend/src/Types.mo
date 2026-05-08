@@ -53,6 +53,8 @@ module {
     options : [LocalizedText]; // For select/radio/checkbox
     sortOrder : Nat;
     isLookupField : Bool;      // One field per form used to verify registration lookup
+    minValue : ?Int;           // For number fields: optional minimum
+    maxValue : ?Int;           // For number fields: optional maximum
   };
 
   public type FormTemplate = {
@@ -211,6 +213,8 @@ module {
     options : [{ fa : Text; sv : Text }];
     sortOrder : Nat;
     isLookupField : Bool;
+    minValue : ?Int;
+    maxValue : ?Int;
   };
 
   public type FormTemplateReturn = {

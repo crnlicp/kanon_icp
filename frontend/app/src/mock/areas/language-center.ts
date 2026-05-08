@@ -430,7 +430,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     description_fa: "فرم برای ثبت‌نام کودکان در دوره‌های زبان", description_sv: "Formulär för barnens språkkurser",
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], isLookupField: false, minValue: 5n, maxValue: 17n, sortOrder: 2n },
       { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Föräldrarnas namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Föräldrarnas e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },

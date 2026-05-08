@@ -5,6 +5,8 @@ import { useI18n } from "../i18n";
 import SessionSelector from "./SessionSelector";
 import type { FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn, RegistrationWithStatusReturn } from "../backend/api/backend";
 
+const PHONE_PATTERN = "\\+[0-9]{11}";
+
 interface RegistrationFormProps {
   activityId: number;
   formFields: FormFieldReturn[] | null;
@@ -240,10 +242,15 @@ export default function RegistrationForm({ activityId, formFields, sessions }: R
                             ? "date"
                             : "text"
                   }
+                  dir={field.fieldType === "number" || field.fieldType === "phone" ? "ltr" : undefined}
+                  pattern={field.fieldType === "phone" ? PHONE_PATTERN : undefined}
+                  title={field.fieldType === "phone" ? t("phoneFormat") : undefined}
+                  placeholder={field.fieldType === "phone" && !placeholder ? t("phonePlaceholder") : placeholder}
+                  min={field.fieldType === "number" && field.minValue != null ? Number(field.minValue) : undefined}
+                  max={field.fieldType === "number" && field.maxValue != null ? Number(field.maxValue) : undefined}
                   required={field.required}
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
-                  placeholder={placeholder}
                   className={inputClass}
                 />
               )}
@@ -277,8 +284,12 @@ export default function RegistrationForm({ activityId, formFields, sessions }: R
               <label className="block text-sm text-white/50 mb-1.5">{t("phone")}</label>
               <input
                 type="tel"
+                dir="ltr"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder={t("phonePlaceholder")}
+                pattern={PHONE_PATTERN}
+                title={t("phoneFormat")}
                 className={inputClass}
               />
             </div>

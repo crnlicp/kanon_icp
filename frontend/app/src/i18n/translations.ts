@@ -297,6 +297,10 @@ export const translations = {
     // Lookup field (form builder)
     useLookupField: "استفاده از این فیلد برای تأیید هویت در جستجوی ثبت‌نام",
     lookupFieldHint: "فقط یک فیلد می‌تواند به عنوان فیلد تأیید انتخاب شود.",
+    fieldMinValue: "حداقل",
+    fieldMaxValue: "حداکثر",
+    phonePlaceholder: "+46000000000",
+    phoneFormat: "فرمت: +46000000000 — بدون فاصله، ۱۲ کاراکتر",
 
     // Event registration templates
     eventRegistrations: "ثبت‌نام‌های رویداد",
@@ -605,6 +609,10 @@ export const translations = {
     // Lookup field (form builder)
     useLookupField: "Använd detta fält för att verifiera identitet vid registreringssökning",
     lookupFieldHint: "Endast ett fält kan väljas som verifieringsfält.",
+    fieldMinValue: "Min",
+    fieldMaxValue: "Max",
+    phonePlaceholder: "+46000000000",
+    phoneFormat: "Format: +46000000000 — inga mellanslag, 12 tecken",
 
     // Event registration templates
     eventRegistrations: "Evenemangsregistreringar",

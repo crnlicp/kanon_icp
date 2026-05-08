@@ -510,7 +510,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
       { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 18n, maxValue: 80n, sortOrder: 4n },
       { id: 5n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 5n },
       { id: 6n, fieldType: "checkbox", label_fa: "شرایط و ریسک را می‌پذیرم", label_sv: "Jag accepterar villkor och risker", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],

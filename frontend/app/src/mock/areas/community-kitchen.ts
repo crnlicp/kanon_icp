@@ -157,7 +157,7 @@ export const mockActivities: ActivityReturn[] = [
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 10n, sortOrder: 3n },
       { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kostval", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], isLookupField: false, sortOrder: 4n },
     ],
     icon: "Sandwich", imageUrl: img("taco-night", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -432,7 +432,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 10n, sortOrder: 3n },
       { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌های مهم", label_sv: "Viktiga allergier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
@@ -454,7 +454,7 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 10n, sortOrder: 3n },
       { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 4n },
     ],
     createdAt: 1748000000000000000n,

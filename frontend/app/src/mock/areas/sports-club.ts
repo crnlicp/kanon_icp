@@ -190,7 +190,7 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     description_fa: "فرم ثبت‌نام برنامه‌های ورزشی جوانان با اطلاعات والدین", description_sv: "Registreringsformulär för ungdomsprogram med föräldraruppgifter",
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام کودک / بازیکن", label_sv: "Barnets / spelarens namn", placeholder_fa: "نام کامل", placeholder_sv: "Fullständigt namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, minValue: 16n, maxValue: 70n, sortOrder: 2n },
       { id: 3n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
       { id: 4n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "۰۹۱۲ ...", placeholder_sv: "070-...", required: true, options: [], isLookupField: false, sortOrder: 4n },
       { id: 5n, fieldType: "textarea", label_fa: "آسیب‌دیدگی‌های قبلی", label_sv: "Tidigare skador", placeholder_fa: "هر آسیب‌دیدگی مرتبطی که مربی باید بداند", placeholder_sv: "Eventuella relevanta skador tränaren bör känna till", required: false, options: [], isLookupField: false, sortOrder: 5n },
