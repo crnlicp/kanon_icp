@@ -8,6 +8,7 @@ import type {
   SocialLinkReturn,
   RegistrationReturn,
   FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) =>
@@ -81,6 +82,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>Detta program är utformat för att förbättra din fysiska och mentala hälsa. I en lugn och stödjande miljö guidar våra erfarna instruktörer dig på denna transformativa resa.</p><p>Klassstorleken är begränsad. Registrera dig idag.</p>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -93,7 +97,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("جریان طلوع آفتاب", "Soluppgångsflöde"),
     formTemplateId: 17001n,
     icon: "Sun", imageUrl: img("sunrise-yoga", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 12002n, topicId: 11001n, slug: "yin-yoga",
@@ -102,7 +106,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Lugn yoga med långa positionshållningar för djup flexibilitet",
     ...body("یین یوگا", "Yin yoga"),
     icon: "Moon", imageUrl: img("yin-yoga", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 12003n, topicId: 11001n, slug: "power-vinyasa",
@@ -112,7 +116,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("پاور ویناسا", "Power vinyasa"),
     formTemplateId: 17001n,
     icon: "Zap", imageUrl: img("power-yoga", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(50),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 12004n, topicId: 11001n, slug: "chair-yoga",
@@ -121,7 +125,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Yoga anpassad för äldre och personer med rörelsebegränsningar",
     ...body("یوگا با صندلی", "Stolsyoga"),
     icon: "Armchair", imageUrl: img("chair-yoga", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(45),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 12005n, topicId: 11001n, slug: "beginners-yoga",
@@ -130,13 +134,13 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "En fullständig introduktion till yoga för dem som just börjar",
     ...body("یوگا برای مبتدیان", "Yoga för nybörjare"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "آیا سابقه آسیب جسمی دارید؟", label_sv: "Har du haft fysiska skador?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله، توضیح می‌دهم", sv: "Ja, jag förklarar" }], sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "توضیحات پزشکی", label_sv: "Medicinsk information", placeholder_fa: "اگر آسیب یا بیماری دارید توضیح دهید", placeholder_sv: "Beskriv eventuella skador eller sjukdomar", required: false, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "آیا سابقه آسیب جسمی دارید؟", label_sv: "Har du haft fysiska skador?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله، توضیح می‌دهم", sv: "Ja, jag förklarar" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "توضیحات پزشکی", label_sv: "Medicinsk information", placeholder_fa: "اگر آسیب یا بیماری دارید توضیح دهید", placeholder_sv: "Beskriv eventuella skador eller sjukdomar", required: false, options: [], isLookupField: false, sortOrder: 4n },
     ],
     icon: "Flower2", imageUrl: img("beginner-yoga", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(40),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(40),
   },
   // ── Mindfulness ──
   {
@@ -147,7 +151,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مدیتیشن هدایت‌شده", "Guidad meditation"),
     formTemplateId: 17001n,
     icon: "Brain", imageUrl: img("guided-meditation", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 12007n, topicId: 11002n, slug: "breathwork",
@@ -156,7 +160,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Pranayama-andningstekniker för stresshantering och energi",
     ...body("تنفس درمانی", "Andningsövningar"),
     icon: "Wind", imageUrl: img("breathwork", 800, 600),
-    hasRegistration: false, sortOrder: 2n, createdAt: ts(52),
+    hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 12008n, topicId: 11002n, slug: "mindful-walking",
@@ -165,7 +169,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Promenad i naturen med fokus på närvaro i nuet",
     ...body("پیاده‌روی ذهن‌آگاهانه", "Medveten promenad"),
     icon: "Footprints", imageUrl: img("mindful-walking", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(48),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 12009n, topicId: 11002n, slug: "stress-relief",
@@ -175,7 +179,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("رهایی از استرس", "Stressavlastning"),
     formTemplateId: 17001n,
     icon: "Smile", imageUrl: img("stress-relief", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 12010n, topicId: 11002n, slug: "sleep-meditation",
@@ -184,7 +188,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Tekniker för att förbättra sömnkvalitet och djup avslappning",
     ...body("مدیتیشن خواب", "Sömnmeditation"),
     icon: "Moon", imageUrl: img("sleep-meditation", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(38),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(38),
   },
   // ── Nutrition ──
   {
@@ -195,7 +199,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("برنامه‌ریزی غذایی", "Måltidsplanering"),
     formTemplateId: 17002n,
     icon: "ClipboardList", imageUrl: img("meal-planning", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 12012n, topicId: 11003n, slug: "smoothie-bowl-class",
@@ -204,7 +208,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Lär dig göra näringsrika och färgglada smoothiebowls",
     ...body("کلاس اسموتی بول", "Smoothiebowl-klass"),
     icon: "Salad", imageUrl: img("smoothie-bowl", 800, 600),
-    hasRegistration: false, sortOrder: 2n, createdAt: ts(51),
+    hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 12013n, topicId: 11003n, slug: "plant-based-cooking",
@@ -214,7 +218,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("آشپزی گیاهی", "Växtbaserad matlagning"),
     formTemplateId: 17002n,
     icon: "Leaf", imageUrl: img("plant-cooking", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(46),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 12014n, topicId: 11003n, slug: "nutrition-consultation",
@@ -223,7 +227,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Privat konsultation med en kostrådgivare",
     ...body("مشاوره تغذیه", "Kostkonsultation"),
     icon: "Stethoscope", imageUrl: img("nutrition-consult", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(41),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 12015n, topicId: 11003n, slug: "fermentation-gut-health",
@@ -232,7 +236,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Lär dig om fermenterade livsmedel och deras effekt på tarmhälsan",
     ...body("تخمیر و سلامت روده", "Fermentering och tarmhälsa"),
     icon: "Flask", imageUrl: img("fermentation", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(36),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(36),
   },
   // ── Retreats ──
   {
@@ -242,14 +246,18 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Två dagar med yoga, meditation och hälsosam matlagning i naturen",
     ...body("اردوی رفاهی آخر هفته", "Välmåenderetreat på helgen"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 5n },
+    ],
+    sessions: [
+      { id: 101n, name_fa: "اردو بهاره (اسفند ۱۴۰۴)", name_sv: "Vårretreat (mars 2026)", date: "2026-03-14", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "اردو پاییزه (شهریور ۱۴۰۵)", name_sv: "Höstretreat (september 2026)", date: "2026-09-12", capacity: 15n, bufferCapacity: 5n, sortOrder: 2n },
     ],
     icon: "Tent", imageUrl: img("wellness-retreat", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    hasRegistration: true, registrationMode: "event", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 12017n, topicId: 11004n, slug: "forest-bathing",
@@ -258,7 +266,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Upplev Shinrin-yoku — terapeutisk nedsänkning i skogen",
     ...body("حمام جنگل", "Skogsbad"),
     icon: "Trees", imageUrl: img("forest-bathing", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(49),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 12018n, topicId: 11004n, slug: "beach-yoga-retreat",
@@ -268,7 +276,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("اردوی یوگا در ساحل", "Strandyogaretreat"),
     formTemplateId: 17001n,
     icon: "Waves", imageUrl: img("beach-yoga", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(44),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 12019n, topicId: 11004n, slug: "silent-retreat",
@@ -277,7 +285,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "En dag av fullständig tystnad, meditation och introspection",
     ...body("اردوی سکوت", "Tystnadretreat"),
     icon: "VolumeX", imageUrl: img("silent-retreat", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(39),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 12020n, topicId: 11004n, slug: "new-moon-ceremony",
@@ -286,7 +294,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Månadssamling med reflektion, intention och gemensam övning",
     ...body("مراسم ماه نو", "Nymåneceremoni"),
     icon: "Moon", imageUrl: img("new-moon", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(34),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(34),
   },
   // ── Healing Arts ──
   {
@@ -297,7 +305,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("حمام صدا", "Ljudbad"),
     formTemplateId: 17001n,
     icon: "Music", imageUrl: img("sound-bath", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 12022n, topicId: 11005n, slug: "reiki-intro",
@@ -306,7 +314,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Bekanta dig med reikienergiläkningens konst för välmående",
     ...body("مقدمه‌ای بر ریکی", "Introduktion till reiki"),
     icon: "Sparkles", imageUrl: img("reiki", 800, 600),
-    hasRegistration: false, sortOrder: 2n, createdAt: ts(47),
+    hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 12023n, topicId: 11005n, slug: "aromatherapy-workshop",
@@ -316,7 +324,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("کارگاه رایحه‌درمانی", "Aromaterapiworkshop"),
     formTemplateId: 17002n,
     icon: "Droplets", imageUrl: img("aromatherapy", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(42),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 12024n, topicId: 11005n, slug: "crystal-healing",
@@ -325,7 +333,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Utforska de energigivande egenskaperna hos läkande stenar och kristaller",
     ...body("درمان با کریستال", "Kristallterapi"),
     icon: "Diamond", imageUrl: img("crystal-healing", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(37),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 12025n, topicId: 11005n, slug: "restorative-stretching",
@@ -334,7 +342,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Djupstretchingklass för att frigöra muskelspänningar och stress",
     ...body("کشش بازیابی", "Återhämtande stretching"),
     icon: "Activity", imageUrl: img("restorative", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(32),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(32),
   },
 ];
 
@@ -391,6 +399,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "julia.s@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Ser fram emot soluppgångsflödet!" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -400,6 +409,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "karin.n@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Mediterar sedan 2 år, vill fördjupa min praktik." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(4),
   },
   {
@@ -411,7 +421,32 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Medel" },
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegetarisk" },
     ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårretreat (mars 2026)" }],
     createdAt: ts(6),
+  },
+  {
+    id: 1768500001n, activityId: 12016n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Leila Moradi" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "leila.m@example.com" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46702345678" },
+      { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Nybörjare" },
+      { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegansk" },
+    ],
+    personCount: 2n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårretreat (mars 2026)" }, { sessionId: 102n, sessionName: "Höstretreat (september 2026)" }],
+    createdAt: ts(18),
+  },
+  {
+    id: 1768400002n, activityId: 12016n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Astrid Lindgren" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "astrid.l@example.com" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46703456789" },
+      { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Avancerad" },
+      { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Allätare" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Höstretreat (september 2026)" }],
+    createdAt: ts(25),
   },
   {
     id: 16004n, activityId: 12021n, name: "", email: "", phone: "", message: "",
@@ -420,9 +455,10 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "hanna.a@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Jag är väldigt nyfiken på ljudbad, aldrig provat!" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(9),
   },
-  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "+46705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], createdAt: ts(11) },
+  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "+46705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────
@@ -432,9 +468,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 17001n, name_fa: "ثبت‌نام کلاس", name_sv: "Klassregistrering",
     description_fa: "فرم پایه برای ثبت‌نام در کلاس‌ها", description_sv: "Grundformulär för registrering i klasser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "Ditt fullständiga namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "Din e-postadress", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något du vill att instruktören vet?", required: false, options: [], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "Ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "Din e-postadress", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något du vill att instruktören vet?", required: false, options: [], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -442,11 +478,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 17002n, name_fa: "ثبت‌نام کارگاه", name_sv: "Workshopregistrering",
     description_fa: "فرم برای کارگاه‌های عملی", description_sv: "Formulär för praktiska workshops",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "Välj din nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "اطلاعات بیشتر", label_sv: "Övrig information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "Välj din nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "اطلاعات بیشتر", label_sv: "Övrig information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -454,13 +490,34 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 17003n, name_fa: "ثبت‌نام اردو", name_sv: "Retreatregistrering",
     description_fa: "فرم کامل برای اردوهای چند روزه", description_sv: "Fullständigt formulär för flerdagarsretreat",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "شرایط را می‌پذیرم", label_sv: "Jag accepterar villkoren", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "شرایط را می‌پذیرم", label_sv: "Jag accepterar villkoren", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(90),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 18001n,
+    name_fa: "اردوی رفاهی", name_sv: "Välmåenderetreat",
+    description_fa: "قالب رویداد برای اردوهای یوگا و تندرستی", description_sv: "Eventmall för yoga- och välmåenderetreat",
+    sessions: [
+      { id: 201n, name_fa: "اردو بهاره", name_sv: "Vårretreat", date: "2026-04-18", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 202n, name_fa: "اردو پاییزه", name_sv: "Höstretreat", date: "2026-10-10", capacity: 15n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

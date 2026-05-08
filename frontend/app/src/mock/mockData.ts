@@ -34,3 +34,5 @@ export const mockContactMessages = active.mockContactMessages;
 export const mockSocialLinks = active.mockSocialLinks;
 export const mockRegistrations = active.mockRegistrations;
 export const mockFormTemplates = active.mockFormTemplates;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const mockEventRegistrationTemplates: import("../backend/api/backend").EventRegistrationTemplateReturn[] = (active as any).mockEventRegistrationTemplates ?? [];

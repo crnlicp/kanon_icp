@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, Trash2, Loader2, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import Toast from "../../../components/Toast";
 import Modal from "../../../components/Modal";
 import FileUpload from "../../../components/FileUpload";
 import AssetImage from "../../../components/AssetImage";
 import FormBuilder from "../../../components/FormBuilder";
+import SessionBuilder from "../../../components/SessionBuilder";
 import { useI18n } from "../../../i18n";
-import type { TopicReturn, ActivityReturn, FormFieldReturn, FormTemplateReturn } from "../../../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn, FormTemplateReturn, EventSessionReturn } from "../../../backend/api/backend";
 
 interface Topic {
   id: number;
@@ -28,12 +29,19 @@ interface ActivityItem {
   icon: string;
   imageUrl: string;
   hasRegistration: boolean;
+  registrationMode: string;
   formTemplateId?: number;
   customFormFields: FormFieldReturn[];
+  sessions: EventSessionReturn[];
+  regMaxCapacity: string;
+  regAllowedPhones: string;
+  regMaxRegistrationsPerPhone: string;
+  regBlockDuplicateEmail: boolean;
   sortOrder: number;
 }
 
 type FormMode = "default" | "template" | "custom";
+type RegMode = "none" | "form" | "event";
 
 interface Props {
   token: string;
@@ -51,10 +59,16 @@ const emptyForm = {
   body_sv: "",
   icon: "Activity",
   imageUrl: "",
-  hasRegistration: false,
+  registrationMode: "none" as RegMode,
   formMode: "default" as FormMode,
   formTemplateId: 0,
   customFormFields: [] as FormFieldReturn[],
+  eventCustomFields: [] as FormFieldReturn[],
+  sessions: [] as EventSessionReturn[],
+  regMaxCapacity: "",
+  regAllowedPhones: "",
+  regMaxRegistrationsPerPhone: "",
+  regBlockDuplicateEmail: false,
   sortOrder: 0,
 };
 
@@ -69,6 +83,8 @@ export default function AdminActivities({ token, readOnly }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sessionsOpen, setSessionsOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({ message: "", type: "success", visible: false });
 
   useEffect(() => {
@@ -94,7 +110,13 @@ export default function AdminActivities({ token, readOnly }: Props) {
       ...a,
       id: Number(a.id),
       topicId: Number(a.topicId),
+      registrationMode: a.registrationMode ?? (a.hasRegistration ? (a.sessions.length > 0 ? "event" : "form") : "none"),
       formTemplateId: a.formTemplateId != null ? Number(a.formTemplateId) : undefined,
+      sessions: a.sessions ?? [],
+      regMaxCapacity: a.regMaxCapacity != null ? String(Number(a.regMaxCapacity)) : "",
+      regAllowedPhones: (a.regAllowedPhones ?? []).join("\n"),
+      regMaxRegistrationsPerPhone: a.regMaxRegistrationsPerPhone != null ? String(Number(a.regMaxRegistrationsPerPhone)) : "",
+      regBlockDuplicateEmail: a.regBlockDuplicateEmail ?? false,
       sortOrder: Number(a.sortOrder),
     })));
   }, [selectedTopicId]);
@@ -108,20 +130,40 @@ export default function AdminActivities({ token, readOnly }: Props) {
     try {
       const { backend } = await import("../../../actor");
       const tid = BigInt(form.topicId || selectedTopicId);
-      const templateId = form.hasRegistration && form.formMode === "template" && form.formTemplateId
-        ? BigInt(form.formTemplateId)
-        : null;
-      const customFields = form.hasRegistration && form.formMode === "custom"
-        ? form.customFormFields
+      const regMode = form.registrationMode;
+      const hasRegistration = regMode !== "none";
+
+      let templateId: bigint | null = null;
+      let customFields: FormFieldReturn[] = [];
+      let sessions: EventSessionReturn[] = [];
+
+      if (regMode === "form") {
+        templateId = form.formMode === "template" && form.formTemplateId ? BigInt(form.formTemplateId) : null;
+        customFields = form.formMode === "custom" ? form.customFormFields : [];
+      } else if (regMode === "event") {
+        sessions = form.sessions;
+        customFields = form.eventCustomFields;
+      }
+
+      const regMaxCapacity = form.regMaxCapacity.trim() ? BigInt(parseInt(form.regMaxCapacity)) : null;
+      const regAllowedPhones = form.regAllowedPhones
+        ? form.regAllowedPhones.split("\n").map((s) => s.trim()).filter(Boolean)
         : [];
+      const regMaxRegistrationsPerPhone = form.regMaxRegistrationsPerPhone.trim()
+        ? BigInt(parseInt(form.regMaxRegistrationsPerPhone))
+        : null;
+
       if (editing !== null) {
         await backend.updateActivity(
           token, BigInt(editing), tid, form.slug,
           form.title_fa, form.title_sv,
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
-          form.icon, form.imageUrl, form.hasRegistration,
+          form.icon, form.imageUrl, hasRegistration, regMode,
           templateId, customFields,
+          sessions,
+          regMaxCapacity, regAllowedPhones,
+          regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
           BigInt(form.sortOrder)
         );
         setToast({ message: t("activityUpdated"), type: "success", visible: true });
@@ -131,8 +173,11 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.title_fa, form.title_sv,
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
-          form.icon, form.imageUrl, form.hasRegistration,
+          form.icon, form.imageUrl, hasRegistration, regMode,
           templateId, customFields,
+          sessions,
+          regMaxCapacity, regAllowedPhones,
+          regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
           BigInt(form.sortOrder)
         );
         setToast({ message: t("activityCreated"), type: "success", visible: true });
@@ -159,12 +204,13 @@ export default function AdminActivities({ token, readOnly }: Props) {
 
   const startEdit = (act: ActivityItem) => {
     setEditing(act.id);
-    // Determine form mode from existing data
+    const regMode = (act.registrationMode as RegMode) || (
+      !act.hasRegistration ? "none" : act.sessions.length > 0 ? "event" : "form"
+    );
     let formMode: FormMode = "default";
-    if (act.customFormFields.length > 0) {
-      formMode = "custom";
-    } else if (act.formTemplateId) {
-      formMode = "template";
+    if (regMode === "form") {
+      if (act.customFormFields.length > 0) formMode = "custom";
+      else if (act.formTemplateId) formMode = "template";
     }
     setForm({
       topicId: act.topicId,
@@ -177,10 +223,16 @@ export default function AdminActivities({ token, readOnly }: Props) {
       body_sv: act.body_sv,
       icon: act.icon,
       imageUrl: act.imageUrl,
-      hasRegistration: act.hasRegistration,
+      registrationMode: regMode,
       formMode,
       formTemplateId: act.formTemplateId ?? 0,
-      customFormFields: act.customFormFields,
+      customFormFields: regMode === "form" ? act.customFormFields : [],
+      eventCustomFields: regMode === "event" ? act.customFormFields : [],
+      sessions: act.sessions ?? [],
+      regMaxCapacity: act.regMaxCapacity ?? "",
+      regAllowedPhones: act.regAllowedPhones ?? "",
+      regMaxRegistrationsPerPhone: act.regMaxRegistrationsPerPhone ?? "",
+      regBlockDuplicateEmail: act.regBlockDuplicateEmail ?? false,
       sortOrder: act.sortOrder,
     });
     setShowForm(true);
@@ -189,6 +241,8 @@ export default function AdminActivities({ token, readOnly }: Props) {
   const resetForm = () => {
     setEditing(null);
     setForm({ ...emptyForm, topicId: selectedTopicId });
+    setSessionsOpen(false);
+    setRulesOpen(false);
     setShowForm(false);
   };
 
@@ -202,19 +256,31 @@ export default function AdminActivities({ token, readOnly }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">{t("activities")}</h2>
-        {!readOnly && <motion.button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm" whileTap={{ scale: 0.98 }}>
-          <Plus size={16} /> {t("addActivity")}
-        </motion.button>}
+        {!readOnly && (
+          topics.length === 0
+            ? <p className="text-sm text-white/40">{t("noTopicsYet")}</p>
+            : (
+              <motion.button
+                onClick={() => { resetForm(); setShowForm(true); }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors text-sm"
+                whileTap={{ scale: 0.98 }}
+              >
+                <Plus size={16} /> {t("addActivity")}
+              </motion.button>
+            )
+        )}
       </div>
 
       {/* Topic Selector */}
-      <div className="mb-6">
-        <select value={selectedTopicId} onChange={(e) => setSelectedTopicId(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors">
-          {topics.map((t) => (
-            <option key={t.id} value={t.id} className="bg-black/70">{t.title_sv} ({t.slug})</option>
-          ))}
-        </select>
-      </div>
+      {topics.length > 0 && (
+        <div className="mb-6">
+          <select value={selectedTopicId} onChange={(e) => setSelectedTopicId(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors">
+            {topics.map((t) => (
+              <option key={t.id} value={t.id} className="bg-black/70">{t.title_sv} ({t.slug})</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Modal Form */}
       <Modal
@@ -222,65 +288,84 @@ export default function AdminActivities({ token, readOnly }: Props) {
         onClose={resetForm}
         title={editing !== null ? t("editActivity") : t("newActivity")}
       >
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Slug</label>
-                <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className={inputClass} />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Icon (Lucide)</label>
-                <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className={inputClass} />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Sort Order</label>
-                <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })} className={inputClass} />
-              </div>
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Slug</label>
+              <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className={inputClass} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Title (فارسی)</label>
-                <input value={form.title_fa} onChange={(e) => setForm({ ...form, title_fa: e.target.value })} className={inputClass} dir="rtl" />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Title (Svenska)</label>
-                <input value={form.title_sv} onChange={(e) => setForm({ ...form, title_sv: e.target.value })} className={inputClass} />
-              </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Icon (Lucide)</label>
+              <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className={inputClass} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Excerpt (فارسی)</label>
-                <textarea value={form.excerpt_fa} onChange={(e) => setForm({ ...form, excerpt_fa: e.target.value })} className={inputClass} dir="rtl" rows={2} />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Excerpt (Svenska)</label>
-                <textarea value={form.excerpt_sv} onChange={(e) => setForm({ ...form, excerpt_sv: e.target.value })} className={inputClass} rows={2} />
-              </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Sort Order</label>
+              <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })} className={inputClass} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Body (فارسی)</label>
-                <textarea value={form.body_fa} onChange={(e) => setForm({ ...form, body_fa: e.target.value })} className={inputClass} dir="rtl" rows={5} />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-1.5">Body (Svenska)</label>
-                <textarea value={form.body_sv} onChange={(e) => setForm({ ...form, body_sv: e.target.value })} className={inputClass} rows={5} />
-              </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Title (فارسی)</label>
+              <input value={form.title_fa} onChange={(e) => setForm({ ...form, title_fa: e.target.value })} className={inputClass} dir="rtl" />
             </div>
-            <FileUpload
-              value={form.imageUrl}
-              onChange={(url) => setForm({ ...form, imageUrl: url })}
-              token={token}
-              label="Image"
-              accept="image/*"
-            />
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={form.hasRegistration} onChange={(e) => setForm({ ...form, hasRegistration: e.target.checked })} className="w-4 h-4 rounded accent-primary" />
-              <span className="text-sm text-white/70">{t("enableRegistration")}</span>
-            </label>
-            {/* Form mode selector - shown when registration is enabled */}
-            {form.hasRegistration && (
-              <div className="space-y-4 p-4 rounded-xl bg-white/[0.02] border border-white/10">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Title (Svenska)</label>
+              <input value={form.title_sv} onChange={(e) => setForm({ ...form, title_sv: e.target.value })} className={inputClass} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Excerpt (فارسی)</label>
+              <textarea value={form.excerpt_fa} onChange={(e) => setForm({ ...form, excerpt_fa: e.target.value })} className={inputClass} dir="rtl" rows={2} />
+            </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Excerpt (Svenska)</label>
+              <textarea value={form.excerpt_sv} onChange={(e) => setForm({ ...form, excerpt_sv: e.target.value })} className={inputClass} rows={2} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Body (فارسی)</label>
+              <textarea value={form.body_fa} onChange={(e) => setForm({ ...form, body_fa: e.target.value })} className={inputClass} dir="rtl" rows={5} />
+            </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">Body (Svenska)</label>
+              <textarea value={form.body_sv} onChange={(e) => setForm({ ...form, body_sv: e.target.value })} className={inputClass} rows={5} />
+            </div>
+          </div>
+          <FileUpload
+            value={form.imageUrl}
+            onChange={(url) => setForm({ ...form, imageUrl: url })}
+            token={token}
+            label="Image"
+            accept="image/*"
+          />
+
+          {/* Registration Mode — 3-way toggle */}
+          <div>
+            <label className="block text-sm text-white/50 mb-2">{t("registrationMode")}</label>
+            <div className="flex gap-2">
+              {(["none", "form", "event"] as RegMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setForm({ ...form, registrationMode: mode })}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    form.registrationMode === mode
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "bg-white/5 text-white/40 border border-white/10 hover:text-white/70"
+                  }`}
+                >
+                  {t(mode === "none" ? "noRegistration" : mode === "form" ? "registrationFormMode" : "eventRegistrationMode")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Form mode options */}
+          {form.registrationMode === "form" && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-4">
                 <div>
                   <label className="block text-sm text-white/50 mb-2">{t("formMode")}</label>
                   <div className="flex gap-2">
@@ -301,7 +386,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
                   </div>
                 </div>
 
-                {/* Template selector */}
                 {form.formMode === "template" && (
                   <div>
                     <label className="block text-sm text-white/50 mb-1.5">{t("selectTemplate")}</label>
@@ -317,7 +401,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
                         </option>
                       ))}
                     </select>
-                    {/* Preview selected template fields */}
                     {form.formTemplateId > 0 && (() => {
                       const selectedTemplate = templates.find((t) => Number(t.id) === form.formTemplateId);
                       if (!selectedTemplate) return null;
@@ -331,7 +414,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
                   </div>
                 )}
 
-                {/* Custom form builder */}
                 {form.formMode === "custom" && (
                   <div>
                     <label className="block text-sm text-white/50 mb-2">{t("formBuilder")}</label>
@@ -342,14 +424,114 @@ export default function AdminActivities({ token, readOnly }: Props) {
                   </div>
                 )}
               </div>
-            )}
-            <div className="flex gap-3 pt-3">
-              <motion.button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm" whileTap={{ scale: 0.98 }}>
-                <Save size={16} /> {saving ? t("saving") : t("save")}
-              </motion.button>
-              <button onClick={resetForm} className="px-6 py-2.5 text-white/50 hover:text-white/80 text-sm">{t("cancel")}</button>
             </div>
+          )}
+
+          {/* Event mode options */}
+          {form.registrationMode === "event" && (
+            <div className="space-y-4">
+              {/* Sessions — always shown for event mode */}
+              <div className="rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setSessionsOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-sm font-medium text-white/70">{t("sessions")} ({form.sessions.length})</span>
+                  {sessionsOpen ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
+                </button>
+                {sessionsOpen && (
+                  <div className="px-4 py-3 border-t border-white/10">
+                    <SessionBuilder
+                      sessions={form.sessions}
+                      onChange={(sessions) => setForm({ ...form, sessions })}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Custom fields for event */}
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+                <label className="block text-sm text-white/50">{t("formBuilder")}</label>
+                <FormBuilder
+                  fields={form.eventCustomFields}
+                  onChange={(fields) => setForm({ ...form, eventCustomFields: fields })}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Registration Rules — shown for both form and event modes */}
+          {form.registrationMode !== "none" && (
+            <div className="rounded-xl border border-white/10 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setRulesOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/5 transition-colors"
+              >
+                <span className="text-sm font-medium text-white/70">{t("registrationRules")}</span>
+                {rulesOpen ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
+              </button>
+              {rulesOpen && (
+                <div className="px-4 py-3 border-t border-white/10 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-white/50 mb-1.5">{t("maxCapacity")}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.regMaxCapacity}
+                        onChange={(e) => setForm({ ...form, regMaxCapacity: e.target.value })}
+                        placeholder="∞"
+                        className={inputClass}
+                      />
+                      <p className="text-xs text-white/30 mt-1">{t("maxCapacityHint")}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-white/50 mb-1.5">{t("maxRegistrationsPerPhone")}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.regMaxRegistrationsPerPhone}
+                        onChange={(e) => setForm({ ...form, regMaxRegistrationsPerPhone: e.target.value })}
+                        placeholder="∞"
+                        className={inputClass}
+                      />
+                      <p className="text-xs text-white/30 mt-1">{t("maxRegistrationsHint")}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/50 mb-1.5">{t("allowedPhones")}</label>
+                    <textarea
+                      rows={4}
+                      value={form.regAllowedPhones}
+                      onChange={(e) => setForm({ ...form, regAllowedPhones: e.target.value })}
+                      placeholder={"+46701234567\n+46709876543"}
+                      className={`${inputClass} resize-none`}
+                    />
+                    <p className="text-xs text-white/30 mt-1">{t("allowedPhonesHint")}</p>
+                  </div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.regBlockDuplicateEmail}
+                      onChange={(e) => setForm({ ...form, regBlockDuplicateEmail: e.target.checked })}
+                      className="w-4 h-4 rounded accent-primary"
+                    />
+                    <span className="text-sm text-white/70">{t("blockDuplicateEmail")}</span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-3">
+            <motion.button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm" whileTap={{ scale: 0.98 }}>
+              <Save size={16} /> {saving ? t("saving") : t("save")}
+            </motion.button>
+            <button onClick={resetForm} className="px-6 py-2.5 text-white/50 hover:text-white/80 text-sm">{t("cancel")}</button>
           </div>
+        </div>
       </Modal>
 
       {/* List */}
@@ -361,16 +543,27 @@ export default function AdminActivities({ token, readOnly }: Props) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-xs text-primary/60 font-mono">{act.slug}</span>
-                  {act.hasRegistration && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary/70">
-                    {act.customFormFields.length > 0 ? t("customForm") : act.formTemplateId ? t("useTemplate") : t("defaultForm")}
-                  </span>}
+                  {act.registrationMode !== "none" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary/70">
+                      {act.registrationMode === "event" ? t("eventRegistrationMode") : t("registrationFormMode")}
+                    </span>
+                  )}
+                  {act.sessions.length > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50">
+                      {act.sessions.length} {t("sessions")}
+                    </span>
+                  )}
                 </div>
                 <p className="text-white font-medium truncate">{act.title_sv}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 ml-4 shrink-0">
-              {!readOnly && <><button onClick={() => startEdit(act)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
-              <button onClick={() => handleDelete(act.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button></>}
+              {!readOnly && (
+                <>
+                  <button onClick={() => startEdit(act)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"><Pencil size={16} /></button>
+                  <button onClick={() => handleDelete(act.id)} className="p-2 rounded-lg hover:bg-accent/10 text-white/40 hover:text-accent transition-colors"><Trash2 size={16} /></button>
+                </>
+              )}
             </div>
           </motion.div>
         ))}

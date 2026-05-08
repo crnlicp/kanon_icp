@@ -2,6 +2,7 @@ import type {
   SiteSettingsReturn, TopicReturn, ActivityReturn, HeroSlideReturn,
   AboutContentReturn, ContactMessageReturn, SocialLinkReturn,
   RegistrationReturn, FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
@@ -31,18 +32,21 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>Att lära sig ett språk är en resa där varje steg öppnar en ny dörr. På Lingua kombinerar vi grammatik, levande konversation och kulturell fördjupning.</p><ul><li>Små klasser (max 8 personer)</li><li>Tillgång till onlineplattform för träning</li><li>Deltagar certifikat i slutet av kursen</li></ul>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 // Reusable CEFR level form fields
 const cefrFields = (lang: "sv" | "en" | "es" | "zh" | "tss"): FormTemplateReturn["fields"] => {
   const langLabel = { sv: "سوئدی / Svenska", en: "انگلیسی / Engelska", es: "اسپانیایی / Spanska", zh: "ماندارین / Mandarin", tss: "زبان اشاره / Teckenspråk" }[lang];
   return [
-    { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-    { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-    { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 3n },
-    { id: 4n, fieldType: "select", label_fa: `سطح فعلی ${langLabel}`, label_sv: `Nuvarande nivå i ${langLabel}`, placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "A0 — کاملاً مبتدی", sv: "A0 — Absolut nybörjare" }, { fa: "A1 — مبتدی", sv: "A1 — Nybörjare" }, { fa: "A2 — پایه", sv: "A2 — Grundläggande" }, { fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], sortOrder: 4n },
-    { id: 5n, fieldType: "radio", label_fa: "هدف اصلی یادگیری", label_sv: "Huvudsakligt inlärningsmål", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "زندگی روزانه", sv: "Vardagslivet" }, { fa: "کار و تجارت", sv: "Arbete och affärer" }, { fa: "آکادمیک و دانشگاه", sv: "Akademiskt och universitetet" }, { fa: "مسافرت", sv: "Resor" }], sortOrder: 5n },
-    { id: 6n, fieldType: "select", label_fa: "زبان مادری شما", label_sv: "Ditt modersmål", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }, { fa: "عربی", sv: "Arabiska" }, { fa: "سایر", sv: "Annat" }], sortOrder: 6n },
+    { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+    { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+    { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+    { id: 4n, fieldType: "select", label_fa: `سطح فعلی ${langLabel}`, label_sv: `Nuvarande nivå i ${langLabel}`, placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "A0 — کاملاً مبتدی", sv: "A0 — Absolut nybörjare" }, { fa: "A1 — مبتدی", sv: "A1 — Nybörjare" }, { fa: "A2 — پایه", sv: "A2 — Grundläggande" }, { fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, sortOrder: 4n },
+    { id: 5n, fieldType: "radio", label_fa: "هدف اصلی یادگیری", label_sv: "Huvudsakligt inlärningsmål", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "زندگی روزانه", sv: "Vardagslivet" }, { fa: "کار و تجارت", sv: "Arbete och affärer" }, { fa: "آکادمیک و دانشگاه", sv: "Akademiskt och universitetet" }, { fa: "مسافرت", sv: "Resor" }], isLookupField: false, sortOrder: 5n },
+    { id: 6n, fieldType: "select", label_fa: "زبان مادری شما", label_sv: "Ditt modersmål", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }, { fa: "عربی", sv: "Arabiska" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, sortOrder: 6n },
   ];
 };
 
@@ -55,7 +59,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Intensiv svenska för invandrare med fokus på daglig användning",
     ...body("SFI پلاس", "SFI Plus"),
     customFormFields: cefrFields("sv"),
-    icon: "MessageCircle", imageUrl: img("sfi-course", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    icon: "MessageCircle", imageUrl: img("sfi-course", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 62002n, topicId: 61001n, slug: "swedish-conversation",
@@ -64,7 +68,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Levande konversationsövning i små grupper med modersmålstalare",
     ...body("مکالمه سوئدی", "Svensk konversation"),
     formTemplateId: 67001n,
-    icon: "Users", imageUrl: img("swedish-conv", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    icon: "Users", imageUrl: img("swedish-conv", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 62003n, topicId: 61001n, slug: "swedish-grammar",
@@ -72,7 +76,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "فعل‌ها، حروف اضافه، حالت‌های اسم و جملات پیچیده",
     excerpt_sv: "Verb, prepositioner, nominalfall och komplexa meningar",
     ...body("گرامر سوئدی", "Svensk grammatik"),
-    icon: "BookOpen", imageUrl: img("swedish-grammar", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    icon: "BookOpen", imageUrl: img("swedish-grammar", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 62004n, topicId: 61001n, slug: "swedish-culture-language",
@@ -81,7 +85,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Idiom, folkkultur, humor och sociala normer i Sverige",
     ...body("زبان و فرهنگ سوئدی", "Svensk språk och kultur"),
     formTemplateId: 67001n,
-    icon: "Heart", imageUrl: img("swedish-culture", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(45),
+    icon: "Heart", imageUrl: img("swedish-culture", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 62005n, topicId: 61001n, slug: "swedish-for-work",
@@ -89,7 +93,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ایمیل‌نویسی، جلسات و زبان حرفه‌ای در محیط کار سوئدی",
     excerpt_sv: "E-postskrivning, möten och professionellt språk på svenska arbetsplatser",
     ...body("سوئدی محیط کار", "Svenska för arbetsplatsen"),
-    icon: "Briefcase", imageUrl: img("swedish-work", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(40),
+    icon: "Briefcase", imageUrl: img("swedish-work", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(40),
   },
   // English
   {
@@ -99,7 +103,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Presentationer, förhandlingar, formella mejl och mötesengelska",
     ...body("انگلیسی تجاری", "Affärsengelska"),
     customFormFields: cefrFields("en"),
-    icon: "Briefcase", imageUrl: img("business-english", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    icon: "Briefcase", imageUrl: img("business-english", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 62007n, topicId: 61002n, slug: "ielts-preparation",
@@ -107,8 +111,18 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "استراتژی‌های مهارت‌های چهارگانه IELTS برای نمره ۷+",
     excerpt_sv: "Strategier för IELTS fyra färdigheter för betyg 7+",
     ...body("آماده‌سازی آیلتس", "IELTS-förberedelse"),
-    formTemplateId: 67002n,
-    icon: "GraduationCap", imageUrl: img("ielts-prep", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(52),
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "نمره هدف IELTS", label_sv: "Mål-IELTS-betyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "سطح فعلی انگلیسی", label_sv: "Nuvarande engelsknivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, sortOrder: 5n },
+    ],
+    sessions: [
+      { id: 101n, name_fa: "دوره بهاره (فروردین ۱۴۰۵)", name_sv: "Vårtermin (april 2026)", date: "2026-04-06", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "دوره پاییزه (شهریور ۱۴۰۵)", name_sv: "Hösttermin (september 2026)", date: "2026-09-07", capacity: 20n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    icon: "GraduationCap", imageUrl: img("ielts-prep", 800, 600), hasRegistration: true, registrationMode: "event", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 62008n, topicId: 61002n, slug: "english-conversation-club",
@@ -116,7 +130,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "بحث‌های آزاد هفتگی در موضوعات مختلف برای تمرین روانی",
     excerpt_sv: "Veckovisa fria diskussioner om olika ämnen för flytande träning",
     ...body("باشگاه مکالمه انگلیسی", "Engelskt konversationsklubb"),
-    icon: "MessageCircle", imageUrl: img("english-club", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(48),
+    icon: "MessageCircle", imageUrl: img("english-club", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 62009n, topicId: 61002n, slug: "academic-writing",
@@ -125,7 +139,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Uppsatsstruktur, citering, styckesskrivning och textkritik",
     ...body("نوشتن آکادمیک", "Akademiskt skrivande"),
     formTemplateId: 67002n,
-    icon: "PenLine", imageUrl: img("academic-writing", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    icon: "PenLine", imageUrl: img("academic-writing", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 62010n, topicId: 61002n, slug: "kids-english",
@@ -134,7 +148,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Rolig engelska för barn 5–12 år med lekar och sånger",
     ...body("انگلیسی کودکان", "Engelska för barn"),
     formTemplateId: 67003n,
-    icon: "Star", imageUrl: img("kids-english", 800, 600), hasRegistration: true, sortOrder: 5n, createdAt: ts(38),
+    icon: "Star", imageUrl: img("kids-english", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(38),
   },
   // Spanish
   {
@@ -144,7 +158,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Första stegen i spanska — uttal, siffror, färger och presentation",
     ...body("اسپانیایی مبتدیان", "Spanska för nybörjare"),
     customFormFields: cefrFields("es"),
-    icon: "MapPin", imageUrl: img("spanish-begin", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    icon: "MapPin", imageUrl: img("spanish-begin", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 62012n, topicId: 61003n, slug: "spanish-culture",
@@ -152,7 +166,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "فرهنگ اسپانیا، مکزیک، آرژانتین و کلمبیا از طریق زبان",
     excerpt_sv: "Kulturer i Spanien, Mexico, Argentina och Colombia genom språket",
     ...body("فرهنگ اسپانیایی‌زبانان", "Spansktalande kulturer"),
-    icon: "Globe", imageUrl: img("spanish-culture", 800, 600), hasRegistration: false, sortOrder: 2n, createdAt: ts(51),
+    icon: "Globe", imageUrl: img("spanish-culture", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 62013n, topicId: 61003n, slug: "dele-preparation",
@@ -161,7 +175,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Det officiella spanska DELE-provet från A1 till C2",
     ...body("آماده‌سازی DELE", "DELE-förberedelse"),
     formTemplateId: 67002n,
-    icon: "GraduationCap", imageUrl: img("dele-prep", 800, 600), hasRegistration: true, sortOrder: 3n, createdAt: ts(46),
+    icon: "GraduationCap", imageUrl: img("dele-prep", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 62014n, topicId: 61003n, slug: "spanish-conversation",
@@ -170,7 +184,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Levande konversation med verkliga dialoger från vardagslivet",
     ...body("مکالمه اسپانیایی", "Spansk konversation"),
     formTemplateId: 67001n,
-    icon: "MessageCircle", imageUrl: img("spanish-conv", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(41),
+    icon: "MessageCircle", imageUrl: img("spanish-conv", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 62015n, topicId: 61003n, slug: "spanish-film-club",
@@ -178,7 +192,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تماشای فیلم‌های اسپانیایی با بحث و تحلیل زبانی",
     excerpt_sv: "Titta på spanskspråkiga filmer med språklig diskussion och analys",
     ...body("باشگاه سینمای اسپانیایی", "Spanskspråkig filmklubb"),
-    icon: "Film", imageUrl: img("spanish-film", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(36),
+    icon: "Film", imageUrl: img("spanish-film", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(36),
   },
   // Mandarin
   {
@@ -188,7 +202,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "150 grundkaraktärer, Pinyin-uttal och grundläggande konversation",
     ...body("ماندارین HSK1", "Mandarin HSK1"),
     customFormFields: cefrFields("zh"),
-    icon: "Languages", imageUrl: img("mandarin-hsk1", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    icon: "Languages", imageUrl: img("mandarin-hsk1", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 62017n, topicId: 61004n, slug: "chinese-characters",
@@ -196,7 +210,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "نوشتن و خواندن کاراکترها با روش داستان‌پردازی تصویری",
     excerpt_sv: "Skriva och läsa karaktärer med visuell historiemetod",
     ...body("کاراکترهای چینی", "Kinesiska tecken"),
-    icon: "PenTool", imageUrl: img("chinese-chars", 800, 600), hasRegistration: false, sortOrder: 2n, createdAt: ts(49),
+    icon: "PenTool", imageUrl: img("chinese-chars", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 62018n, topicId: 61004n, slug: "mandarin-business",
@@ -205,7 +219,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Mötespråk, förhandlingar och e-postskrivning på kinesiska",
     ...body("ماندارین تجاری", "Affärsmandarin"),
     formTemplateId: 67002n,
-    icon: "Briefcase", imageUrl: img("mandarin-biz", 800, 600), hasRegistration: true, sortOrder: 3n, createdAt: ts(44),
+    icon: "Briefcase", imageUrl: img("mandarin-biz", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 62019n, topicId: 61004n, slug: "mandarin-culture",
@@ -213,7 +227,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "فلسفه، آداب، غذا و تاریخ چین از منظر زبان‌شناسی",
     excerpt_sv: "Filosofi, etikett, mat och Kinas historia ur ett lingvistiskt perspektiv",
     ...body("فرهنگ و تمدن چین", "Kinesisk kultur och civilisation"),
-    icon: "Globe", imageUrl: img("chinese-culture", 800, 600), hasRegistration: false, sortOrder: 4n, createdAt: ts(39),
+    icon: "Globe", imageUrl: img("chinese-culture", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 62020n, topicId: 61004n, slug: "mandarin-conversation",
@@ -222,7 +236,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Tala om vardagliga ämnen med fokus på toner",
     ...body("مکالمه ماندارین", "Mandarinkonversation"),
     formTemplateId: 67001n,
-    icon: "MessageCircle", imageUrl: img("mandarin-conv", 800, 600), hasRegistration: true, sortOrder: 5n, createdAt: ts(34),
+    icon: "MessageCircle", imageUrl: img("mandarin-conv", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(34),
   },
   // Sign Language
   {
@@ -232,12 +246,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Första-ord, fingersalfabetet och grundläggande TSS-konversation",
     ...body("مقدمه‌ای بر TSS", "Introduktion till TSS"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "دلیل یادگیری زبان اشاره", label_sv: "Anledning till att lära sig teckenspråk", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "برای ارتباط با فرد ناشنوا در خانواده", sv: "Kommunicera med döv familjemedlem" }, { fa: "برای کار در حوزه ناشنوایان", sv: "Arbeta inom dövaområdet" }, { fa: "علاقه شخصی", sv: "Personligt intresse" }, { fa: "دوره دانشگاهی", sv: "Universitetskurs" }], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "آیا کسی در اطرافتان ناشنواست؟", label_sv: "Har du en döv person i din omgivning?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: false, options: [{ fa: "بله، در خانواده", sv: "Ja, i familjen" }, { fa: "بله، دوست یا همکار", sv: "Ja, vän eller kollega" }, { fa: "خیر", sv: "Nej" }], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "دلیل یادگیری زبان اشاره", label_sv: "Anledning till att lära sig teckenspråk", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "برای ارتباط با فرد ناشنوا در خانواده", sv: "Kommunicera med döv familjemedlem" }, { fa: "برای کار در حوزه ناشنوایان", sv: "Arbeta inom dövaområdet" }, { fa: "علاقه شخصی", sv: "Personligt intresse" }, { fa: "دوره دانشگاهی", sv: "Universitetskurs" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "آیا کسی در اطرافتان ناشنواست؟", label_sv: "Har du en döv person i din omgivning?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: false, options: [{ fa: "بله، در خانواده", sv: "Ja, i familjen" }, { fa: "بله، دوست یا همکار", sv: "Ja, vän eller kollega" }, { fa: "خیر", sv: "Nej" }], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Hand", imageUrl: img("sign-intro", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    icon: "Hand", imageUrl: img("sign-intro", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 62022n, topicId: 61005n, slug: "sign-language-intermediate",
@@ -246,7 +260,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Rumslig grammatik, klassifikator och manuellt berättande",
     ...body("زبان اشاره متوسط", "Mellannivå teckenspråk"),
     formTemplateId: 67001n,
-    icon: "Layers", imageUrl: img("sign-intermediate", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(47),
+    icon: "Layers", imageUrl: img("sign-intermediate", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 62023n, topicId: 61005n, slug: "deaf-culture",
@@ -254,7 +268,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تاریخ، هنر، جشن‌ها و ارزش‌های جامعه ناشنوایان سوئد",
     excerpt_sv: "Historia, konst, fester och värderingar i det svenska dövasamhället",
     ...body("فرهنگ ناشنوایان", "Dövkulturen"),
-    icon: "Heart", imageUrl: img("deaf-culture", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(42),
+    icon: "Heart", imageUrl: img("deaf-culture", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 62024n, topicId: 61005n, slug: "sign-language-for-parents",
@@ -263,7 +277,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "För föräldrar till döva barn — kommunikation, lek och stöd via tecken",
     ...body("زبان اشاره برای والدین", "Teckenspråk för föräldrar"),
     formTemplateId: 67003n,
-    icon: "Users", imageUrl: img("sign-parents", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(37),
+    icon: "Users", imageUrl: img("sign-parents", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 62025n, topicId: 61005n, slug: "interpreting-basics",
@@ -271,7 +285,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "مهارت‌های اولیه ترجمه بین زبان اشاره و گفتار",
     excerpt_sv: "Grundläggande färdigheter i tolkning mellan teckenspråk och tal",
     ...body("مبانی ترجمه همزمان اشاره", "Grundläggande tolkning"),
-    icon: "Repeat", imageUrl: img("sign-interpret", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(32),
+    icon: "Repeat", imageUrl: img("sign-interpret", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(32),
   },
 ];
 
@@ -321,6 +335,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 5n, fieldLabel: "Mål / هدف", value: "Vardagslivet" },
       { fieldId: 6n, fieldLabel: "Modersmål / زبان مادری", value: "Persiska" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -333,6 +348,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 5n, fieldLabel: "Mål / هدف", value: "Arbete och affärer" },
       { fieldId: 6n, fieldLabel: "Modersmål / زبان مادری", value: "Svenska" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
   },
   {
@@ -343,10 +359,47 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 3n, fieldLabel: "Anledning / دلیل", value: "Kommunicera med döv familjemedlem" },
       { fieldId: 4n, fieldLabel: "Döv i omgivning / ناشنوا در اطراف", value: "Ja, i familjen" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(8),
   },
-  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "+46705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], createdAt: ts(11) },
-  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "+46704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], createdAt: ts(16) },
+  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "+46705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
+  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "+46704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(16) },
+  {
+    id: 1774500001n, activityId: 62007n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Sara Mohammadi" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "sara.m@example.com" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701234567" },
+      { fieldId: 4n, fieldLabel: "Mål-IELTS / نمره هدف", value: "7.0" },
+      { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B2 — Övre medel" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (april 2026)" }],
+    createdAt: ts(2),
+  },
+  {
+    id: 1774400002n, activityId: 62007n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Marcus Berggren" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "marcus.bg@example.se" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "" },
+      { fieldId: 4n, fieldLabel: "Mål-IELTS / نمره هدف", value: "7.5+" },
+      { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "C1 — Avancerad" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Hösttermin (september 2026)" }],
+    createdAt: ts(6),
+  },
+  {
+    id: 1774300003n, activityId: 62007n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Layla Hassan" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "layla.h@example.com" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46709988776" },
+      { fieldId: 4n, fieldLabel: "Mål-IELTS / نمره هدف", value: "6.5" },
+      { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B1 — Medel" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (april 2026)" }],
+    createdAt: ts(9),
+  },
 ];
 
 export const mockFormTemplates: FormTemplateReturn[] = [
@@ -354,9 +407,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 67001n, name_fa: "ثبت‌نام مکالمه", name_sv: "Konversationsregistrering",
     description_fa: "فرم برای کلاس‌های مکالمه", description_sv: "Formulär för konversationsklasser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "A1–A2", sv: "A1–A2" }, { fa: "B1–B2", sv: "B1–B2" }, { fa: "C1–C2", sv: "C1–C2" }], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "A1–A2", sv: "A1–A2" }, { fa: "B1–B2", sv: "B1–B2" }, { fa: "C1–C2", sv: "C1–C2" }], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -364,11 +417,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 67002n, name_fa: "ثبت‌نام دوره آکادمیک", name_sv: "Akademisk kursregistrering",
     description_fa: "فرم برای دوره‌های آزمون رسمی", description_sv: "Formulär för officiella provkurser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "نمره هدف", label_sv: "Målbetyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], sortOrder: 4n },
-      { id: 5n, fieldType: "date", label_fa: "تاریخ آزمون برنامه‌ریزی‌شده", label_sv: "Planerat provdatum", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "نمره هدف", label_sv: "Målbetyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "date", label_fa: "تاریخ آزمون برنامه‌ریزی‌شده", label_sv: "Planerat provdatum", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -376,13 +429,34 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 67003n, name_fa: "ثبت‌نام دوره کودکان", name_sv: "Barnkursregistrering",
     description_fa: "فرم برای ثبت‌نام کودکان در دوره‌های زبان", description_sv: "Formulär för barnens språkkurser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Föräldrarnas namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Föräldrarnas e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا نیازهای خاص", label_sv: "Medicinska tillstånd eller särskilda behov", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Föräldrarnas namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Föräldrarnas e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا نیازهای خاص", label_sv: "Medicinska tillstånd eller särskilda behov", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(90),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 68001n,
+    name_fa: "دوره زبان", name_sv: "Språkkurs",
+    description_fa: "قالب رویداد برای دوره‌های زبان و آزمون", description_sv: "Eventmall för språkkurser och prov",
+    sessions: [
+      { id: 201n, name_fa: "ترم بهاره", name_sv: "Vårtermin", date: "2026-04-06", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 202n, name_fa: "ترم پاییزه", name_sv: "Hösttermin", date: "2026-09-07", capacity: 20n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

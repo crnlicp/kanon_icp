@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, GripVertical, KeyRound } from "lucide-react";
 import { useI18n } from "../i18n";
-import type { FormFieldReturn, FormFieldOptionReturn } from "../backend/api/backend";
+import type { FormFieldReturn } from "../backend/api/backend";
+
+type FormFieldOptionReturn = { fa: string; sv: string };
 
 const FIELD_TYPES = [
   "text", "textarea", "email", "phone", "number", "select", "radio", "checkbox", "date",
 ] as const;
 
 const TYPES_WITH_OPTIONS = new Set(["select", "radio"]);
+const TYPES_SUPPORTING_LOOKUP = new Set(["text", "email", "phone", "number"]);
 
 interface Props {
   fields: FormFieldReturn[];
@@ -42,6 +45,7 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
       placeholder_fa: "",
       placeholder_sv: "",
       required: false,
+      isLookupField: false,
       options: [],
       sortOrder: BigInt(fields.length + 1),
     };
@@ -84,6 +88,11 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
     updateField(fieldIdx, { options: field.options.filter((_, i) => i !== optIdx) });
   };
 
+  const setLookupField = (idx: number) => {
+    // Radio behavior: only one field can be the lookup field
+    onChange(fields.map((f, i) => ({ ...f, isLookupField: i === idx })));
+  };
+
   if (readOnly) {
     return (
       <div className="space-y-2">
@@ -114,6 +123,7 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
               <GripVertical size={14} className="text-white/20 shrink-0" />
               <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary/70 shrink-0">{fieldTypeLabel(field.fieldType)}</span>
               <span className="text-sm text-white/70 flex-1 truncate">{field.label_sv || field.label_fa || `Field ${idx + 1}`}</span>
+              {field.isLookupField && <KeyRound size={13} className="text-yellow-400/70 shrink-0" aria-label="Lookup field" />}
               {field.required && <span className="text-xs text-accent/60 shrink-0">*</span>}
               <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => moveField(idx, -1)} disabled={idx === 0} className="p-1 rounded hover:bg-white/5 text-white/30 hover:text-white/70 disabled:opacity-20" title={t("moveUp")}><ChevronUp size={14} /></button>
@@ -168,6 +178,25 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
                   <input type="checkbox" checked={field.required} onChange={(e) => updateField(idx, { required: e.target.checked })} className="w-4 h-4 rounded accent-primary" />
                   <span className="text-sm text-white/60">{t("fieldRequired")}</span>
                 </label>
+
+                {/* Lookup field toggle — only for field types that carry a verifiable value */}
+                {TYPES_SUPPORTING_LOOKUP.has(field.fieldType) && (
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={field.isLookupField}
+                      onChange={(e) => {
+                        if (e.target.checked) setLookupField(idx);
+                        else updateField(idx, { isLookupField: false });
+                      }}
+                      className="w-4 h-4 mt-0.5 rounded accent-yellow-400"
+                    />
+                    <span className="text-sm text-white/60">
+                      {t("useLookupField")}
+                      <span className="block text-xs text-white/30 mt-0.5">{t("lookupFieldHint")}</span>
+                    </span>
+                  </label>
+                )}
 
                 {/* Options (for select/radio) */}
                 {TYPES_WITH_OPTIONS.has(field.fieldType) && (

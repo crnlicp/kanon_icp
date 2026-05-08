@@ -18,6 +18,8 @@ import {
   ClipboardList,
   FileText,
   Globe2,
+  CalendarCheck,
+  CalendarPlus,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
@@ -32,11 +34,13 @@ import AdminSlides from "./sections/AdminSlides";
 import AdminAbout from "./sections/AdminAbout";
 import AdminContact from "./sections/AdminContact";
 import AdminRegistrations from "./sections/AdminRegistrations";
+import AdminEventRegistrations from "./sections/AdminEventRegistrations";
 import AdminFormTemplates from "./sections/AdminFormTemplates";
+import AdminEventRegistrationTemplates from "./sections/AdminEventRegistrationTemplates";
 import AdminDemoAreas from "./sections/AdminDemoAreas";
 import WavingFlag from "../../components/WavingFlag";
 
-type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "formTemplates" | "social" | "about" | "contact" | "demoAreas";
+type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "eventRegistrations" | "formTemplates" | "eventRegTemplates" | "social" | "about" | "contact" | "demoAreas";
 
 const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] = [
   { id: "dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -45,7 +49,9 @@ const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] =
   { id: "slides", labelKey: "heroSlides", icon: Image },
   { id: "activities", labelKey: "activities", icon: Activity },
   { id: "registrations", labelKey: "registrations", icon: ClipboardList },
+  { id: "eventRegistrations", labelKey: "eventRegistrations", icon: CalendarCheck },
   { id: "formTemplates", labelKey: "formTemplates", icon: FileText },
+  { id: "eventRegTemplates", labelKey: "eventRegTemplates", icon: CalendarPlus },
   { id: "about", labelKey: "aboutUs", icon: Info },
   { id: "contact", labelKey: "contactMessages", icon: MessageSquare },
   { id: "social", labelKey: "socialLinks", icon: Link2 },
@@ -202,7 +208,9 @@ export default function AdminDashboard() {
           {activeSection === "slides" && <AdminSlides token={token!} readOnly={mockActive} />}
           {activeSection === "activities" && <AdminActivities token={token!} readOnly={mockActive} />}
           {activeSection === "registrations" && <AdminRegistrations token={token!} />}
+          {activeSection === "eventRegistrations" && <AdminEventRegistrations token={token!} />}
           {activeSection === "formTemplates" && <AdminFormTemplates token={token!} readOnly={mockActive} />}
+          {activeSection === "eventRegTemplates" && <AdminEventRegistrationTemplates token={token!} readOnly={mockActive} />}
           {activeSection === "about" && <AdminAbout token={token!} readOnly={mockActive} />}
           {activeSection === "contact" && <AdminContact token={token!} readOnly={mockActive} />}
           {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}

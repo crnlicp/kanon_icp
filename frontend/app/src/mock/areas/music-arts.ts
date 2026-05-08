@@ -8,6 +8,7 @@ import type {
   SocialLinkReturn,
   RegistrationReturn,
   FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) =>
@@ -81,6 +82,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>Harmonia Academy erbjuder en inspirerande miljö för konstnärer på alla nivåer. Våra professionella instruktörer stödjer varje elev på sin konstnärliga tillväxtresa med ett individuellt anpassat tillvägagångssätt.</p><p>Kontakta oss för mer information och kursanmälan.</p>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -93,7 +97,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("پیانو مبتدیان", "Nybörjarpiano"),
     formTemplateId: 37001n,
     icon: "Piano", imageUrl: img("beginner-piano", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 32002n, topicId: 31001n, slug: "classical-techniques",
@@ -103,7 +107,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("تکنیک‌های کلاسیک", "Klassiska tekniker"),
     formTemplateId: 37001n,
     icon: "Music2", imageUrl: img("classical-piano", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 32003n, topicId: 31001n, slug: "jazz-improvisation",
@@ -112,7 +116,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Jazzteori, modes, comping och fri improvisation",
     ...body("ایمپروویزاسیون جاز", "Jazzimprovisation"),
     icon: "Shuffle", imageUrl: img("jazz-piano", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 32004n, topicId: 31001n, slug: "piano-ensemble",
@@ -122,7 +126,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("آنسامبل پیانو", "Pianoensemble"),
     formTemplateId: 37001n,
     icon: "Users", imageUrl: img("piano-ensemble", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(45),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 32005n, topicId: 31001n, slug: "digital-music-production",
@@ -131,7 +135,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Arbeta med DAW, Ableton och producera professionella beats",
     ...body("تولید موسیقی دیجیتال", "Digital musikproduktion"),
     icon: "Headphones", imageUrl: img("music-production", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(40),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(40),
   },
   // ── Vocals ──
   {
@@ -142,7 +146,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مبانی صدا", "Röstgrunder"),
     formTemplateId: 37001n,
     icon: "Mic", imageUrl: img("voice-basics", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 32007n, topicId: 31002n, slug: "choir-practice",
@@ -151,7 +155,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Flerstämmig sångharmonisering, partiturläsning och kollektivt framförande",
     ...body("تمرین کُر", "Körrepetition"),
     icon: "Users", imageUrl: img("choir", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(52),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 32008n, topicId: 31002n, slug: "song-interpretation",
@@ -160,7 +164,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Känslomässigt uttryck, dynamik och berättande genom sång",
     ...body("تفسیر ترانه", "Låttolkning"),
     icon: "Heart", imageUrl: img("song-interpretation", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(48),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 32009n, topicId: 31002n, slug: "breath-posture",
@@ -170,7 +174,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("تنفس و بدن‌آگاهی", "Andning och kroppskännedom"),
     formTemplateId: 37001n,
     icon: "Wind", imageUrl: img("breath-vocal", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 32010n, topicId: 31002n, slug: "performance-workshop",
@@ -179,13 +183,13 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Scenberedskap, publikengagemang och hantering av scenångest",
     ...body("کارگاه اجرا", "Framförandeworkshop"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نوع صدا", label_sv: "Rösttyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "سوپرانو", sv: "Sopran" }, { fa: "آلتو", sv: "Alt" }, { fa: "تنور", sv: "Tenor" }, { fa: "باریتون/باس", sv: "Baryton/Bas" }], sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "قطعه‌ای که قرار است اجرا کنید", label_sv: "Stycket du ska framföra", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نوع صدا", label_sv: "Rösttyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "سوپرانو", sv: "Sopran" }, { fa: "آلتو", sv: "Alt" }, { fa: "تنور", sv: "Tenor" }, { fa: "باریتون/باس", sv: "Baryton/Bas" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "قطعه‌ای که قرار است اجرا کنید", label_sv: "Stycket du ska framföra", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 4n },
     ],
     icon: "Star", imageUrl: img("performance-workshop", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(38),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(38),
   },
   // ── Visual Arts ──
   {
@@ -196,7 +200,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("نقاشی آبرنگ", "Akvarellmålning"),
     formTemplateId: 37002n,
     icon: "Palette", imageUrl: img("watercolor", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 32012n, topicId: 31003n, slug: "oil-portrait",
@@ -206,7 +210,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("پرتره رنگ روغن", "Oljemålad porträtt"),
     formTemplateId: 37002n,
     icon: "User", imageUrl: img("oil-portrait", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(51),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 32013n, topicId: 31003n, slug: "sculpture-workshop",
@@ -215,7 +219,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Arbeta med lera, keramik och bygga tredimensionella skulpturer",
     ...body("کارگاه مجسمه‌سازی", "Skulpturworkshop"),
     icon: "Box", imageUrl: img("sculpture", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(46),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 32014n, topicId: 31003n, slug: "life-drawing",
@@ -224,7 +228,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Studie av konstnärlig anatomi och snabbteckning från levande modell",
     ...body("طراحی از مدل زنده", "Levande modellteckning"),
     icon: "PenTool", imageUrl: img("life-drawing", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(41),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 32015n, topicId: 31003n, slug: "digital-illustration",
@@ -234,7 +238,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("تصویرسازی دیجیتال", "Digital illustration"),
     formTemplateId: 37002n,
     icon: "Monitor", imageUrl: img("digital-art", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(36),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(36),
   },
   // ── Dance ──
   {
@@ -245,7 +249,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مقدمه‌ای بر باله", "Introduktion till balett"),
     formTemplateId: 37001n,
     icon: "Footprints", imageUrl: img("ballet", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 32017n, topicId: 31004n, slug: "contemporary-dance",
@@ -255,7 +259,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("رقص معاصر", "Samtida dans"),
     formTemplateId: 37001n,
     icon: "Wind", imageUrl: img("contemporary-dance", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(49),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 32018n, topicId: 31004n, slug: "latin-rhythms",
@@ -264,7 +268,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Salsa, bachata och cha-cha — kul och hälsosamt tillsammans",
     ...body("ریتم‌های لاتین", "Latinrytmer"),
     icon: "Music", imageUrl: img("latin-dance", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(44),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 32019n, topicId: 31004n, slug: "dance-for-wellness",
@@ -273,7 +277,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Fri rörelse, muskelavspänning och glädje genom dans",
     ...body("رقص برای سلامتی", "Dans för välmående"),
     icon: "Heart", imageUrl: img("dance-wellness", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(39),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 32020n, topicId: 31004n, slug: "choreography-lab",
@@ -283,7 +287,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("آزمایشگاه کوریوگرافی", "Koreografilabb"),
     formTemplateId: 37001n,
     icon: "GitBranch", imageUrl: img("choreography", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(34),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(34),
   },
   // ── Composition ──
   {
@@ -294,7 +298,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مبانی تئوری موسیقی", "Musikteorigrunder"),
     formTemplateId: 37001n,
     icon: "BookOpen", imageUrl: img("music-theory", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 32022n, topicId: 31005n, slug: "songwriting-workshop",
@@ -302,9 +306,18 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "از ایده تا ترانه: ملودی، هارمونی و کلمات",
     excerpt_sv: "Från idé till låt: melodi, harmoni och text",
     ...body("کارگاه ترانه‌سرایی", "Låtskrivarworkshop"),
-    formTemplateId: 37002n,
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "ابزار اصلی", label_sv: "Primärt instrument", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "گیتار", sv: "Gitarr" }, { fa: "پیانو", sv: "Piano" }, { fa: "آواز", sv: "Sång" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "تجربه ترانه‌سرایی", label_sv: "Låtskrivarerfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اولین بار", sv: "Första gången" }, { fa: "چند ترانه نوشته‌ام", sv: "Skrivit några låtar" }, { fa: "تجربه زیادی دارم", sv: "Stor erfarenhet" }], isLookupField: false, sortOrder: 4n },
+    ],
+    sessions: [
+      { id: 101n, name_fa: "گروه مبتدی (پنجشنبه‌ها)", name_sv: "Nybörjargrupp (torsdagar)", date: "2026-10-01", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "گروه پیشرفته (شنبه‌ها)", name_sv: "Avancerad grupp (lördagar)", date: "2026-10-03", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
     icon: "PenLine", imageUrl: img("songwriting", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(47),
+    hasRegistration: true, registrationMode: "event", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 32023n, topicId: 31005n, slug: "film-scoring",
@@ -313,7 +326,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Skapa musik för bild, känslor och visuellt berättande",
     ...body("موسیقی فیلم", "Filmmusik"),
     icon: "Film", imageUrl: img("film-scoring", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(42),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 32024n, topicId: 31005n, slug: "ear-training",
@@ -322,7 +335,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Identifiera intervaller, ackord och rytmer med musikaliskt gehör",
     ...body("تمرین گوش", "Gehörsträning"),
     icon: "Ear", imageUrl: img("ear-training", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(37),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 32025n, topicId: 31005n, slug: "electronic-music",
@@ -332,7 +345,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("موسیقی الکترونیک", "Elektronisk musik"),
     formTemplateId: 37002n,
     icon: "Radio", imageUrl: img("electronic-music", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(32),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(32),
   },
 ];
 
@@ -389,6 +402,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "linn.j@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Har aldrig spelat piano förut, väldigt nervös men exalterad!" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -398,6 +412,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "viktor.b@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Sjunger sedan gymnasiet, vill ta nästa steg." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
   },
   {
@@ -409,6 +424,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Jag älskar naturmotiv och vill lära mig måla blommar." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(7),
   },
   {
@@ -419,9 +435,32 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 3n, fieldLabel: "Rösttyp / نوع صدا", value: "Sopran" },
       { fieldId: 4n, fieldLabel: "Stycket / قطعه", value: "O mio babbino caro — Puccini" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(10),
   },
-  { id: 36005n, activityId: 32016n, name: "Sara Holmberg", email: "sara.h@example.com", phone: "+46705544332", message: "Min dotter är 8 år och drömmer om balett.", fieldValues: [], createdAt: ts(13) },
+  { id: 36005n, activityId: 32016n, name: "Sara Holmberg", email: "sara.h@example.com", phone: "+46705544332", message: "Min dotter är 8 år och drömmer om balett.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
+  {
+    id: 1773500001n, activityId: 32022n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Viktor Holm" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "viktor.holm@example.com" },
+      { fieldId: 3n, fieldLabel: "Primärt instrument / ابزار", value: "Gitarr" },
+      { fieldId: 4n, fieldLabel: "Låtskrivarerfarenhet / تجربه ترانه‌سرایی", value: "Skrivit några låtar" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Nybörjargrupp (torsdagar)" }],
+    createdAt: ts(1),
+  },
+  {
+    id: 1773400002n, activityId: 32022n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Rebecka Strand" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "rebecka.s@example.com" },
+      { fieldId: 3n, fieldLabel: "Primärt instrument / ابزار", value: "Sång" },
+      { fieldId: 4n, fieldLabel: "Låtskrivarerfarenhet / تجربه ترانه‌سرایی", value: "Stor erfarenhet" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Avancerad grupp (lördagar)" }],
+    createdAt: ts(4),
+  },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────
@@ -431,9 +470,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 37001n, name_fa: "ثبت‌نام کلاس", name_sv: "Kursregistrering",
     description_fa: "فرم پایه برای ثبت‌نام در کلاس‌های آکادمی", description_sv: "Grundformulär för akademikursregistrering",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Berätta lite om dig och dina mål", required: false, options: [], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Berätta lite om dig och dina mål", required: false, options: [], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -441,11 +480,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 37002n, name_fa: "ثبت‌نام کارگاه", name_sv: "Workshopregistrering",
     description_fa: "فرم کارگاه‌های عملی هنری", description_sv: "Formulär för praktiska konstworkshops",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "توضیحات", label_sv: "Information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "توضیحات", label_sv: "Information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -453,12 +492,33 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 37003n, name_fa: "ثبت‌نام آدیشن", name_sv: "Auditionregistrering",
     description_fa: "فرم برای آدیشن در گروه‌های هنری", description_sv: "Formulär för audition till konstgrupper",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "حرفه‌ای", sv: "Professionell" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "قطعه آدیشن", label_sv: "Auditionstycke", placeholder_fa: "", placeholder_sv: "Beskriv vad du tänker framföra", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "حرفه‌ای", sv: "Professionell" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "قطعه آدیشن", label_sv: "Auditionstycke", placeholder_fa: "", placeholder_sv: "Beskriv vad du tänker framföra", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(90),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 38001n,
+    name_fa: "رویداد موسیقی", name_sv: "Musikevenemang",
+    description_fa: "قالب رویداد برای کارگاه‌ها و رویدادهای موسیقی", description_sv: "Eventmall för musikworkshops och evenemang",
+    sessions: [
+      { id: 201n, name_fa: "گروه مبتدی", name_sv: "Nybörjargrupp", date: "2026-10-08", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 202n, name_fa: "گروه پیشرفته", name_sv: "Avancerad grupp", date: "2026-10-10", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "ابزار موسیقی", label_sv: "Musikinstrument", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

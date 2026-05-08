@@ -39,6 +39,8 @@ interface Activity {
   excerpt_sv: string;
   icon: string;
   imageUrl: string;
+  hasRegistration: boolean;
+  registrationMode: string;
 }
 
 export default function TopicHomePage() {
@@ -141,6 +143,15 @@ export default function TopicHomePage() {
                   <h3 className="text-lg sm:text-xl font-bold text-white">
                     {localized(activity.title_fa, activity.title_sv)}
                   </h3>
+                  {activity.registrationMode !== "none" && (
+                    <div className="flex items-center gap-1.5 text-xs text-white/50 bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5 w-fit">
+                      {activity.registrationMode === "event"
+                        ? <LucideIcons.CalendarDays size={11} className="text-primary/80" />
+                        : <LucideIcons.ClipboardList size={11} className="text-primary/80" />
+                      }
+                      <span>{activity.registrationMode === "event" ? t("eventRegistrationMode") : t("registrationFormMode")}</span>
+                    </div>
+                  )}
                   <p className="text-white/50 text-sm leading-relaxed line-clamp-3">
                     {localized(activity.excerpt_fa, activity.excerpt_sv)}
                   </p>

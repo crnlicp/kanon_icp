@@ -2,6 +2,7 @@ import type {
   SiteSettingsReturn, TopicReturn, ActivityReturn, HeroSlideReturn,
   AboutContentReturn, ContactMessageReturn, SocialLinkReturn,
   RegistrationReturn, FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
@@ -31,6 +32,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>I denna klass med professionella kockar som guide, utforskar du matlagningstekniker och smakhemligheter. Varje session inkluderar förberedelse, tillagning och gemensamt ätande.</p><ul><li>Färska lokala ingredienser</li><li>Tryckta recept att ta hem</li><li>Intim miljö med max 12 personer</li></ul>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -42,13 +46,13 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Lär dig göra färsk pasta med semolina och ägg",
     ...body("پاستا دست‌ساز", "Pasta från grunden"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح آشپزی", label_sv: "Matlagningsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی — کمتر از یک سال", sv: "Nybörjare — mindre än ett år" }, { fa: "متوسط — ۱ تا ۳ سال", sv: "Medel — 1–3 år" }, { fa: "پیشرفته — بیش از ۳ سال", sv: "Avancerad — mer än 3 år" }], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "آیا حساسیت به گلوتن دارید؟", label_sv: "Har du glutenintolerans?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله", sv: "Ja" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌های غذایی دیگر", label_sv: "Andra matallergier", placeholder_fa: "اگر آلرژی یا محدودیت غذایی دارید بنویسید", placeholder_sv: "Ange eventuella allergier eller kostbegränsningar", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح آشپزی", label_sv: "Matlagningsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی — کمتر از یک سال", sv: "Nybörjare — mindre än ett år" }, { fa: "متوسط — ۱ تا ۳ سال", sv: "Medel — 1–3 år" }, { fa: "پیشرفته — بیش از ۳ سال", sv: "Avancerad — mer än 3 år" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "آیا حساسیت به گلوتن دارید؟", label_sv: "Har du glutenintolerans?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله", sv: "Ja" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌های غذایی دیگر", label_sv: "Andra matallergier", placeholder_fa: "اگر آلرژی یا محدودیت غذایی دارید بنویسید", placeholder_sv: "Ange eventuella allergier eller kostbegränsningar", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
-    icon: "ChefHat", imageUrl: img("pasta-scratch", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    icon: "ChefHat", imageUrl: img("pasta-scratch", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 52002n, topicId: 51001n, slug: "pizza-napoletana",
@@ -57,7 +61,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Napolitansk deg, San Marzano-tomatssås och bakning i hög temperatur",
     ...body("پیتزا ناپولیتانا", "Pizza Napoletana"),
     formTemplateId: 57001n,
-    icon: "Pizza", imageUrl: img("pizza-naple", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    icon: "Pizza", imageUrl: img("pizza-naple", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 52003n, topicId: 51001n, slug: "risotto-masterclass",
@@ -65,7 +69,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تکنیک صحیح پختن ریزوتو: خامه‌ای بدون خامه",
     excerpt_sv: "Rätt teknik för risotto: krämigt utan grädde",
     ...body("مسترکلاس ریزوتو", "Risotto masterclass"),
-    icon: "Utensils", imageUrl: img("risotto", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    icon: "Utensils", imageUrl: img("risotto", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 52004n, topicId: 51001n, slug: "tiramisu-and-panna-cotta",
@@ -74,7 +78,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Två klassiska italienska desserter med chefens hemligheter",
     ...body("تیرامیسو و پانا کوتا", "Tiramisu och panna cotta"),
     formTemplateId: 57001n,
-    icon: "IceCream", imageUrl: img("tiramisu", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(45),
+    icon: "IceCream", imageUrl: img("tiramisu", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 52005n, topicId: 51001n, slug: "italian-wine-pairing",
@@ -82,7 +86,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "اصول جفت‌کردن شراب‌های ایتالیایی با غذاهای کلاسیک",
     excerpt_sv: "Principerna för att kombinera italienska viner med klassiska rätter",
     ...body("ترکیب غذا و شراب ایتالیایی", "Italiensk mat- och vinkombination"),
-    icon: "Wine", imageUrl: img("wine-pairing", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(40),
+    icon: "Wine", imageUrl: img("wine-pairing", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(40),
   },
   // Baking
   {
@@ -92,12 +96,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Skapa och underhålla surdeg och baka äkta surdegsbröd",
     ...body("نان خمیرمایه طبیعی", "Surdegsbröd"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "آیا قبلاً نان خمیرمایه پخته‌اید؟", label_sv: "Har du bakat surdegsbröd tidigare?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اولین بار است", sv: "Första gången" }, { fa: "چند بار امتحان کرده‌ام", sv: "Försökt ett par gånger" }, { fa: "با تجربه هستم", sv: "Jag har erfarenhet" }], sortOrder: 3n },
-      { id: 4n, fieldType: "checkbox", label_fa: "تجهیزات مورد نیاز را تهیه می‌کنم", label_sv: "Jag skaffar nödvändig utrustning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "آیا قبلاً نان خمیرمایه پخته‌اید؟", label_sv: "Har du bakat surdegsbröd tidigare?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اولین بار است", sv: "Första gången" }, { fa: "چند بار امتحان کرده‌ام", sv: "Försökt ett par gånger" }, { fa: "با تجربه هستم", sv: "Jag har erfarenhet" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "checkbox", label_fa: "تجهیزات مورد نیاز را تهیه می‌کنم", label_sv: "Jag skaffar nödvändig utrustning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Wheat", imageUrl: img("sourdough", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    icon: "Wheat", imageUrl: img("sourdough", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 52007n, topicId: 51002n, slug: "french-pastry",
@@ -106,7 +110,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Croissanter, éclairs, madeleines och macarons — grunderna i fransk patisseri",
     ...body("شیرینی‌پزی فرانسوی", "Franska konditorier"),
     formTemplateId: 57001n,
-    icon: "Croissant", imageUrl: img("french-pastry", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(52),
+    icon: "Croissant", imageUrl: img("french-pastry", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 52008n, topicId: 51002n, slug: "cake-decoration",
@@ -114,7 +118,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کرم‌های کره‌ای، گل‌های شکری و تکنیک‌های پایپینگ",
     excerpt_sv: "Smörkrämer, sockerblommor och piping-tekniker",
     ...body("تزئین کیک", "Tårtdekorering"),
-    icon: "CakeSlice", imageUrl: img("cake-deco", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(48),
+    icon: "CakeSlice", imageUrl: img("cake-deco", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 52009n, topicId: 51002n, slug: "gluten-free-baking",
@@ -123,7 +127,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Vetemjölsalternativ och baktekniker för glutenintoleranta",
     ...body("نانوایی بدون گلوتن", "Glutenfri bakning"),
     formTemplateId: 57002n,
-    icon: "Star", imageUrl: img("gluten-free", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    icon: "Star", imageUrl: img("gluten-free", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 52010n, topicId: 51002n, slug: "chocolate-workshop",
@@ -131,7 +135,17 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تمپرکردن شکلات، ترافل و شکلات‌های پر شده",
     excerpt_sv: "Temperering av choklad, tryfflar och fyllda choklader",
     ...body("کارگاه شکلات‌سازی", "Chokladworkshop"),
-    icon: "Gift", imageUrl: img("chocolate", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(38),
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "تجربه شکلات‌سازی", label_sv: "Chokladtillverkningserfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اولین بار است", sv: "Första gången" }, { fa: "کمی تجربه دارم", sv: "Lite erfarenhet" }, { fa: "تجربه دارم", sv: "Har erfarenhet" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "آلرژی غذایی", label_sv: "Matallergier", placeholder_fa: "آیا به شکلات، آجیل یا لبنیات حساسیت دارید؟", placeholder_sv: "Är du allergisk mot choklad, nötter eller mejeri?", required: false, options: [], isLookupField: false, sortOrder: 4n },
+    ],
+    sessions: [
+      { id: 101n, name_fa: "جلسه صبح", name_sv: "Förmiddagssession", date: "2026-11-14", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 102n, name_fa: "جلسه بعدازظهر", name_sv: "Eftermiddagssession", date: "2026-11-14", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    icon: "Gift", imageUrl: img("chocolate", 800, 600), hasRegistration: true, registrationMode: "event", sortOrder: 5n, createdAt: ts(38),
   },
   // Street Food
   {
@@ -141,12 +155,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Äkta mexikanska tacos med handgjorda tortillas och färsk salsa",
     ...body("شب تاکو", "Tacokvällen"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kostval", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kostval", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Sandwich", imageUrl: img("taco-night", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    icon: "Sandwich", imageUrl: img("taco-night", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 52012n, topicId: 51003n, slug: "dim-sum",
@@ -155,7 +169,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Dumplings, baobröd, har gow och ångade kinesiska rätter",
     ...body("دیم‌سام", "Dim sum"),
     formTemplateId: 57001n,
-    icon: "Star", imageUrl: img("dim-sum", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(51),
+    icon: "Star", imageUrl: img("dim-sum", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 52013n, topicId: 51003n, slug: "falafel-and-mezze",
@@ -163,7 +177,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "حمص، فلافل، تبوله و انواع مزه اصیل خاورمیانه",
     excerpt_sv: "Hummus, falafel, tabbouleh och äkta mellanösterns mezze",
     ...body("فلافل و مزه خاورمیانه‌ای", "Falafel och mellanösterns mezze"),
-    icon: "Salad", imageUrl: img("falafel-mezze", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(46),
+    icon: "Salad", imageUrl: img("falafel-mezze", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 52014n, topicId: 51003n, slug: "ramen-workshop",
@@ -172,7 +186,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "18-timmarsbuljongen, tare och japanska ramen-toppings",
     ...body("کارگاه رامن", "Ramenworkshop"),
     formTemplateId: 57001n,
-    icon: "Soup", imageUrl: img("ramen", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(41),
+    icon: "Soup", imageUrl: img("ramen", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 52015n, topicId: 51003n, slug: "street-food-tour",
@@ -180,7 +194,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تست غذاهای خیابانی از ۶ کشور مختلف در یک شام",
     excerpt_sv: "Smaka på gatumat från 6 olika länder på en middag",
     ...body("گردش غذایی خیابانی", "Gatumatsvandring"),
-    icon: "Globe", imageUrl: img("food-tour", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(36),
+    icon: "Globe", imageUrl: img("food-tour", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(36),
   },
   // Fermentation
   {
@@ -190,12 +204,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Traditionell koreansk kimchi med naturlig fermentering av nyttiga bakterier",
     ...body("کیمچی‌سازی", "Kimchitillverkning"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "آیا با تخمیر آشنایی دارید؟", label_sv: "Har du erfarenhet av fermentering?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اصلاً", sv: "Inte alls" }, { fa: "کمی", sv: "Lite" }, { fa: "بله، تجربه دارم", sv: "Ja, jag har erfarenhet" }], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "ظرف تخمیر دارید؟", label_sv: "Har du ett fermenteringskärl?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "بله", sv: "Ja" }, { fa: "خیر، از شما می‌خرم", sv: "Nej, jag köper från er" }, { fa: "می‌خواهم یاد بگیرم چه بخرم", sv: "Vill lära mig vad jag ska köpa" }], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "آیا با تخمیر آشنایی دارید؟", label_sv: "Har du erfarenhet av fermentering?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "اصلاً", sv: "Inte alls" }, { fa: "کمی", sv: "Lite" }, { fa: "بله، تجربه دارم", sv: "Ja, jag har erfarenhet" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "ظرف تخمیر دارید؟", label_sv: "Har du ett fermenteringskärl?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "بله", sv: "Ja" }, { fa: "خیر، از شما می‌خرم", sv: "Nej, jag köper från er" }, { fa: "می‌خواهم یاد بگیرم چه بخرم", sv: "Vill lära mig vad jag ska köpa" }], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "FlaskConical", imageUrl: img("kimchi", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    icon: "FlaskConical", imageUrl: img("kimchi", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 52017n, topicId: 51004n, slug: "kombucha-brewing",
@@ -204,7 +218,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "SCOBY, första och andra fermentering, naturlig smaksättning",
     ...body("دم‌کردن کامبوچا", "Kombuchatillverkning"),
     formTemplateId: 57001n,
-    icon: "Droplets", imageUrl: img("kombucha", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(49),
+    icon: "Droplets", imageUrl: img("kombucha", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 52018n, topicId: 51004n, slug: "vegetable-fermentation",
@@ -212,7 +226,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ترشی‌های خانگی، کلم ترش آلمانی و سبزیجات تخمیری",
     excerpt_sv: "Hemgjord surkål, sauerkraut och fermenterade grönsaker",
     ...body("تخمیر سبزیجات", "Grönsaksfermentering"),
-    icon: "Leaf", imageUrl: img("veggie-ferment", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(44),
+    icon: "Leaf", imageUrl: img("veggie-ferment", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 52019n, topicId: 51004n, slug: "kefir-and-yogurt",
@@ -221,7 +235,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Tillverkning av mjölkkefir, vattenkefir och tjock grekisk yoghurt",
     ...body("کفیر و ماست خانگی", "Kefir och hemgjord yoghurt"),
     formTemplateId: 57002n,
-    icon: "Milk", imageUrl: img("kefir-yogurt", 800, 600), hasRegistration: true, sortOrder: 4n, createdAt: ts(39),
+    icon: "Milk", imageUrl: img("kefir-yogurt", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 52020n, topicId: 51004n, slug: "fermented-pantry",
@@ -229,7 +243,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "مایه‌ها، خمیرهای تخمیری و نگهداری غذا به روش سنتی",
     excerpt_sv: "Starter, fermenterade pastor och traditionell matkonservering",
     ...body("آنباری تخمیری", "Fermenterat skafferi"),
-    icon: "Archive", imageUrl: img("ferment-pantry", 800, 600), hasRegistration: false, sortOrder: 5n, createdAt: ts(34),
+    icon: "Archive", imageUrl: img("ferment-pantry", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(34),
   },
   // Plant-based
   {
@@ -239,12 +253,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Tofu, tempeh, seitan och baljväxter — protein utan kött",
     ...body("پروتئین گیاهی", "Veganskt protein"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "رژیم غذایی شما", label_sv: "Din kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "وگان", sv: "Vegan" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "دارم به سمت گیاهخواری می‌روم", sv: "Övergår till vegetarisk kost" }, { fa: "کنجکاوم", sv: "Nyfiken" }], sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "آلرژی‌ها و محدودیت‌های غذایی", label_sv: "Allergier och kostbegränsningar", placeholder_fa: "آیا به سویا، آجیل یا گلوتن حساسیت دارید؟", placeholder_sv: "Är du allergisk mot soja, nötter eller gluten?", required: false, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "رژیم غذایی شما", label_sv: "Din kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "وگان", sv: "Vegan" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "دارم به سمت گیاهخواری می‌روم", sv: "Övergår till vegetarisk kost" }, { fa: "کنجکاوم", sv: "Nyfiken" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "آلرژی‌ها و محدودیت‌های غذایی", label_sv: "Allergier och kostbegränsningar", placeholder_fa: "آیا به سویا، آجیل یا گلوتن حساسیت دارید؟", placeholder_sv: "Är du allergisk mot soja, nötter eller gluten?", required: false, options: [], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Carrot", imageUrl: img("vegan-protein", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    icon: "Carrot", imageUrl: img("vegan-protein", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 52022n, topicId: 51005n, slug: "raw-food",
@@ -252,7 +266,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "سالادهای پیچیده، مارینادهای خام و چیزکیک خام",
     excerpt_sv: "Komplexa sallader, råa marinader och raw cheesecake",
     ...body("غذای خام", "Rawfood"),
-    icon: "Apple", imageUrl: img("raw-food", 800, 600), hasRegistration: false, sortOrder: 2n, createdAt: ts(47),
+    icon: "Apple", imageUrl: img("raw-food", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 52023n, topicId: 51005n, slug: "plant-based-burgers",
@@ -261,7 +275,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Burger av bönor, svamp, rödbeta — äkta smak utan kött",
     ...body("برگر گیاهی خانگی", "Hemgjord växtbaserad burger"),
     formTemplateId: 57001n,
-    icon: "Sandwich", imageUrl: img("plant-burger", 800, 600), hasRegistration: true, sortOrder: 3n, createdAt: ts(42),
+    icon: "Sandwich", imageUrl: img("plant-burger", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 52024n, topicId: 51005n, slug: "vegan-desserts",
@@ -269,7 +283,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "موس شکلات آووکادو، کیک خرمای خام، بستنی موزی",
     excerpt_sv: "Avokadochokladmousse, rå dadeltårta, bananglass",
     ...body("دسرهای وگان", "Veganska desserter"),
-    icon: "IceCream", imageUrl: img("vegan-dessert", 800, 600), hasRegistration: false, sortOrder: 4n, createdAt: ts(37),
+    icon: "IceCream", imageUrl: img("vegan-dessert", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 52025n, topicId: 51005n, slug: "seasonal-plant-cooking",
@@ -278,7 +292,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Använda säsongens grönsaker för varierade och prisvärda måltider",
     ...body("آشپزی فصلی گیاهی", "Säsongsbaserad växtmatlagning"),
     formTemplateId: 57002n,
-    icon: "Leaf", imageUrl: img("seasonal-plant", 800, 600), hasRegistration: true, sortOrder: 5n, createdAt: ts(32),
+    icon: "Leaf", imageUrl: img("seasonal-plant", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(32),
   },
 ];
 
@@ -327,6 +341,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Glutenintolerans / حساسیت گلوتن", value: "Nej" },
       { fieldId: 5n, fieldLabel: "Allergier / آلرژی", value: "Allergisk mot nötter." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -337,9 +352,10 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 3n, fieldLabel: "Antal / تعداد", value: "3" },
       { fieldId: 4n, fieldLabel: "Kostval / رژیم", value: "Vegetarian" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
   },
-  { id: 56003n, activityId: 52002n, name: "Oskar Nilsson", email: "oskar.n@example.com", phone: "+46701239876", message: "Älskar pizza, vill lära mig göra äkta napolitansk!", fieldValues: [], createdAt: ts(8) },
+  { id: 56003n, activityId: 52002n, name: "Oskar Nilsson", email: "oskar.n@example.com", phone: "+46701239876", message: "Älskar pizza, vill lära mig göra äkta napolitansk!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(8) },
   {
     id: 56004n, activityId: 52016n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -348,9 +364,43 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 3n, fieldLabel: "Erfarenhet / تجربه", value: "Lite" },
       { fieldId: 4n, fieldLabel: "Kärl / ظرف", value: "Nej, jag köper från er" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(11),
   },
-  { id: 56005n, activityId: 52007n, name: "Isabelle Morin", email: "isabelle.m@example.com", phone: "+46705544332", message: "Jag har drömt om att lära mig göra croissanter hela livet!", fieldValues: [], createdAt: ts(15) },
+  { id: 56005n, activityId: 52007n, name: "Isabelle Morin", email: "isabelle.m@example.com", phone: "+46705544332", message: "Jag har drömt om att lära mig göra croissanter hela livet!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(15) },
+  {
+    id: 1776500001n, activityId: 52010n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Anna Björk" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "anna.bjork@example.com" },
+      { fieldId: 3n, fieldLabel: "Erfarenhet / تجربه", value: "Första gången" },
+      { fieldId: 4n, fieldLabel: "Matallergier / آلرژی", value: "" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Förmiddagssession" }],
+    createdAt: ts(1),
+  },
+  {
+    id: 1776400002n, activityId: 52010n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Erik Strand" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "erik.strand@example.com" },
+      { fieldId: 3n, fieldLabel: "Erfarenhet / تجربه", value: "Lite erfarenhet" },
+      { fieldId: 4n, fieldLabel: "Matallergier / آلرژی", value: "Allergisk mot nötter" },
+    ],
+    personCount: 2n, selectedSessions: [{ sessionId: 102n, sessionName: "Eftermiddagssession" }],
+    createdAt: ts(3),
+  },
+  {
+    id: 1776300003n, activityId: 52010n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Parisa Ahmadi" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "parisa.a@example.com" },
+      { fieldId: 3n, fieldLabel: "Erfarenhet / تجربه", value: "Har erfarenhet" },
+      { fieldId: 4n, fieldLabel: "Matallergier / آلرژی", value: "" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Förmiddagssession" }, { sessionId: 102n, sessionName: "Eftermiddagssession" }],
+    createdAt: ts(5),
+  },
 ];
 
 export const mockFormTemplates: FormTemplateReturn[] = [
@@ -358,9 +408,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 57001n, name_fa: "ثبت‌نام کلاس آشپزی", name_sv: "Matlagningskursregistrering",
     description_fa: "فرم پایه برای ثبت‌نام در کلاس‌ها", description_sv: "Grundformulär för kursanmälan",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "آلرژی یا محدودیت غذایی", label_sv: "Allergier eller kostbegränsningar", placeholder_fa: "هر آلرژی یا محدودیت را بنویسید", placeholder_sv: "Ange eventuella allergier eller restriktioner", required: false, options: [], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "آلرژی یا محدودیت غذایی", label_sv: "Allergier eller kostbegränsningar", placeholder_fa: "هر آلرژی یا محدودیت را بنویسید", placeholder_sv: "Ange eventuella allergier eller restriktioner", required: false, options: [], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -368,11 +418,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 57002n, name_fa: "ثبت‌نام کارگاه غذایی", name_sv: "Matworkshopregistrering",
     description_fa: "فرم برای کارگاه‌های تخصصی", description_sv: "Formulär för specialiserade matworkshops",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح آشپزی", label_sv: "Matlagningsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌ها", label_sv: "Allergier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح آشپزی", label_sv: "Matlagningsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌ها", label_sv: "Allergier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -380,12 +430,33 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 57003n, name_fa: "ثبت‌نام رویداد غذایی", name_sv: "Matevenemangregistrering",
     description_fa: "برای رویدادها و گردهمایی‌های غذایی", description_sv: "För matevenemang och matsamlingar",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌های مهم", label_sv: "Viktiga allergier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهخوار", sv: "Vegetarian" }, { fa: "وگان", sv: "Vegan" }, { fa: "بدون گلوتن", sv: "Glutenfri" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "آلرژی‌های مهم", label_sv: "Viktiga allergier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(90),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 58001n,
+    name_fa: "کارگاه آشپزی", name_sv: "Matlagningstillställning",
+    description_fa: "قالب رویداد برای کارگاه‌های آشپزی", description_sv: "Eventmall för matlagningsworkshops",
+    sessions: [
+      { id: 201n, name_fa: "جلسه صبح", name_sv: "Morgonsession", date: "2026-12-05", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 202n, name_fa: "جلسه بعدازظهر", name_sv: "Eftermiddagssession", date: "2026-12-12", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal personer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "رژیم غذایی", label_sv: "Kosthållning", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

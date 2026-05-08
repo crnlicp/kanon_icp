@@ -8,6 +8,7 @@ import type {
   SocialLinkReturn,
   RegistrationReturn,
   FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) =>
@@ -81,6 +82,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>Detta program är utformat för dem som älskar naturen och äventyret. Våra erfarna guider säkerställer säkerhet, glädje och lärande på samma gång.</p><p>Ta med nödvändig utrustning och kom med energi!</p>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -93,7 +97,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("پیاده‌روی در مسیرهای محلی", "Vandring på lokala leder"),
     formTemplateId: 47001n,
     icon: "Footprints", imageUrl: img("local-trail", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 42002n, topicId: 41001n, slug: "mountain-summit",
@@ -101,9 +105,19 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "صعود یک‌روزه به قله‌های اطراف با راهنمای مجرب",
     excerpt_sv: "Endagstur till toppar i omgivningen med erfaren guide",
     ...body("صعود به قله", "Topptur"),
-    formTemplateId: 47002n,
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تماس اضطراری", label_sv: "Nödtelefon", placeholder_fa: "نام: شماره", placeholder_sv: "Namn: telefon", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "شرایط پزشکی", label_sv: "Medicinska tillstånd", placeholder_fa: "هر محدودیتی که راهنما باید بداند", placeholder_sv: "Begränsningar guiden bör känna till", required: false, options: [], isLookupField: false, sortOrder: 5n },
+    ],
+    sessions: [
+      { id: 101n, name_fa: "صعود بهاره — خرداد ۱۴۰۵", name_sv: "Vårklättring — juni 2026", date: "2026-06-13", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "صعود پاییزه — شهریور ۱۴۰۵", name_sv: "Höstklättring — september 2026", date: "2026-09-05", capacity: 15n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
     icon: "Mountain", imageUrl: img("mountain-summit", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    hasRegistration: true, registrationMode: "event", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 42003n, topicId: 41001n, slug: "night-hike",
@@ -112,7 +126,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Upplev skogen på natten med pannlampa och otaliga stjärnor",
     ...body("پیاده‌روی شبانه", "Nattpromenad"),
     icon: "Moon", imageUrl: img("night-hike", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 42004n, topicId: 41001n, slug: "trail-maintenance",
@@ -121,7 +135,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Delta frivilligt i underhåll och förbättring av vandringsleder",
     ...body("روز نگهداری مسیر", "Ledunderhållsdag"),
     icon: "Hammer", imageUrl: img("trail-maintenance", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(45),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 42005n, topicId: 41001n, slug: "nordic-walking",
@@ -131,7 +145,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("نوردیک واکینگ", "Nordisk gång"),
     formTemplateId: 47001n,
     icon: "PersonStanding", imageUrl: img("nordic-walking", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(40),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(40),
   },
   // ── Climbing ──
   {
@@ -142,7 +156,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مقدمه‌ای بر بولدرینگ", "Introduktion till bouldering"),
     formTemplateId: 47002n,
     icon: "Anchor", imageUrl: img("bouldering", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 42007n, topicId: 41002n, slug: "top-rope-basics",
@@ -152,7 +166,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مبانی تاپ‌روپ", "Toprope-grunder"),
     formTemplateId: 47002n,
     icon: "Shield", imageUrl: img("top-rope", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(52),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 42008n, topicId: 41002n, slug: "lead-climbing-course",
@@ -161,14 +175,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Avancerad klättring med rephantering och säkring av sig själv",
     ...body("دوره لید کلایمبینگ", "Ledklättringskurs"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه صخره‌نوردی", label_sv: "Klättringserfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "تاپ‌روپ - مبتدی", sv: "Toprope - nybörjare" }, { fa: "تاپ‌روپ - باتجربه", sv: "Toprope - erfaren" }, { fa: "لید قبلاً داشتم", sv: "Har ledat tidigare" }], sortOrder: 4n },
-      { id: 5n, fieldType: "checkbox", label_fa: "مسئولیت‌پذیری برای خطرات احتمالی را می‌پذیرم", label_sv: "Jag accepterar ansvaret för eventuella risker", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه صخره‌نوردی", label_sv: "Klättringserfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "تاپ‌روپ - مبتدی", sv: "Toprope - nybörjare" }, { fa: "تاپ‌روپ - باتجربه", sv: "Toprope - erfaren" }, { fa: "لید قبلاً داشتم", sv: "Har ledat tidigare" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "checkbox", label_fa: "مسئولیت‌پذیری برای خطرات احتمالی را می‌پذیرم", label_sv: "Jag accepterar ansvaret för eventuella risker", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
     ],
     icon: "ArrowUp", imageUrl: img("lead-climbing", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(48),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 42009n, topicId: 41002n, slug: "outdoor-crag-day",
@@ -178,7 +192,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("روز صخره‌نوردی در طبیعت", "Klätterdag utomhus"),
     formTemplateId: 47002n,
     icon: "Mountain", imageUrl: img("crag-day", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 42010n, topicId: 41002n, slug: "strength-flexibility",
@@ -187,7 +201,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Klätterspecifik träning för att stärka fingrar, armar och flexibilitet",
     ...body("قدرت و انعطاف برای صخره‌نورد", "Styrka och flexibilitet för klättrare"),
     icon: "Dumbbell", imageUrl: img("climbing-strength", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(38),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(38),
   },
   // ── Cycling ──
   {
@@ -198,7 +212,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("گروه دوچرخه‌سواری جاده", "Vägcykelgrupp"),
     formTemplateId: 47001n,
     icon: "Bike", imageUrl: img("road-cycling", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 42012n, topicId: 41003n, slug: "mountain-biking",
@@ -207,7 +221,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Grundläggande MTB-tekniker: bromsning, balans på hinder och terrängorientering",
     ...body("دوچرخه‌سواری کوهستان مبتدی", "Nybörjarmountainbike"),
     icon: "Mountain", imageUrl: img("mountain-bike", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(51),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 42013n, topicId: 41003n, slug: "bike-maintenance",
@@ -216,7 +230,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Slanglagning, växeljustering och grundläggande cykelunderhåll",
     ...body("کارگاه تعمیر دوچرخه", "Cykelreparationsworkshop"),
     icon: "Wrench", imageUrl: img("bike-repair", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(46),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 42014n, topicId: 41003n, slug: "city-cycling-tour",
@@ -225,7 +239,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Utflykt genom staden med cykel, hitta dolda platser och stadsestetik",
     ...body("تور دوچرخه‌سواری در شهر", "Stadscykeltur"),
     icon: "MapPin", imageUrl: img("city-cycling", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(41),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 42015n, topicId: 41003n, slug: "gravel-ride",
@@ -235,7 +249,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("گراول راید", "Gravelritt"),
     formTemplateId: 47001n,
     icon: "Trees", imageUrl: img("gravel-ride", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(36),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(36),
   },
   // ── Water Sports ──
   {
@@ -246,7 +260,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مقدمه‌ای بر کایاک", "Introduktion till kajak"),
     formTemplateId: 47002n,
     icon: "Waves", imageUrl: img("kayaking", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 42017n, topicId: 41004n, slug: "sup-paddleboard",
@@ -255,7 +269,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "SUP — balans, paddlingteknik och utflykt på stilla sjöar",
     ...body("ایستاده روی تخته پادل", "Stand-up paddleboard"),
     icon: "Surfboard", imageUrl: img("paddleboard", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(49),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 42018n, topicId: 41004n, slug: "open-water-swimming",
@@ -264,7 +278,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Simning i sjö och hav med fokus på säkerhet och andningstekniker",
     ...body("شنای آب باز", "Öppenvattensimning"),
     icon: "Waves", imageUrl: img("open-swimming", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(44),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 42019n, topicId: 41004n, slug: "canoe-trip",
@@ -274,7 +288,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("سفر با قایق کنو", "Kanotresa"),
     formTemplateId: 47001n,
     icon: "Anchor", imageUrl: img("canoe-trip", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(39),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 42020n, topicId: 41004n, slug: "sailing-basics",
@@ -284,7 +298,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مبانی قایقرانی بادبانی", "Seglingsgrunder"),
     formTemplateId: 47002n,
     icon: "Navigation", imageUrl: img("sailing", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(34),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(34),
   },
   // ── Wildlife ──
   {
@@ -295,7 +309,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("پرنده‌نگری", "Fågelskådning"),
     formTemplateId: 47001n,
     icon: "Bird", imageUrl: img("bird-watching", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 42022n, topicId: 41005n, slug: "plant-identification",
@@ -304,7 +318,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Lär dig identifiera ätliga, medicinska och giftiga växter i svensk natur",
     ...body("شناسایی گیاهان", "Växtidentifiering"),
     icon: "Leaf", imageUrl: img("plant-id", 800, 600),
-    hasRegistration: false, sortOrder: 2n, createdAt: ts(47),
+    hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 42023n, topicId: 41005n, slug: "stargazing",
@@ -313,7 +327,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Stjärnobservation, identifiering av stjärnbilder och kosmologidiskussion",
     ...body("ستاره‌شناسی شبانه", "Stjärnskådning"),
     icon: "Star", imageUrl: img("stargazing", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(42),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 42024n, topicId: 41005n, slug: "wildlife-photography",
@@ -323,7 +337,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("عکاسی از حیات وحش", "Naturfotografi"),
     formTemplateId: 47001n,
     icon: "Camera", imageUrl: img("wildlife-photo", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(37),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 42025n, topicId: 41005n, slug: "foraging-basics",
@@ -332,7 +346,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Säker identifiering och insamling av svampar, bär och ätliga växter",
     ...body("مبانی جمع‌آوری غذا از طبیعت", "Grundläggande mat-insamling"),
     icon: "Sprout", imageUrl: img("foraging", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(32),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(32),
   },
 ];
 
@@ -389,6 +403,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "johanna.e@example.com" },
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Första vandringen någonsin, lite nervös men peppad!" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -400,6 +415,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Medel" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Har vandrat 5 km turer, vill kliva upp en nivå." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
   },
   {
@@ -411,6 +427,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Sett det på film och alltid drömt om att klättra." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(7),
   },
   {
@@ -422,9 +439,43 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Kan simma men har aldrig kajakat." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(9),
   },
-  { id: 46005n, activityId: 42021n, name: "Petra Magnusson", email: "petra.m@example.com", phone: "+46706543210", message: "Jag har ett par kikare sedan länge, nu vill jag lära mig använda dem ordentligt.", fieldValues: [], createdAt: ts(13) },
+  { id: 46005n, activityId: 42021n, name: "Petra Magnusson", email: "petra.m@example.com", phone: "+46706543210", message: "Jag har ett par kikare sedan länge, nu vill jag lära mig använda dem ordentligt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
+  {
+    id: 1772500001n, activityId: 42002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Erik Bergman" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "erik.bergman@example.se" },
+      { fieldId: 3n, fieldLabel: "Nödtelefon / تماس اضطراری", value: "Anna Bergman: 070-1234567" },
+      { fieldId: 4n, fieldLabel: "Konditionsnivå / آمادگی", value: "Medel" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårklättring — juni 2026" }],
+    createdAt: ts(2),
+  },
+  {
+    id: 1772400002n, activityId: 42002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Fatima Nouri" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "fatima.n@example.com" },
+      { fieldId: 3n, fieldLabel: "Nödtelefon / تماس اضطراری", value: "Reza Nouri: 073-9876543" },
+      { fieldId: 4n, fieldLabel: "Konditionsnivå / آمادگی", value: "Avancerad" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårklättring — juni 2026" }, { sessionId: 102n, sessionName: "Höstklättring — september 2026" }],
+    createdAt: ts(5),
+  },
+  {
+    id: 1772300003n, activityId: 42002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "Namn / نام", value: "Johan Svensson" },
+      { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "johan.sv@example.se" },
+      { fieldId: 3n, fieldLabel: "Nödtelefon / تماس اضطراری", value: "Lena Svensson: 076-4321098" },
+      { fieldId: 4n, fieldLabel: "Konditionsnivå / آمادگی", value: "Nybörjare" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Höstklättring — september 2026" }],
+    createdAt: ts(8),
+  },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────
@@ -434,9 +485,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 47001n, name_fa: "ثبت‌نام فعالیت", name_sv: "Aktivitetsregistrering",
     description_fa: "فرم پایه برای فعالیت‌های باشگاه", description_sv: "Grundformulär för klubbaktiviteter",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något vi bör veta?", required: false, options: [], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något vi bör veta?", required: false, options: [], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -444,11 +495,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 47002n, name_fa: "ثبت‌نام ماجراجویی", name_sv: "Äventyrsregistrering",
     description_fa: "فرم برای فعالیت‌های پیشرفته‌تر با اطلاعات ایمنی", description_sv: "Formulär för mer avancerade aktiviteter med säkerhetsinformation",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "آیا محدودیت پزشکی دارید؟", label_sv: "Har du medicinska begränsningar?", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "آیا محدودیت پزشکی دارید؟", label_sv: "Har du medicinska begränsningar?", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -456,13 +507,34 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 47003n, name_fa: "ثبت‌نام تور", name_sv: "Turregistrering",
     description_fa: "فرم کامل برای تورهای گروهی", description_sv: "Fullständigt formulär för gruppturer",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "شرایط و ریسک را می‌پذیرم", label_sv: "Jag accepterar villkor och risker", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "شرایط و ریسک را می‌پذیرم", label_sv: "Jag accepterar villkor och risker", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(90),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 48001n,
+    name_fa: "رویداد طبیعت‌گردی", name_sv: "Naturevenemang",
+    description_fa: "قالب رویداد برای فعالیت‌های طبیعت‌گردی و ماجراجویی", description_sv: "Eventmall för friluftsliv och äventyrsaktiviteter",
+    sessions: [
+      { id: 201n, name_fa: "رویداد بهاره", name_sv: "Vårevenemang", date: "2026-06-13", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 202n, name_fa: "رویداد پاییزه", name_sv: "Höstevenemang", date: "2026-09-19", capacity: 15n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تماس اضطراری", label_sv: "Nödkontakt", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح آمادگی", label_sv: "Konditionsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

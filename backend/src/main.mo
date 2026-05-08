@@ -6,6 +6,7 @@ import Iter "mo:core/Iter";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
+import List "mo:core/List";
 import Blob "mo:core/Blob";
 
 import T "./Types";
@@ -23,14 +24,23 @@ persistent actor {
   type SocialLink = T.SocialLink;
   type FormField = T.FormField;
   type FormTemplate = T.FormTemplate;
+  type EventRegistrationTemplate = T.EventRegistrationTemplate;
+  type EventSession = T.EventSession;
+  type RegistrationRules = T.RegistrationRules;
   type TopicReturn = T.TopicReturn;
   type HeroSlideReturn = T.HeroSlideReturn;
   type ActivityReturn = T.ActivityReturn;
   type RegistrationReturn = T.RegistrationReturn;
+  type RegistrationWithStatusReturn = T.RegistrationWithStatusReturn;
+  type SubmitRegistrationResult = T.SubmitRegistrationResult;
   type SiteSettingsReturn = T.SiteSettingsReturn;
   type SocialLinkReturn = T.SocialLinkReturn;
   type FormFieldReturn = T.FormFieldReturn;
   type FormTemplateReturn = T.FormTemplateReturn;
+  type EventRegistrationTemplateReturn = T.EventRegistrationTemplateReturn;
+  type EventSessionReturn = T.EventSessionReturn;
+  type SessionAvailabilityReturn = T.SessionAvailabilityReturn;
+  type SessionStatsReturn = T.SessionStatsReturn;
   type AboutContent = T.AboutContent;
   type AboutContentReturn = T.AboutContentReturn;
   type ContactMessage = T.ContactMessage;
@@ -52,6 +62,9 @@ persistent actor {
 
   let formTemplates = Map.empty<Nat, FormTemplate>();
   var nextFormTemplateId : Nat = 1;
+
+  let eventRegTemplates = Map.empty<Nat, EventRegistrationTemplate>();
+  var nextEventRegTemplateId : Nat = 1;
 
   let socialLinks = Map.empty<Nat, SocialLink>();
   var nextSocialLinkId : Nat = 1;
@@ -365,6 +378,56 @@ persistent actor {
     }
   };
 
+  // ─── Activity helpers ─────────────────────────────────────────────────────
+
+  func buildSessions(raw : [EventSessionReturn]) : [EventSession] {
+    Array.map<EventSessionReturn, EventSession>(raw, func (s) {
+      {
+        id             = s.id;
+        name           = { fa = s.name_fa; sv = s.name_sv };
+        date           = s.date;
+        capacity       = s.capacity;
+        bufferCapacity = s.bufferCapacity;
+        sortOrder      = s.sortOrder;
+      }
+    })
+  };
+
+  func buildFormFields(raw : [FormFieldReturn]) : [FormField] {
+    Array.map<FormFieldReturn, FormField>(raw, func (f) {
+      {
+        id = f.id;
+        fieldType = H.textToFieldType(f.fieldType);
+        fieldLabel = { fa = f.label_fa; sv = f.label_sv };
+        placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
+        required = f.required;
+        options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
+          f.options, func (o) { { fa = o.fa; sv = o.sv } }
+        );
+        sortOrder = f.sortOrder;
+        isLookupField = f.isLookupField;
+      }
+    })
+  };
+
+  func buildRules(
+    maxCapacity              : ?Nat,
+    allowedPhones            : [Text],
+    maxRegistrationsPerPhone : ?Nat,
+    blockDuplicateEmail      : Bool,
+  ) : ?RegistrationRules {
+    if (maxCapacity == null and allowedPhones.size() == 0 and maxRegistrationsPerPhone == null and not blockDuplicateEmail) {
+      null
+    } else {
+      ?{
+        maxCapacity;
+        allowedPhones;
+        maxRegistrationsPerPhone;
+        blockDuplicateEmail;
+      }
+    }
+  };
+
   // ─── Activities CRUD ──────────────────────────────────────────────────────
 
   public query func getActivitiesByTopic(topicId : Nat) : async [ActivityReturn] {
@@ -423,8 +486,14 @@ persistent actor {
     icon : Text,
     imageUrl : Text,
     hasRegistration : Bool,
+    registrationMode : Text,
     formTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
+    actSessions : [EventSessionReturn],
+    regMaxCapacity : ?Nat,
+    regAllowedPhones : [Text],
+    regMaxRegistrationsPerPhone : ?Nat,
+    regBlockDuplicateEmail : Bool,
     sortOrder : Nat,
   ) : async ActivityReturn {
     requireAuth(token);
@@ -440,23 +509,11 @@ persistent actor {
       icon;
       imageUrl;
       hasRegistration;
+      registrationMode;
       formTemplateId;
-      customFormFields = Array.map<FormFieldReturn, FormField>(
-        customFormFields,
-        func (f) {
-          {
-            id = f.id;
-            fieldType = H.textToFieldType(f.fieldType);
-            fieldLabel = { fa = f.label_fa; sv = f.label_sv };
-            placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
-            required = f.required;
-            options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
-              f.options, func (o) { { fa = o.fa; sv = o.sv } }
-            );
-            sortOrder = f.sortOrder;
-          }
-        }
-      );
+      customFormFields = buildFormFields(customFormFields);
+      sessions = buildSessions(actSessions);
+      registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
       sortOrder;
       createdAt = Time.now();
     };
@@ -478,8 +535,14 @@ persistent actor {
     icon : Text,
     imageUrl : Text,
     hasRegistration : Bool,
+    registrationMode : Text,
     formTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
+    actSessions : [EventSessionReturn],
+    regMaxCapacity : ?Nat,
+    regAllowedPhones : [Text],
+    regMaxRegistrationsPerPhone : ?Nat,
+    regBlockDuplicateEmail : Bool,
     sortOrder : Nat,
   ) : async ?ActivityReturn {
     requireAuth(token);
@@ -495,23 +558,11 @@ persistent actor {
           icon;
           imageUrl;
           hasRegistration;
+          registrationMode;
           formTemplateId;
-          customFormFields = Array.map<FormFieldReturn, FormField>(
-            customFormFields,
-            func (f) {
-              {
-                id = f.id;
-                fieldType = H.textToFieldType(f.fieldType);
-                fieldLabel = { fa = f.label_fa; sv = f.label_sv };
-                placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
-                required = f.required;
-                options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
-                  f.options, func (o) { { fa = o.fa; sv = o.sv } }
-                );
-                sortOrder = f.sortOrder;
-              }
-            }
-          );
+          customFormFields = buildFormFields(customFormFields);
+          sessions = buildSessions(actSessions);
+          registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
           sortOrder;
           createdAt = existing.createdAt;
         };
@@ -563,22 +614,7 @@ persistent actor {
       id;
       name = { fa = name_fa; sv = name_sv };
       description = { fa = description_fa; sv = description_sv };
-      fields = Array.map<FormFieldReturn, FormField>(
-        fields,
-        func (f) {
-          {
-            id = f.id;
-            fieldType = H.textToFieldType(f.fieldType);
-            fieldLabel = { fa = f.label_fa; sv = f.label_sv };
-            placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
-            required = f.required;
-            options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
-              f.options, func (o) { { fa = o.fa; sv = o.sv } }
-            );
-            sortOrder = f.sortOrder;
-          }
-        }
-      );
+      fields = buildFormFields(fields);
       createdAt = Time.now();
     };
     Map.add(formTemplates, Nat.compare, id, template);
@@ -601,22 +637,7 @@ persistent actor {
           id;
           name = { fa = name_fa; sv = name_sv };
           description = { fa = description_fa; sv = description_sv };
-          fields = Array.map<FormFieldReturn, FormField>(
-            fields,
-            func (f) {
-              {
-                id = f.id;
-                fieldType = H.textToFieldType(f.fieldType);
-                fieldLabel = { fa = f.label_fa; sv = f.label_sv };
-                placeholder = { fa = f.placeholder_fa; sv = f.placeholder_sv };
-                required = f.required;
-                options = Array.map<{ fa : Text; sv : Text }, T.LocalizedText>(
-                  f.options, func (o) { { fa = o.fa; sv = o.sv } }
-                );
-                sortOrder = f.sortOrder;
-              }
-            }
-          );
+          fields = buildFormFields(fields);
           createdAt = existing.createdAt;
         };
         Map.add(formTemplates, Nat.compare, id, updated);
@@ -634,6 +655,84 @@ persistent actor {
     }
   };
 
+  // ─── Event Registration Templates CRUD ───────────────────────────────────
+
+  public query func getEventRegistrationTemplates() : async [EventRegistrationTemplateReturn] {
+    Iter.toArray(
+      Iter.map<(Nat, EventRegistrationTemplate), EventRegistrationTemplateReturn>(
+        Map.entries(eventRegTemplates),
+        func ((_, t)) { H.eventRegTemplateToReturn(t) }
+      )
+    )
+  };
+
+  public query func getEventRegistrationTemplate(id : Nat) : async ?EventRegistrationTemplateReturn {
+    switch (Map.get(eventRegTemplates, Nat.compare, id)) {
+      case (?t) { ?H.eventRegTemplateToReturn(t) };
+      case null { null };
+    }
+  };
+
+  public func createEventRegistrationTemplate(
+    token : Text,
+    name_fa : Text,
+    name_sv : Text,
+    description_fa : Text,
+    description_sv : Text,
+    tmplSessions : [EventSessionReturn],
+    fields : [FormFieldReturn],
+  ) : async EventRegistrationTemplateReturn {
+    requireAuth(token);
+    let id = nextEventRegTemplateId;
+    nextEventRegTemplateId += 1;
+    let tmpl : EventRegistrationTemplate = {
+      id;
+      name = { fa = name_fa; sv = name_sv };
+      description = { fa = description_fa; sv = description_sv };
+      sessions = buildSessions(tmplSessions);
+      fields = buildFormFields(fields);
+      createdAt = Time.now();
+    };
+    Map.add(eventRegTemplates, Nat.compare, id, tmpl);
+    H.eventRegTemplateToReturn(tmpl)
+  };
+
+  public func updateEventRegistrationTemplate(
+    token : Text,
+    id : Nat,
+    name_fa : Text,
+    name_sv : Text,
+    description_fa : Text,
+    description_sv : Text,
+    tmplSessions : [EventSessionReturn],
+    fields : [FormFieldReturn],
+  ) : async ?EventRegistrationTemplateReturn {
+    requireAuth(token);
+    switch (Map.get(eventRegTemplates, Nat.compare, id)) {
+      case (?existing) {
+        let updated : EventRegistrationTemplate = {
+          id;
+          name = { fa = name_fa; sv = name_sv };
+          description = { fa = description_fa; sv = description_sv };
+          sessions = buildSessions(tmplSessions);
+          fields = buildFormFields(fields);
+          createdAt = existing.createdAt;
+        };
+        Map.add(eventRegTemplates, Nat.compare, id, updated);
+        ?H.eventRegTemplateToReturn(updated)
+      };
+      case null { null };
+    }
+  };
+
+  public func deleteEventRegistrationTemplate(token : Text, id : Nat) : async Bool {
+    requireAuth(token);
+    switch (Map.get(eventRegTemplates, Nat.compare, id)) {
+      case (?_) { ignore Map.delete(eventRegTemplates, Nat.compare, id); true };
+      case null { false };
+    }
+  };
+
   // ─── Activity Form Fields Resolution ──────────────────────────────────
 
   public query func getActivityFormFields(activityId : Nat) : async ?[FormFieldReturn] {
@@ -642,74 +741,264 @@ persistent actor {
         if (not activity.hasRegistration) {
           return null;
         };
-        // If custom fields defined, use them
         if (activity.customFormFields.size() > 0) {
           return ?Array.map<FormField, FormFieldReturn>(activity.customFormFields, H.fieldToReturn);
         };
-        // If template linked, resolve it
         switch (activity.formTemplateId) {
           case (?tid) {
             switch (Map.get(formTemplates, Nat.compare, tid)) {
               case (?template) {
                 ?Array.map<FormField, FormFieldReturn>(template.fields, H.fieldToReturn)
               };
-              case null { null }; // Template was deleted
+              case null { null };
             }
           };
-          case null { null }; // No template — use default form
+          case null { null };
         };
       };
       case null { null };
     }
   };
 
+  // ─── Session availability helpers ─────────────────────────────────────────
+
+  // Get all registrations for an activity as an array (for capacity computation)
+  func regsForActivity(activityId : Nat) : [T.Registration] {
+    Iter.toArray(
+      Iter.map<(Nat, T.Registration), T.Registration>(
+        Iter.filter<(Nat, T.Registration)>(
+          Map.entries(registrations),
+          func ((_, r)) { r.activityId == activityId }
+        ),
+        func ((_, r)) { r }
+      )
+    )
+  };
+
+  // Compute SessionAvailabilityReturn for each session of an activity
+  func computeAvailability(activity : Activity) : [SessionAvailabilityReturn] {
+    let actRegs = regsForActivity(activity.id);
+    Array.map<EventSession, SessionAvailabilityReturn>(activity.sessions, func (s) {
+      let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null);
+      {
+        sessionId      = s.id;
+        name_fa        = s.name.fa;
+        name_sv        = s.name.sv;
+        date           = s.date;
+        capacity       = s.capacity;
+        bufferCapacity = s.bufferCapacity;
+        confirmedCount = confirmed;
+        bufferCount    = buffer;
+        regularFull    = confirmed >= s.capacity;
+        totalFull      = confirmed + buffer >= s.capacity + s.bufferCapacity;
+        sortOrder      = s.sortOrder;
+      }
+    })
+  };
+
+  // ─── Session Availability Queries ─────────────────────────────────────────
+
+  public query func getSessionAvailability(activityId : Nat) : async [SessionAvailabilityReturn] {
+    switch (Map.get(activities, Nat.compare, activityId)) {
+      case (?activity) { computeAvailability(activity) };
+      case null { [] };
+    }
+  };
+
+  public query func getSessionStats(token : Text, activityId : Nat) : async [SessionStatsReturn] {
+    requireAuth(token);
+    switch (Map.get(activities, Nat.compare, activityId)) {
+      case (?activity) {
+        let actRegs = regsForActivity(activityId);
+        Array.map<EventSession, SessionStatsReturn>(activity.sessions, func (s) {
+          let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null);
+          // Count distinct registration records for this session
+          var regCount : Nat = 0;
+          for (reg in actRegs.vals()) {
+            for (ss in reg.selectedSessions.vals()) {
+              if (ss.sessionId == s.id) { regCount += 1 };
+            };
+          };
+          {
+            sessionId         = s.id;
+            name_fa           = s.name.fa;
+            name_sv           = s.name.sv;
+            date              = s.date;
+            capacity          = s.capacity;
+            bufferCapacity    = s.bufferCapacity;
+            confirmedCount    = confirmed;
+            bufferCount       = buffer;
+            registrationCount = regCount;
+            sortOrder         = s.sortOrder;
+          }
+        })
+      };
+      case null { [] };
+    }
+  };
+
   // ─── Registrations ────────────────────────────────────────────────────────
 
-  // Input size limits to prevent unbounded storage growth.
   let maxNameLen : Nat = 200;
   let maxEmailLen : Nat = 200;
   let maxPhoneLen : Nat = 50;
   let maxMessageLen : Nat = 2000;
   let maxFieldValueLen : Nat = 2000;
   let maxFieldValues : Nat = 50;
+  let maxPersonCount : Nat = 20;
+  let maxSessions : Nat = 20;
+
+  // Check if a text value is in an array (case-sensitive)
+  func arrayContainsText(arr : [Text], val : Text) : Bool {
+    for (t in arr.vals()) {
+      if (t == val) { return true };
+    };
+    false
+  };
+
+  // Check if a Nat is in an array
+  func arrayContainsNat(arr : [Nat], val : Nat) : Bool {
+    for (n in arr.vals()) {
+      if (n == val) { return true };
+    };
+    false
+  };
+
+  // Snapshot session names from activity.sessions for the given IDs
+  func snapshotSessions(
+    sessionIds : [Nat],
+    actSessions : [EventSession],
+  ) : [T.RegistrationSessionSnapshot] {
+    Array.map<Nat, T.RegistrationSessionSnapshot>(sessionIds, func (sid) {
+      var name = "Session " # Nat.toText(sid);
+      for (s in actSessions.vals()) {
+        if (s.id == sid) { name := s.name.fa # " / " # s.name.sv };
+      };
+      { sessionId = sid; sessionName = name }
+    })
+  };
 
   public func submitRegistration(
-    activityId : Nat,
-    name : Text,
-    email : Text,
-    phone : Text,
-    message : Text,
-    fieldValues : [{ fieldId : Nat; value : Text }],
-  ) : async ?RegistrationReturn {
-    // Reject oversized input
+    activityId         : Nat,
+    name               : Text,
+    email              : Text,
+    phone              : Text,
+    message            : Text,
+    personCount        : Nat,
+    selectedSessionIds : [Nat],
+    fieldValues        : [{ fieldId : Nat; value : Text }],
+  ) : async SubmitRegistrationResult {
+    // 1. Input size validation
     if (
       name.size() > maxNameLen or
       email.size() > maxEmailLen or
       phone.size() > maxPhoneLen or
       message.size() > maxMessageLen or
-      fieldValues.size() > maxFieldValues
+      fieldValues.size() > maxFieldValues or
+      personCount < 1 or personCount > maxPersonCount or
+      selectedSessionIds.size() > maxSessions
     ) {
-      return null;
+      return #invalidInput;
     };
-    // Validate field value sizes
     for (fv in fieldValues.vals()) {
-      if (fv.value.size() > maxFieldValueLen) {
-        return null;
-      };
+      if (fv.value.size() > maxFieldValueLen) { return #invalidInput };
     };
+
+    // 2. Activity check
     switch (Map.get(activities, Nat.compare, activityId)) {
       case (?activity) {
-        if (not activity.hasRegistration) {
-          return null;
-        };
-        let id = nextRegistrationId;
-        nextRegistrationId += 1;
+        if (not activity.hasRegistration) { return #registrationDisabled };
 
-        // Resolve form fields to snapshot labels
+        let rules = activity.registrationRules;
+
+        // 3. Phone whitelist
+        switch (rules) {
+          case (?r) {
+            if (r.allowedPhones.size() > 0 and not arrayContainsText(r.allowedPhones, phone)) {
+              return #phoneNotAllowed;
+            };
+          };
+          case null {};
+        };
+
+        let actRegs = regsForActivity(activityId);
+
+        // 4. Max registrations per phone
+        switch (rules) {
+          case (?r) {
+            switch (r.maxRegistrationsPerPhone) {
+              case (?maxPerPhone) {
+                var phoneCount : Nat = 0;
+                for (reg in actRegs.vals()) {
+                  if (reg.phone == phone) { phoneCount += 1 };
+                };
+                if (phoneCount >= maxPerPhone) { return #maxRegistrationsReached };
+              };
+              case null {};
+            };
+          };
+          case null {};
+        };
+
+        // 5. Duplicate email
+        switch (rules) {
+          case (?r) {
+            if (r.blockDuplicateEmail) {
+              for (reg in actRegs.vals()) {
+                if (reg.email == email) { return #duplicateEmail };
+              };
+            };
+          };
+          case null {};
+        };
+
+        // 6. Overall capacity
+        switch (rules) {
+          case (?r) {
+            switch (r.maxCapacity) {
+              case (?cap) {
+                if (actRegs.size() >= cap) { return #capacityFull };
+              };
+              case null {};
+            };
+          };
+          case null {};
+        };
+
+        // 7. Per-session capacity check (only when sessions are selected)
+        if (selectedSessionIds.size() > 0) {
+          let failedSessionsBuf = List.empty<Nat>();
+          for (sid in selectedSessionIds.vals()) {
+            var sessionCap : Nat = 0;
+            var sessionBuf : Nat = 0;
+            var sessionFound = false;
+            for (s in activity.sessions.vals()) {
+              if (s.id == sid) {
+                sessionCap := s.capacity;
+                sessionBuf := s.bufferCapacity;
+                sessionFound := true;
+              };
+            };
+            if (sessionFound) {
+              let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, null);
+              if (confirmed + buffer + personCount > sessionCap + sessionBuf) {
+                failedSessionsBuf.add(sid);
+              };
+            };
+          };
+          if (failedSessionsBuf.size() > 0) {
+            return #sessionsUnavailable(List.toArray(failedSessionsBuf));
+          };
+        };
+
+        // 8. Store registration — use timestamp-based ID for uniqueness
+        let tsId = Int.abs(Time.now()) / 1_000_000_000;
+        let id = if (tsId > nextRegistrationId) tsId else nextRegistrationId + 1;
+        nextRegistrationId := id;
+
         let resolvedFields = Array.map<{ fieldId : Nat; value : Text }, T.RegistrationFieldValue>(
           fieldValues,
           func (fv) {
-            // Try to find label from custom fields or template
             var resolvedLabel = "Field " # Nat.toText(fv.fieldId);
             var found = false;
             for (cf in activity.customFormFields.vals()) {
@@ -740,28 +1029,209 @@ persistent actor {
           }
         );
 
-        let reg : Registration = {
+        let reg : T.Registration = {
           id;
           activityId;
           name;
           email;
           phone;
           message;
+          personCount;
+          selectedSessions = snapshotSessions(selectedSessionIds, activity.sessions);
           fieldValues = resolvedFields;
           createdAt = Time.now();
         };
         Map.add(registrations, Nat.compare, id, reg);
-        ?H.regToReturn(reg)
+
+        // 9. Compute statuses (reg is now in the map)
+        let allRegsNow = regsForActivity(activityId);
+        let statuses = H.computeSessionStatuses(allRegsNow, reg, activity.sessions, null);
+        #ok(H.regToReturnWithStatus(reg, statuses))
+      };
+      case null { #registrationDisabled };
+    }
+  };
+
+  // ─── Public Registration Lookup / Modify / Cancel ─────────────────────────
+
+  // Resolve the effective form fields for an activity (custom > template > none)
+  func resolveActivityFields(activity : Activity) : [FormField] {
+    if (activity.customFormFields.size() > 0) {
+      return activity.customFormFields;
+    };
+    switch (activity.formTemplateId) {
+      case (?tid) {
+        switch (Map.get(formTemplates, Nat.compare, tid)) {
+          case (?t) { return t.fields };
+          case null {};
+        };
+      };
+      case null {};
+    };
+    []
+  };
+
+  // Find the designated lookup field; falls back to phone matching if none
+  func verifyLookup(reg : T.Registration, activity : ?Activity, lookupValue : Text) : Bool {
+    switch (activity) {
+      case (?act) {
+        let fields = resolveActivityFields(act);
+        for (f in fields.vals()) {
+          if (f.isLookupField) {
+            // Check if any fieldValue matches
+            for (fv in reg.fieldValues.vals()) {
+              if (fv.fieldId == f.id) {
+                return (fv.value == lookupValue);
+              };
+            };
+            return false; // lookup field defined but not filled
+          };
+        };
+        // No lookup field defined — fall back to phone
+        reg.phone == lookupValue
+      };
+      case null { reg.phone == lookupValue };
+    }
+  };
+
+  public query func getRegistrationById(id : Nat, lookupValue : Text) : async ?RegistrationWithStatusReturn {
+    switch (Map.get(registrations, Nat.compare, id)) {
+      case (?reg) {
+        let actOpt = Map.get(activities, Nat.compare, reg.activityId);
+        if (not verifyLookup(reg, actOpt, lookupValue)) { return null };
+        switch (actOpt) {
+          case (?activity) {
+            let actRegs = regsForActivity(reg.activityId);
+            let statuses = H.computeSessionStatuses(actRegs, reg, activity.sessions, null);
+            ?H.regToReturnWithStatus(reg, statuses)
+          };
+          case null {
+            // Activity was deleted — return without status
+            ?H.regToReturnWithStatus(reg, [])
+          };
+        }
       };
       case null { null };
     }
   };
 
+  public func cancelRegistration(id : Nat, lookupValue : Text) : async Bool {
+    switch (Map.get(registrations, Nat.compare, id)) {
+      case (?reg) {
+        let actOpt = Map.get(activities, Nat.compare, reg.activityId);
+        if (not verifyLookup(reg, actOpt, lookupValue)) { return false };
+        ignore Map.delete(registrations, Nat.compare, id);
+        true
+      };
+      case null { false };
+    }
+  };
+
+  public func modifyRegistration(
+    id                    : Nat,
+    lookupValue           : Text,
+    newPersonCount        : Nat,
+    newSelectedSessionIds : [Nat],
+    newFieldValues        : [{ fieldId : Nat; value : Text }],
+  ) : async SubmitRegistrationResult {
+    // Validate input sizes
+    if (
+      newPersonCount < 1 or newPersonCount > maxPersonCount or
+      newSelectedSessionIds.size() > maxSessions or
+      newFieldValues.size() > maxFieldValues
+    ) {
+      return #invalidInput;
+    };
+    for (fv in newFieldValues.vals()) {
+      if (fv.value.size() > maxFieldValueLen) { return #invalidInput };
+    };
+
+    switch (Map.get(registrations, Nat.compare, id)) {
+      case (?existing) {
+        let actOpt = Map.get(activities, Nat.compare, existing.activityId);
+        if (not verifyLookup(existing, actOpt, lookupValue)) { return #invalidInput };
+
+        switch (actOpt) {
+          case (?activity) {
+            if (not activity.hasRegistration) { return #registrationDisabled };
+
+            let actRegs = regsForActivity(existing.activityId);
+
+            // Per-session capacity check excluding the current registration
+            if (newSelectedSessionIds.size() > 0) {
+              let failedSessionsBuf = List.empty<Nat>();
+              for (sid in newSelectedSessionIds.vals()) {
+                var sessionCap : Nat = 0;
+                var sessionBuf : Nat = 0;
+                var sessionFound = false;
+                for (s in activity.sessions.vals()) {
+                  if (s.id == sid) {
+                    sessionCap := s.capacity;
+                    sessionBuf := s.bufferCapacity;
+                    sessionFound := true;
+                  };
+                };
+                if (sessionFound) {
+                  let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, ?id);
+                  if (confirmed + buffer + newPersonCount > sessionCap + sessionBuf) {
+                    failedSessionsBuf.add(sid);
+                  };
+                };
+              };
+              if (failedSessionsBuf.size() > 0) {
+                return #sessionsUnavailable(List.toArray(failedSessionsBuf));
+              };
+            };
+
+            // Resolve field labels
+            let resolvedFields = Array.map<{ fieldId : Nat; value : Text }, T.RegistrationFieldValue>(
+              newFieldValues,
+              func (fv) {
+                var resolvedLabel = "Field " # Nat.toText(fv.fieldId);
+                var found = false;
+                for (cf in activity.customFormFields.vals()) {
+                  if (not found and cf.id == fv.fieldId) {
+                    resolvedLabel := cf.fieldLabel.fa # " / " # cf.fieldLabel.sv;
+                    found := true;
+                  };
+                };
+                { fieldId = fv.fieldId; fieldLabel = resolvedLabel; value = fv.value }
+              }
+            );
+
+            // Update in place, preserving createdAt (keeps queue position)
+            let updated : T.Registration = {
+              id;
+              activityId = existing.activityId;
+              name       = existing.name;
+              email      = existing.email;
+              phone      = existing.phone;
+              message    = existing.message;
+              personCount = newPersonCount;
+              selectedSessions = snapshotSessions(newSelectedSessionIds, activity.sessions);
+              fieldValues = resolvedFields;
+              createdAt   = existing.createdAt;
+            };
+            Map.add(registrations, Nat.compare, id, updated);
+
+            let allRegsNow = regsForActivity(existing.activityId);
+            let statuses = H.computeSessionStatuses(allRegsNow, updated, activity.sessions, null);
+            #ok(H.regToReturnWithStatus(updated, statuses))
+          };
+          case null { #registrationDisabled };
+        }
+      };
+      case null { #invalidInput };
+    }
+  };
+
+  // ─── Admin Registration Queries ───────────────────────────────────────────
+
   public query func getRegistrations(token : Text, activityId : Nat) : async [RegistrationReturn] {
     requireAuth(token);
     Iter.toArray(
-      Iter.map<(Nat, Registration), RegistrationReturn>(
-        Iter.filter<(Nat, Registration)>(
+      Iter.map<(Nat, T.Registration), RegistrationReturn>(
+        Iter.filter<(Nat, T.Registration)>(
           Map.entries(registrations),
           func ((_, r)) { r.activityId == activityId }
         ),
@@ -773,7 +1243,7 @@ persistent actor {
   public query func getAllRegistrations(token : Text) : async [RegistrationReturn] {
     requireAuth(token);
     Iter.toArray(
-      Iter.map<(Nat, Registration), RegistrationReturn>(
+      Iter.map<(Nat, T.Registration), RegistrationReturn>(
         Map.entries(registrations),
         func ((_, r)) { H.regToReturn(r) }
       )
@@ -904,7 +1374,6 @@ persistent actor {
 
   // ─── Asset Upload ─────────────────────────────────────────────────────────
 
-  // Max asset size: 1.5 MB (IC message limit is 2 MB; leave room for Candid overhead).
   let maxAssetSize : Nat = 1_500_000;
 
   public func uploadAsset(token : Text, name : Text, contentType : Text, data : Blob) : async Text {

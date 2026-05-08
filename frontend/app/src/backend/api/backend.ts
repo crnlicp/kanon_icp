@@ -51,25 +51,33 @@ function candid_none<T>(): [] {
 function record_opt_to_undefined<T>(arg: T | null): T | undefined {
     return arg == null ? undefined : arg;
 }
-export interface SocialLinkReturn {
+export interface RegistrationWithStatusReturn {
     id: bigint;
-    url: string;
+    name: string;
+    createdAt: bigint;
+    fieldValues: Array<{
+        value: string;
+        fieldLabel: string;
+        fieldId: bigint;
+    }>;
+    activityId: bigint;
+    selectedSessions: Array<SessionStatusReturn>;
+    email: string;
+    personCount: bigint;
+    phone: string;
+}
+export interface SessionAvailabilityReturn {
     sortOrder: bigint;
-    platform: string;
-}
-export interface FormFieldOptionReturn {
-    fa: string;
-    sv: string;
-}
-export interface RegistrationFieldValueReturn {
-    value: string;
-    fieldLabel: string;
-    fieldId: bigint;
-}
-export interface AboutContentReturn {
-    headerImageUrl: string;
-    body_fa: string;
-    body_sv: string;
+    date: string;
+    bufferCapacity: bigint;
+    totalFull: boolean;
+    regularFull: boolean;
+    confirmedCount: bigint;
+    name_fa: string;
+    name_sv: string;
+    sessionId: bigint;
+    capacity: bigint;
+    bufferCount: bigint;
 }
 export interface FormTemplateReturn {
     id: bigint;
@@ -80,19 +88,33 @@ export interface FormTemplateReturn {
     name_fa: string;
     name_sv: string;
 }
-export interface FieldValueInput {
-    value: string;
-    fieldId: bigint;
+export interface EventSessionReturn {
+    id: bigint;
+    sortOrder: bigint;
+    date: string;
+    bufferCapacity: bigint;
+    name_fa: string;
+    name_sv: string;
+    capacity: bigint;
+}
+export interface AboutContentReturn {
+    headerImageUrl: string;
+    body_fa: string;
+    body_sv: string;
 }
 export interface FormFieldReturn {
     id: bigint;
     sortOrder: bigint;
     label_fa: string;
     label_sv: string;
+    isLookupField: boolean;
     placeholder_fa: string;
     placeholder_sv: string;
     required: boolean;
-    options: Array<FormFieldOptionReturn>;
+    options: Array<{
+        fa: string;
+        sv: string;
+    }>;
     fieldType: string;
 }
 export interface ContactMessageReturn {
@@ -128,6 +150,93 @@ export interface HeroSlideReturn {
     title_sv: string;
     topicId: bigint;
 }
+export interface EventRegistrationTemplateReturn {
+    id: bigint;
+    description_fa: string;
+    description_sv: string;
+    createdAt: bigint;
+    fields: Array<FormFieldReturn>;
+    sessions: Array<EventSessionReturn>;
+    name_fa: string;
+    name_sv: string;
+}
+export interface ActivityReturn {
+    id: bigint;
+    regAllowedPhones: Array<string>;
+    formTemplateId?: bigint;
+    body_fa: string;
+    body_sv: string;
+    sortOrder: bigint;
+    icon: string;
+    createdAt: bigint;
+    slug: string;
+    regMaxRegistrationsPerPhone?: bigint;
+    regBlockDuplicateEmail: boolean;
+    customFormFields: Array<FormFieldReturn>;
+    imageUrl: string;
+    sessions: Array<EventSessionReturn>;
+    excerpt_fa: string;
+    excerpt_sv: string;
+    hasRegistration: boolean;
+    regMaxCapacity?: bigint;
+    registrationMode: string;
+    title_fa: string;
+    title_sv: string;
+    topicId: bigint;
+}
+export interface RegistrationFieldValueReturn {
+    value: string;
+    fieldLabel: string;
+    fieldId: bigint;
+}
+export interface SessionStatusReturn {
+    status: string;
+    sessionName: string;
+    sessionId: bigint;
+}
+export interface SessionStatsReturn {
+    sortOrder: bigint;
+    date: string;
+    bufferCapacity: bigint;
+    confirmedCount: bigint;
+    name_fa: string;
+    name_sv: string;
+    sessionId: bigint;
+    capacity: bigint;
+    bufferCount: bigint;
+    registrationCount: bigint;
+}
+export type SubmitRegistrationResult = {
+    __kind__: "ok";
+    ok: RegistrationWithStatusReturn;
+} | {
+    __kind__: "invalidInput";
+    invalidInput: null;
+} | {
+    __kind__: "duplicateEmail";
+    duplicateEmail: null;
+} | {
+    __kind__: "capacityFull";
+    capacityFull: null;
+} | {
+    __kind__: "sessionsUnavailable";
+    sessionsUnavailable: Array<bigint>;
+} | {
+    __kind__: "phoneNotAllowed";
+    phoneNotAllowed: null;
+} | {
+    __kind__: "registrationDisabled";
+    registrationDisabled: null;
+} | {
+    __kind__: "maxRegistrationsReached";
+    maxRegistrationsReached: null;
+};
+export interface SocialLinkReturn {
+    id: bigint;
+    url: string;
+    sortOrder: bigint;
+    platform: string;
+}
 export interface SiteSettingsReturn {
     landingBackgroundUrl: string;
     topicsBackgroundUrl: string;
@@ -144,37 +253,23 @@ export interface RegistrationReturn {
     createdAt: bigint;
     fieldValues: Array<RegistrationFieldValueReturn>;
     activityId: bigint;
+    selectedSessions: Array<{
+        sessionName: string;
+        sessionId: bigint;
+    }>;
     email: string;
     message: string;
+    personCount: bigint;
     phone: string;
 }
-export interface ActivityReturn {
-    id: bigint;
-    formTemplateId?: bigint;
-    body_fa: string;
-    body_sv: string;
-    sortOrder: bigint;
-    icon: string;
-    createdAt: bigint;
-    slug: string;
-    customFormFields: Array<FormFieldReturn>;
-    imageUrl: string;
-    excerpt_fa: string;
-    excerpt_sv: string;
-    hasRegistration: boolean;
-    title_fa: string;
-    title_sv: string;
-    topicId: bigint;
-}
 export interface backendInterface {
-    /**
-     * Auth
-     */
     adminLogin(passwordHash: string): Promise<string | null>;
     adminLogout(token: string): Promise<void>;
+    cancelRegistration(id: bigint, lookupValue: string): Promise<boolean>;
     changePassword(token: string, newPasswordHash: string): Promise<boolean>;
     checkSession(token: string): Promise<boolean>;
-    createActivity(token: string, topicId: bigint, slug: string, title_fa: string, title_sv: string, excerpt_fa: string, excerpt_sv: string, body_fa: string, body_sv: string, icon: string, imageUrl: string, hasRegistration: boolean, formTemplateId: bigint | null, customFormFields: Array<FormFieldReturn>, sortOrder: bigint): Promise<ActivityReturn>;
+    createActivity(token: string, topicId: bigint, slug: string, title_fa: string, title_sv: string, excerpt_fa: string, excerpt_sv: string, body_fa: string, body_sv: string, icon: string, imageUrl: string, hasRegistration: boolean, registrationMode: string, formTemplateId: bigint | null, customFormFields: Array<FormFieldReturn>, actSessions: Array<EventSessionReturn>, regMaxCapacity: bigint | null, regAllowedPhones: Array<string>, regMaxRegistrationsPerPhone: bigint | null, regBlockDuplicateEmail: boolean, sortOrder: bigint): Promise<ActivityReturn>;
+    createEventRegistrationTemplate(token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, tmplSessions: Array<EventSessionReturn>, fields: Array<FormFieldReturn>): Promise<EventRegistrationTemplateReturn>;
     createFormTemplate(token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, fields: Array<FormFieldReturn>): Promise<FormTemplateReturn>;
     createSlide(token: string, topicId: bigint, imageUrl: string, title_fa: string, title_sv: string, subtitle_fa: string, subtitle_sv: string, ctaText_fa: string, ctaText_sv: string, ctaLink: string, sortOrder: bigint): Promise<HeroSlideReturn>;
     createSocialLink(token: string, platform: string, url: string, sortOrder: bigint): Promise<SocialLinkReturn>;
@@ -182,75 +277,56 @@ export interface backendInterface {
     deleteActivity(token: string, id: bigint): Promise<boolean>;
     deleteAsset(token: string, key: string): Promise<boolean>;
     deleteContactMessage(token: string, id: bigint): Promise<boolean>;
+    deleteEventRegistrationTemplate(token: string, id: bigint): Promise<boolean>;
     deleteFormTemplate(token: string, id: bigint): Promise<boolean>;
     deleteSlide(token: string, id: bigint): Promise<boolean>;
     deleteSocialLink(token: string, id: bigint): Promise<boolean>;
     deleteTopic(token: string, id: bigint): Promise<boolean>;
-    /**
-     * About Us
-     */
     getAboutContent(): Promise<AboutContentReturn>;
-    /**
-     * Activities
-     */
     getActivitiesByTopic(topicId: bigint): Promise<Array<ActivityReturn>>;
     getActivity(id: bigint): Promise<ActivityReturn | null>;
     getActivityBySlug(topicId: bigint, slug: string): Promise<ActivityReturn | null>;
-    /**
-     * Activity Form Fields
-     */
     getActivityFormFields(activityId: bigint): Promise<Array<FormFieldReturn> | null>;
     getAllActivities(): Promise<Array<ActivityReturn>>;
     getAllRegistrations(token: string): Promise<Array<RegistrationReturn>>;
     getAsset(key: string): Promise<Uint8Array | null>;
     getContactMessages(token: string): Promise<Array<ContactMessageReturn>>;
+    getEventRegistrationTemplate(id: bigint): Promise<EventRegistrationTemplateReturn | null>;
+    getEventRegistrationTemplates(): Promise<Array<EventRegistrationTemplateReturn>>;
     getFormTemplate(id: bigint): Promise<FormTemplateReturn | null>;
-    /**
-     * Form Templates
-     */
     getFormTemplates(): Promise<Array<FormTemplateReturn>>;
+    getRegistrationById(id: bigint, lookupValue: string): Promise<RegistrationWithStatusReturn | null>;
     getRegistrations(token: string, activityId: bigint): Promise<Array<RegistrationReturn>>;
-    /**
-     * Site Settings
-     */
+    getSessionAvailability(activityId: bigint): Promise<Array<SessionAvailabilityReturn>>;
+    getSessionStats(token: string, activityId: bigint): Promise<Array<SessionStatsReturn>>;
     getSettings(): Promise<SiteSettingsReturn>;
-    /**
-     * Hero Slides
-     */
     getSlidesByTopic(topicId: bigint): Promise<Array<HeroSlideReturn>>;
-    /**
-     * Social Links
-     */
     getSocialLinks(): Promise<Array<SocialLinkReturn>>;
     getTopic(id: bigint): Promise<TopicReturn | null>;
     getTopicBySlug(slug: string): Promise<TopicReturn | null>;
-    /**
-     * Topics
-     */
     getTopics(): Promise<Array<TopicReturn>>;
     listAssets(): Promise<Array<string>>;
+    modifyRegistration(id: bigint, lookupValue: string, newPersonCount: bigint, newSelectedSessionIds: Array<bigint>, newFieldValues: Array<{
+        value: string;
+        fieldId: bigint;
+    }>): Promise<SubmitRegistrationResult>;
     setMockMode(token: string, enabled: boolean): Promise<boolean>;
-    /**
-     * Contact Messages
-     */
     submitContactMessage(name: string, email: string, phone: string, message: string): Promise<ContactMessageReturn | null>;
-    /**
-     * Registrations
-     */
-    submitRegistration(activityId: bigint, name: string, email: string, phone: string, message: string, fieldValues: Array<FieldValueInput>): Promise<RegistrationReturn | null>;
+    submitRegistration(activityId: bigint, name: string, email: string, phone: string, message: string, personCount: bigint, selectedSessionIds: Array<bigint>, fieldValues: Array<{
+        value: string;
+        fieldId: bigint;
+    }>): Promise<SubmitRegistrationResult>;
     updateAboutContent(token: string, headerImageUrl: string, body_fa: string, body_sv: string): Promise<AboutContentReturn>;
-    updateActivity(token: string, id: bigint, topicId: bigint, slug: string, title_fa: string, title_sv: string, excerpt_fa: string, excerpt_sv: string, body_fa: string, body_sv: string, icon: string, imageUrl: string, hasRegistration: boolean, formTemplateId: bigint | null, customFormFields: Array<FormFieldReturn>, sortOrder: bigint): Promise<ActivityReturn | null>;
+    updateActivity(token: string, id: bigint, topicId: bigint, slug: string, title_fa: string, title_sv: string, excerpt_fa: string, excerpt_sv: string, body_fa: string, body_sv: string, icon: string, imageUrl: string, hasRegistration: boolean, registrationMode: string, formTemplateId: bigint | null, customFormFields: Array<FormFieldReturn>, actSessions: Array<EventSessionReturn>, regMaxCapacity: bigint | null, regAllowedPhones: Array<string>, regMaxRegistrationsPerPhone: bigint | null, regBlockDuplicateEmail: boolean, sortOrder: bigint): Promise<ActivityReturn | null>;
+    updateEventRegistrationTemplate(token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, tmplSessions: Array<EventSessionReturn>, fields: Array<FormFieldReturn>): Promise<EventRegistrationTemplateReturn | null>;
     updateFormTemplate(token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, fields: Array<FormFieldReturn>): Promise<FormTemplateReturn | null>;
     updateSettings(token: string, logoUrl: string, title_fa: string, title_sv: string, subtitle_fa: string, subtitle_sv: string, landingBackgroundUrl: string, topicsBackgroundUrl: string): Promise<SiteSettingsReturn>;
     updateSlide(token: string, id: bigint, topicId: bigint, imageUrl: string, title_fa: string, title_sv: string, subtitle_fa: string, subtitle_sv: string, ctaText_fa: string, ctaText_sv: string, ctaLink: string, sortOrder: bigint): Promise<HeroSlideReturn | null>;
     updateSocialLink(token: string, id: bigint, platform: string, url: string, sortOrder: bigint): Promise<SocialLinkReturn | null>;
     updateTopic(token: string, id: bigint, slug: string, title_fa: string, title_sv: string, description_fa: string, description_sv: string, icon: string, backgroundUrl: string, sortOrder: bigint): Promise<TopicReturn | null>;
-    /**
-     * Assets
-     */
     uploadAsset(token: string, name: string, contentType: string, data: Uint8Array): Promise<string>;
 }
-import type { ActivityReturn as _ActivityReturn, ContactMessageReturn as _ContactMessageReturn, FormFieldReturn as _FormFieldReturn, FormTemplateReturn as _FormTemplateReturn, HeroSlideReturn as _HeroSlideReturn, RegistrationReturn as _RegistrationReturn, SocialLinkReturn as _SocialLinkReturn, TopicReturn as _TopicReturn } from "./declarations/backend.did";
+import type { ActivityReturn as _ActivityReturn, ContactMessageReturn as _ContactMessageReturn, EventRegistrationTemplateReturn as _EventRegistrationTemplateReturn, EventSessionReturn as _EventSessionReturn, FormFieldReturn as _FormFieldReturn, FormTemplateReturn as _FormTemplateReturn, HeroSlideReturn as _HeroSlideReturn, RegistrationWithStatusReturn as _RegistrationWithStatusReturn, SocialLinkReturn as _SocialLinkReturn, SubmitRegistrationResult as _SubmitRegistrationResult, TopicReturn as _TopicReturn } from "./declarations/backend.did";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>){}
     async adminLogin(arg0: string): Promise<string | null> {
@@ -261,6 +337,10 @@ export class Backend implements backendInterface {
         const result = await this.actor.adminLogout(arg0);
         return result;
     }
+    async cancelRegistration(arg0: bigint, arg1: string): Promise<boolean> {
+        const result = await this.actor.cancelRegistration(arg0, arg1);
+        return result;
+    }
     async changePassword(arg0: string, arg1: string): Promise<boolean> {
         const result = await this.actor.changePassword(arg0, arg1);
         return result;
@@ -269,9 +349,13 @@ export class Backend implements backendInterface {
         const result = await this.actor.checkSession(arg0);
         return result;
     }
-    async createActivity(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: boolean, arg12: bigint | null, arg13: Array<FormFieldReturn>, arg14: bigint): Promise<ActivityReturn> {
-        const result = await this.actor.createActivity(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, to_candid_opt_n2(arg12), arg13, arg14);
+    async createActivity(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: boolean, arg12: string, arg13: bigint | null, arg14: Array<FormFieldReturn>, arg15: Array<EventSessionReturn>, arg16: bigint | null, arg17: Array<string>, arg18: bigint | null, arg19: boolean, arg20: bigint): Promise<ActivityReturn> {
+        const result = await this.actor.createActivity(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, to_candid_opt_n2(arg13), arg14, arg15, to_candid_opt_n2(arg16), arg17, to_candid_opt_n2(arg18), arg19, arg20);
         return from_candid_ActivityReturn_n3(result);
+    }
+    async createEventRegistrationTemplate(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: Array<EventSessionReturn>, arg6: Array<FormFieldReturn>): Promise<EventRegistrationTemplateReturn> {
+        const result = await this.actor.createEventRegistrationTemplate(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+        return result;
     }
     async createFormTemplate(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: Array<FormFieldReturn>): Promise<FormTemplateReturn> {
         const result = await this.actor.createFormTemplate(arg0, arg1, arg2, arg3, arg4, arg5);
@@ -299,6 +383,10 @@ export class Backend implements backendInterface {
     }
     async deleteContactMessage(arg0: string, arg1: bigint): Promise<boolean> {
         const result = await this.actor.deleteContactMessage(arg0, arg1);
+        return result;
+    }
+    async deleteEventRegistrationTemplate(arg0: string, arg1: bigint): Promise<boolean> {
+        const result = await this.actor.deleteEventRegistrationTemplate(arg0, arg1);
         return result;
     }
     async deleteFormTemplate(arg0: string, arg1: bigint): Promise<boolean> {
@@ -353,16 +441,36 @@ export class Backend implements backendInterface {
         const result = await this.actor.getContactMessages(arg0);
         return result;
     }
+    async getEventRegistrationTemplate(arg0: bigint): Promise<EventRegistrationTemplateReturn | null> {
+        const result = await this.actor.getEventRegistrationTemplate(arg0);
+        return from_candid_opt_n10(result);
+    }
+    async getEventRegistrationTemplates(): Promise<Array<EventRegistrationTemplateReturn>> {
+        const result = await this.actor.getEventRegistrationTemplates();
+        return result;
+    }
     async getFormTemplate(arg0: bigint): Promise<FormTemplateReturn | null> {
         const result = await this.actor.getFormTemplate(arg0);
-        return from_candid_opt_n10(result);
+        return from_candid_opt_n11(result);
     }
     async getFormTemplates(): Promise<Array<FormTemplateReturn>> {
         const result = await this.actor.getFormTemplates();
         return result;
     }
+    async getRegistrationById(arg0: bigint, arg1: string): Promise<RegistrationWithStatusReturn | null> {
+        const result = await this.actor.getRegistrationById(arg0, arg1);
+        return from_candid_opt_n12(result);
+    }
     async getRegistrations(arg0: string, arg1: bigint): Promise<Array<RegistrationReturn>> {
         const result = await this.actor.getRegistrations(arg0, arg1);
+        return result;
+    }
+    async getSessionAvailability(arg0: bigint): Promise<Array<SessionAvailabilityReturn>> {
+        const result = await this.actor.getSessionAvailability(arg0);
+        return result;
+    }
+    async getSessionStats(arg0: string, arg1: bigint): Promise<Array<SessionStatsReturn>> {
+        const result = await this.actor.getSessionStats(arg0, arg1);
         return result;
     }
     async getSettings(): Promise<SiteSettingsReturn> {
@@ -379,11 +487,11 @@ export class Backend implements backendInterface {
     }
     async getTopic(arg0: bigint): Promise<TopicReturn | null> {
         const result = await this.actor.getTopic(arg0);
-        return from_candid_opt_n11(result);
+        return from_candid_opt_n13(result);
     }
     async getTopicBySlug(arg0: string): Promise<TopicReturn | null> {
         const result = await this.actor.getTopicBySlug(arg0);
-        return from_candid_opt_n11(result);
+        return from_candid_opt_n13(result);
     }
     async getTopics(): Promise<Array<TopicReturn>> {
         const result = await this.actor.getTopics();
@@ -393,29 +501,43 @@ export class Backend implements backendInterface {
         const result = await this.actor.listAssets();
         return result;
     }
+    async modifyRegistration(arg0: bigint, arg1: string, arg2: bigint, arg3: Array<bigint>, arg4: Array<{
+        value: string;
+        fieldId: bigint;
+    }>): Promise<SubmitRegistrationResult> {
+        const result = await this.actor.modifyRegistration(arg0, arg1, arg2, arg3, arg4);
+        return from_candid_SubmitRegistrationResult_n14(result);
+    }
     async setMockMode(arg0: string, arg1: boolean): Promise<boolean> {
         const result = await this.actor.setMockMode(arg0, arg1);
         return result;
     }
     async submitContactMessage(arg0: string, arg1: string, arg2: string, arg3: string): Promise<ContactMessageReturn | null> {
         const result = await this.actor.submitContactMessage(arg0, arg1, arg2, arg3);
-        return from_candid_opt_n12(result);
+        return from_candid_opt_n16(result);
     }
-    async submitRegistration(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: Array<FieldValueInput>): Promise<RegistrationReturn | null> {
-        const result = await this.actor.submitRegistration(arg0, arg1, arg2, arg3, arg4, arg5);
-        return from_candid_opt_n13(result);
+    async submitRegistration(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: bigint, arg6: Array<bigint>, arg7: Array<{
+        value: string;
+        fieldId: bigint;
+    }>): Promise<SubmitRegistrationResult> {
+        const result = await this.actor.submitRegistration(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        return from_candid_SubmitRegistrationResult_n14(result);
     }
     async updateAboutContent(arg0: string, arg1: string, arg2: string, arg3: string): Promise<AboutContentReturn> {
         const result = await this.actor.updateAboutContent(arg0, arg1, arg2, arg3);
         return result;
     }
-    async updateActivity(arg0: string, arg1: bigint, arg2: bigint, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: boolean, arg13: bigint | null, arg14: Array<FormFieldReturn>, arg15: bigint): Promise<ActivityReturn | null> {
-        const result = await this.actor.updateActivity(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, to_candid_opt_n2(arg13), arg14, arg15);
+    async updateActivity(arg0: string, arg1: bigint, arg2: bigint, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: boolean, arg13: string, arg14: bigint | null, arg15: Array<FormFieldReturn>, arg16: Array<EventSessionReturn>, arg17: bigint | null, arg18: Array<string>, arg19: bigint | null, arg20: boolean, arg21: bigint): Promise<ActivityReturn | null> {
+        const result = await this.actor.updateActivity(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, to_candid_opt_n2(arg14), arg15, arg16, to_candid_opt_n2(arg17), arg18, to_candid_opt_n2(arg19), arg20, arg21);
         return from_candid_opt_n7(result);
+    }
+    async updateEventRegistrationTemplate(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: Array<EventSessionReturn>, arg7: Array<FormFieldReturn>): Promise<EventRegistrationTemplateReturn | null> {
+        const result = await this.actor.updateEventRegistrationTemplate(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        return from_candid_opt_n10(result);
     }
     async updateFormTemplate(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: Array<FormFieldReturn>): Promise<FormTemplateReturn | null> {
         const result = await this.actor.updateFormTemplate(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-        return from_candid_opt_n10(result);
+        return from_candid_opt_n11(result);
     }
     async updateSettings(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string): Promise<SiteSettingsReturn> {
         const result = await this.actor.updateSettings(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -423,15 +545,15 @@ export class Backend implements backendInterface {
     }
     async updateSlide(arg0: string, arg1: bigint, arg2: bigint, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: bigint): Promise<HeroSlideReturn | null> {
         const result = await this.actor.updateSlide(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
-        return from_candid_opt_n14(result);
+        return from_candid_opt_n17(result);
     }
     async updateSocialLink(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: bigint): Promise<SocialLinkReturn | null> {
         const result = await this.actor.updateSocialLink(arg0, arg1, arg2, arg3, arg4);
-        return from_candid_opt_n15(result);
+        return from_candid_opt_n18(result);
     }
     async updateTopic(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: bigint): Promise<TopicReturn | null> {
         const result = await this.actor.updateTopic(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-        return from_candid_opt_n11(result);
+        return from_candid_opt_n13(result);
     }
     async uploadAsset(arg0: string, arg1: string, arg2: string, arg3: Uint8Array): Promise<string> {
         const result = await this.actor.uploadAsset(arg0, arg1, arg2, arg3);
@@ -441,25 +563,31 @@ export class Backend implements backendInterface {
 function from_candid_ActivityReturn_n3(value: _ActivityReturn): ActivityReturn {
     return from_candid_record_n4(value);
 }
+function from_candid_SubmitRegistrationResult_n14(value: _SubmitRegistrationResult): SubmitRegistrationResult {
+    return from_candid_variant_n15(value);
+}
 function from_candid_opt_n1(value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n10(value: [] | [_FormTemplateReturn]): FormTemplateReturn | null {
+function from_candid_opt_n10(value: [] | [_EventRegistrationTemplateReturn]): EventRegistrationTemplateReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n11(value: [] | [_TopicReturn]): TopicReturn | null {
+function from_candid_opt_n11(value: [] | [_FormTemplateReturn]): FormTemplateReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n12(value: [] | [_ContactMessageReturn]): ContactMessageReturn | null {
+function from_candid_opt_n12(value: [] | [_RegistrationWithStatusReturn]): RegistrationWithStatusReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n13(value: [] | [_RegistrationReturn]): RegistrationReturn | null {
+function from_candid_opt_n13(value: [] | [_TopicReturn]): TopicReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n14(value: [] | [_HeroSlideReturn]): HeroSlideReturn | null {
+function from_candid_opt_n16(value: [] | [_ContactMessageReturn]): ContactMessageReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n15(value: [] | [_SocialLinkReturn]): SocialLinkReturn | null {
+function from_candid_opt_n17(value: [] | [_HeroSlideReturn]): HeroSlideReturn | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n18(value: [] | [_SocialLinkReturn]): SocialLinkReturn | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n5(value: [] | [bigint]): bigint | null {
@@ -476,6 +604,7 @@ function from_candid_opt_n9(value: [] | [Uint8Array]): Uint8Array | null {
 }
 function from_candid_record_n4(value: {
     id: bigint;
+    regAllowedPhones: Array<string>;
     formTemplateId: [] | [bigint];
     body_fa: string;
     body_sv: string;
@@ -483,16 +612,22 @@ function from_candid_record_n4(value: {
     icon: string;
     createdAt: bigint;
     slug: string;
+    regMaxRegistrationsPerPhone: [] | [bigint];
+    regBlockDuplicateEmail: boolean;
     customFormFields: Array<_FormFieldReturn>;
     imageUrl: string;
+    sessions: Array<_EventSessionReturn>;
     excerpt_fa: string;
     excerpt_sv: string;
     hasRegistration: boolean;
+    regMaxCapacity: [] | [bigint];
+    registrationMode: string;
     title_fa: string;
     title_sv: string;
     topicId: bigint;
 }): {
     id: bigint;
+    regAllowedPhones: Array<string>;
     formTemplateId?: bigint;
     body_fa: string;
     body_sv: string;
@@ -500,17 +635,23 @@ function from_candid_record_n4(value: {
     icon: string;
     createdAt: bigint;
     slug: string;
+    regMaxRegistrationsPerPhone?: bigint;
+    regBlockDuplicateEmail: boolean;
     customFormFields: Array<FormFieldReturn>;
     imageUrl: string;
+    sessions: Array<EventSessionReturn>;
     excerpt_fa: string;
     excerpt_sv: string;
     hasRegistration: boolean;
+    regMaxCapacity?: bigint;
+    registrationMode: string;
     title_fa: string;
     title_sv: string;
     topicId: bigint;
 } {
     return {
         id: value.id,
+        regAllowedPhones: value.regAllowedPhones,
         formTemplateId: record_opt_to_undefined(from_candid_opt_n5(value.formTemplateId)),
         body_fa: value.body_fa,
         body_sv: value.body_sv,
@@ -518,15 +659,87 @@ function from_candid_record_n4(value: {
         icon: value.icon,
         createdAt: value.createdAt,
         slug: value.slug,
+        regMaxRegistrationsPerPhone: record_opt_to_undefined(from_candid_opt_n5(value.regMaxRegistrationsPerPhone)),
+        regBlockDuplicateEmail: value.regBlockDuplicateEmail,
         customFormFields: value.customFormFields,
         imageUrl: value.imageUrl,
+        sessions: value.sessions,
         excerpt_fa: value.excerpt_fa,
         excerpt_sv: value.excerpt_sv,
         hasRegistration: value.hasRegistration,
+        regMaxCapacity: record_opt_to_undefined(from_candid_opt_n5(value.regMaxCapacity)),
+        registrationMode: value.registrationMode,
         title_fa: value.title_fa,
         title_sv: value.title_sv,
         topicId: value.topicId
     };
+}
+function from_candid_variant_n15(value: {
+    ok: _RegistrationWithStatusReturn;
+} | {
+    invalidInput: null;
+} | {
+    duplicateEmail: null;
+} | {
+    capacityFull: null;
+} | {
+    sessionsUnavailable: Array<bigint>;
+} | {
+    phoneNotAllowed: null;
+} | {
+    registrationDisabled: null;
+} | {
+    maxRegistrationsReached: null;
+}): {
+    __kind__: "ok";
+    ok: RegistrationWithStatusReturn;
+} | {
+    __kind__: "invalidInput";
+    invalidInput: null;
+} | {
+    __kind__: "duplicateEmail";
+    duplicateEmail: null;
+} | {
+    __kind__: "capacityFull";
+    capacityFull: null;
+} | {
+    __kind__: "sessionsUnavailable";
+    sessionsUnavailable: Array<bigint>;
+} | {
+    __kind__: "phoneNotAllowed";
+    phoneNotAllowed: null;
+} | {
+    __kind__: "registrationDisabled";
+    registrationDisabled: null;
+} | {
+    __kind__: "maxRegistrationsReached";
+    maxRegistrationsReached: null;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: value.ok
+    } : "invalidInput" in value ? {
+        __kind__: "invalidInput",
+        invalidInput: value.invalidInput
+    } : "duplicateEmail" in value ? {
+        __kind__: "duplicateEmail",
+        duplicateEmail: value.duplicateEmail
+    } : "capacityFull" in value ? {
+        __kind__: "capacityFull",
+        capacityFull: value.capacityFull
+    } : "sessionsUnavailable" in value ? {
+        __kind__: "sessionsUnavailable",
+        sessionsUnavailable: value.sessionsUnavailable
+    } : "phoneNotAllowed" in value ? {
+        __kind__: "phoneNotAllowed",
+        phoneNotAllowed: value.phoneNotAllowed
+    } : "registrationDisabled" in value ? {
+        __kind__: "registrationDisabled",
+        registrationDisabled: value.registrationDisabled
+    } : "maxRegistrationsReached" in value ? {
+        __kind__: "maxRegistrationsReached",
+        maxRegistrationsReached: value.maxRegistrationsReached
+    } : value;
 }
 function from_candid_vec_n6(value: Array<_ActivityReturn>): Array<ActivityReturn> {
     return value.map((x)=>from_candid_ActivityReturn_n3(x));

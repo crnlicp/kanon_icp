@@ -1,25 +1,46 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
+import { CheckCircle, Copy } from "lucide-react";
 import { useI18n } from "../i18n";
-import type { FormFieldReturn } from "../backend/api/backend";
+import SessionSelector from "./SessionSelector";
+import type { FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn, RegistrationWithStatusReturn } from "../backend/api/backend";
 
 interface RegistrationFormProps {
   activityId: number;
   formFields: FormFieldReturn[] | null;
-  onSuccess: () => void;
-  onError: () => void;
+  sessions: EventSessionReturn[];
 }
 
-export default function RegistrationForm({ activityId, formFields, onSuccess, onError }: RegistrationFormProps) {
+const inputClass =
+  "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors";
+
+export default function RegistrationForm({ activityId, formFields, sessions }: RegistrationFormProps) {
   const { t, localized } = useI18n();
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
   const [dynamicFormData, setDynamicFormData] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  const [selectedSessionIds, setSelectedSessionIds] = useState<number[]>([]);
+  const [personCount, setPersonCount] = useState(1);
+  const [availability, setAvailability] = useState<SessionAvailabilityReturn[]>([]);
+  const [unavailableIds, setUnavailableIds] = useState<number[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successRegistration, setSuccessRegistration] = useState<RegistrationWithStatusReturn | null>(null);
+
+  useEffect(() => {
+    if (sessions.length > 0) {
+      import("../actor").then(({ backend }) => {
+        backend.getSessionAvailability(BigInt(activityId)).then(setAvailability);
+      });
+    }
+  }, [activityId, sessions.length]);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setSubmitting(true);
+      setErrorMsg(null);
+      setUnavailableIds([]);
       try {
         const { backend } = await import("../actor");
 
@@ -36,28 +57,108 @@ export default function RegistrationForm({ activityId, formFields, onSuccess, on
           formFields ? "" : formData.email,
           formFields ? "" : formData.phone,
           formFields ? "" : formData.message,
+          BigInt(personCount),
+          selectedSessionIds.map(BigInt),
           fieldValues,
         );
-        if (result) {
+
+        if (result.__kind__ === "ok") {
+          setSuccessRegistration(result.ok);
           setFormData({ name: "", email: "", phone: "", message: "" });
           setDynamicFormData({});
-          onSuccess();
+          setSelectedSessionIds([]);
+          setPersonCount(1);
+        } else if (result.__kind__ === "sessionsUnavailable") {
+          setUnavailableIds(result.sessionsUnavailable.map(Number));
+          setErrorMsg(t("sessionsUnavailableError"));
+          backend.getSessionAvailability(BigInt(activityId)).then(setAvailability);
+        } else if (result.__kind__ === "phoneNotAllowed") {
+          setErrorMsg(t("phoneNotAllowedError"));
+        } else if (result.__kind__ === "maxRegistrationsReached") {
+          setErrorMsg(t("maxRegistrationsError"));
+        } else if (result.__kind__ === "duplicateEmail") {
+          setErrorMsg(t("duplicateEmailError"));
+        } else if (result.__kind__ === "capacityFull") {
+          setErrorMsg(t("capacityFullError"));
         } else {
-          onError();
+          setErrorMsg(t("registrationError"));
         }
       } catch {
-        onError();
+        setErrorMsg(t("registrationError"));
       }
       setSubmitting(false);
     },
-    [activityId, formData, dynamicFormData, formFields, onSuccess, onError],
+    [activityId, formData, dynamicFormData, formFields, personCount, selectedSessionIds, t],
   );
 
-  const inputClass =
-    "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors";
+  if (successRegistration) {
+    return (
+      <div className="space-y-4">
+        <div className="p-5 rounded-xl bg-green-500/10 border border-green-500/20 space-y-3">
+          <div className="flex items-center gap-2 text-green-400">
+            <CheckCircle size={18} />
+            <span className="font-semibold">{t("registrationSuccess")}</span>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-white/60">{t("saveRegistrationId")}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-white">#{String(successRegistration.id)}</span>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(String(successRegistration.id))}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white/50 hover:text-white transition-colors"
+                title="Copy ID"
+              >
+                <Copy size={13} />
+              </button>
+            </div>
+            <p className="text-xs text-white/40">{t("saveRegistrationIdHint")}</p>
+          </div>
+          {successRegistration.selectedSessions.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-white/40 uppercase tracking-wide">{t("selectedSessions")}</p>
+              <div className="flex flex-wrap gap-2">
+                {successRegistration.selectedSessions.map((ss) => (
+                  <span
+                    key={Number(ss.sessionId)}
+                    className={`text-xs px-2.5 py-1 rounded-full border ${
+                      ss.status === "confirmed"
+                        ? "bg-green-500/15 text-green-400 border-green-500/20"
+                        : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                    }`}
+                  >
+                    {ss.sessionName} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Session selector */}
+      {sessions.length > 0 && availability.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm text-white/50">{t("sessions")}</p>
+          <SessionSelector
+            availability={availability}
+            selectedIds={selectedSessionIds}
+            personCount={personCount}
+            onSelectionChange={setSelectedSessionIds}
+            onPersonCountChange={setPersonCount}
+            unavailableIds={unavailableIds}
+          />
+          {sessions.length > 0 && selectedSessionIds.length === 0 && (
+            <p className="text-xs text-red-400/80 mt-1">{t("selectAtLeastOneSession")}</p>
+          )}
+        </div>
+      )}
+
+      {/* Form fields */}
       {formFields ? (
         formFields.map((field) => {
           const fieldId = String(field.id);
@@ -86,7 +187,7 @@ export default function RegistrationForm({ activityId, formFields, onSuccess, on
                   required={field.required}
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
-                  className='w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors'
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
                 >
                   <option value="" className="bg-black/70">{placeholder || `-- ${label} --`}</option>
                   {field.options.map((opt, i) => (
@@ -193,9 +294,14 @@ export default function RegistrationForm({ activityId, formFields, onSuccess, on
           </div>
         </>
       )}
+
+      {errorMsg && (
+        <p className="text-sm text-red-400">{errorMsg}</p>
+      )}
+
       <motion.button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || (sessions.length > 0 && selectedSessionIds.length === 0)}
         className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

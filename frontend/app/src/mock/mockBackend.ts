@@ -9,6 +9,7 @@ import {
   mockSocialLinks,
   mockRegistrations,
   mockFormTemplates,
+  mockEventRegistrationTemplates,
 } from "./mockData";
 
 /**
@@ -123,18 +124,20 @@ export const mockBackend: backendInterface = {
 
   async deleteTopic() { return true; },
 
-  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId, customFormFields, sortOrder) {
+  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, _regMaxCap, regAllowedPhones, _regMaxPerPhone, regBlockDuplicateEmail, sortOrder) {
     return {
       id: BigInt(Date.now()), topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId: formTemplateId ?? undefined, customFormFields, sortOrder,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
+      sessions, regAllowedPhones, regBlockDuplicateEmail, sortOrder,
       createdAt: BigInt(Date.now()) * 1_000_000n,
     };
   },
 
-  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId, customFormFields, sortOrder) {
+  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, _regMaxCap, regAllowedPhones, _regMaxPerPhone, regBlockDuplicateEmail, sortOrder) {
     return {
       id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, formTemplateId: formTemplateId ?? undefined, customFormFields, sortOrder, createdAt: 0n,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
+      sessions, regAllowedPhones, regBlockDuplicateEmail, sortOrder, createdAt: 0n,
     };
   },
 
@@ -152,6 +155,16 @@ export const mockBackend: backendInterface = {
   },
 
   async deleteFormTemplate() { return true; },
+
+  async getEventRegistrationTemplates() { return mockEventRegistrationTemplates; },
+  async getEventRegistrationTemplate(id: bigint) { return mockEventRegistrationTemplates.find((t) => t.id === id) ?? null; },
+  async createEventRegistrationTemplate(_token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[]) {
+    return { id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: BigInt(Date.now()) * 1_000_000n };
+  },
+  async updateEventRegistrationTemplate(_token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[]) {
+    return { id, name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: 0n };
+  },
+  async deleteEventRegistrationTemplate() { return true; },
 
   async createSlide(_token, topicId, imageUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, ctaText_fa, ctaText_sv, ctaLink, sortOrder) {
     return {
@@ -191,11 +204,119 @@ export const mockBackend: backendInterface = {
     return { id: BigInt(Date.now()), name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
-  async submitRegistration(activityId, name, email, phone, message) {
-    return { id: BigInt(Date.now()), activityId, name, email, phone, message, fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n };
+  async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues) {
+    return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n } };
   },
 
   async deleteContactMessage() { return true; },
+
+  async getSessionAvailability(activityId) {
+    const activity = mockActivities.find((a) => a.id === activityId);
+    if (!activity || activity.sessions.length === 0) return [];
+    const regs = mockRegistrations.filter((r) => r.activityId === activityId);
+    const sorted = [...regs].sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    return activity.sessions.map((session) => {
+      let confirmed = 0, buffered = 0;
+      const cap = Number(session.capacity), buf = Number(session.bufferCapacity);
+      for (const r of sorted) {
+        if (!r.selectedSessions.some((ss) => ss.sessionId === session.id)) continue;
+        const n = Number(r.personCount);
+        if (confirmed + n <= cap) confirmed += n;
+        else if (buffered + n <= buf) buffered += n;
+      }
+      return {
+        sessionId: session.id, name_fa: session.name_fa, name_sv: session.name_sv,
+        date: session.date, capacity: session.capacity, bufferCapacity: session.bufferCapacity,
+        confirmedCount: BigInt(confirmed), bufferCount: BigInt(buffered),
+        regularFull: confirmed >= cap, totalFull: confirmed >= cap && buffered >= buf,
+        sortOrder: session.sortOrder,
+      };
+    });
+  },
+
+  async getSessionStats(_token, activityId) {
+    const activity = mockActivities.find((a) => a.id === activityId);
+    if (!activity || activity.sessions.length === 0) return [];
+    const regs = mockRegistrations.filter((r) => r.activityId === activityId);
+    const sorted = [...regs].sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    return activity.sessions.map((session) => {
+      let confirmed = 0, buffered = 0;
+      const cap = Number(session.capacity), buf = Number(session.bufferCapacity);
+      for (const r of sorted) {
+        if (!r.selectedSessions.some((ss) => ss.sessionId === session.id)) continue;
+        const n = Number(r.personCount);
+        if (confirmed + n <= cap) confirmed += n;
+        else if (buffered + n <= buf) buffered += n;
+      }
+      const regCount = regs.filter((r) => r.selectedSessions.some((ss) => ss.sessionId === session.id)).length;
+      return {
+        sessionId: session.id, name_fa: session.name_fa, name_sv: session.name_sv,
+        date: session.date, capacity: session.capacity, bufferCapacity: session.bufferCapacity,
+        confirmedCount: BigInt(confirmed), bufferCount: BigInt(buffered),
+        registrationCount: BigInt(regCount), sortOrder: session.sortOrder,
+      };
+    });
+  },
+
+  async getRegistrationById(id, lookupValue) {
+    const reg = mockRegistrations.find((r) => {
+      if (r.id !== id) return false;
+      if (r.phone === lookupValue) return true;
+      return r.fieldValues.some((fv) => fv.value.toLowerCase() === lookupValue.toLowerCase());
+    });
+    if (!reg) return null;
+    const activity = mockActivities.find((a) => a.id === reg.activityId);
+    const sessions = activity?.sessions ?? [];
+    const regs = mockRegistrations.filter((r) => r.activityId === reg.activityId);
+    const sorted = [...regs].sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    const selectedSessions = reg.selectedSessions.map((ss) => {
+      const session = sessions.find((s) => s.id === ss.sessionId);
+      let status = "confirmed";
+      if (session) {
+        const cap = Number(session.capacity);
+        let cumulative = 0;
+        for (const r of sorted) {
+          if (!r.selectedSessions.some((s) => s.sessionId === ss.sessionId)) continue;
+          if (r.id === reg.id) { status = cumulative < cap ? "confirmed" : "buffer"; break; }
+          cumulative += Number(r.personCount);
+        }
+      }
+      return { sessionId: ss.sessionId, sessionName: ss.sessionName, status };
+    });
+    return {
+      id: reg.id, activityId: reg.activityId,
+      name: reg.name, email: reg.email, phone: reg.phone,
+      personCount: reg.personCount, selectedSessions,
+      fieldValues: reg.fieldValues.map((fv) => ({ fieldId: fv.fieldId, fieldLabel: fv.fieldLabel, value: fv.value })),
+      createdAt: reg.createdAt,
+    };
+  },
+
+  async cancelRegistration(id, lookupValue) {
+    return mockRegistrations.some((r) => {
+      if (r.id !== id) return false;
+      if (r.phone === lookupValue) return true;
+      return r.fieldValues.some((fv) => fv.value.toLowerCase() === lookupValue.toLowerCase());
+    });
+  },
+
+  async modifyRegistration(id, lookupValue, newPersonCount, _newSessionIds, _fieldValues) {
+    const reg = mockRegistrations.find((r) => {
+      if (r.id !== id) return false;
+      if (r.phone === lookupValue) return true;
+      return r.fieldValues.some((fv) => fv.value.toLowerCase() === lookupValue.toLowerCase());
+    });
+    if (!reg) return { __kind__: "invalidInput" as const, invalidInput: null };
+    return {
+      __kind__: "ok" as const,
+      ok: {
+        id: reg.id, activityId: reg.activityId,
+        name: reg.name, email: reg.email, phone: reg.phone,
+        personCount: newPersonCount, selectedSessions: [],
+        fieldValues: [], createdAt: reg.createdAt,
+      },
+    };
+  },
 
   async uploadAsset() { return "/mock/asset"; },
   async deleteAsset() { return true; },

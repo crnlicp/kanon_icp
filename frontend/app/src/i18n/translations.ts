@@ -213,6 +213,99 @@ export const translations = {
     switchArea: "تغییر به این حوزه",
     switchingArea: "در حال تغییر...",
     demoAreaNote: "تغییر حوزه نمایشی صفحه را مجدداً بارگذاری می‌کند. اطلاعات واقعی تأثیر نمی‌پذیرد.",
+
+    // Event Sessions (admin builder)
+    sessions: "جلسات رویداد",
+    session: "جلسه",
+    addSession: "افزودن جلسه",
+    sessionName: "نام جلسه",
+    sessionDate: "تاریخ (اختیاری)",
+    sessionCapacity: "ظرفیت عادی",
+    sessionBuffer: "بافر مدیریت",
+    sessionBufferHint: "صندلی‌های اضافی پنهان که پس از پر شدن ظرفیت عادی استفاده می‌شود",
+    noSessions: "جلسه‌ای تعریف نشده است.",
+    removeSession: "حذف جلسه",
+
+    // Session availability (public)
+    spotsRemaining: "جای خالی",
+    regularFull: "ظرفیت عادی پر شد",
+    bufferSpotsRemaining: "جای بافر باقیمانده",
+    fullyBooked: "ظرفیت تکمیل شد",
+    confirmedStatus: "تأیید شده",
+    bufferStatus: "در صف انتظار",
+    nowFullDeselect: "ظرفیت تکمیل شد — لطفاً از انتخاب خارج کنید",
+
+    // Group size
+    howManyPeople: "تعداد نفرات گروه؟",
+    groupSize: "تعداد نفرات",
+    person: "نفر",
+
+    // Registration success card
+    saveRegistrationId: "شناسه ثبت‌نام خود را ذخیره کنید",
+    saveRegistrationIdHint: "با این شناسه می‌توانید ثبت‌نام خود را مشاهده، تغییر یا لغو کنید.",
+    yourRegistrationId: "شناسه ثبت‌نام شما",
+    selectedSessions: "جلسات انتخابی",
+
+    // Registration lookup
+    findMyRegistration: "ثبت‌نام خود را بیابید",
+    registrationId: "شناسه ثبت‌نام",
+    findRegistration: "جستجو",
+    registrationFound: "ثبت‌نام یافت شد",
+    registrationNotFound: "ثبت‌نامی با این اطلاعات یافت نشد.",
+    modifyRegistration: "ویرایش ثبت‌نام",
+    cancelRegistration: "لغو ثبت‌نام",
+    confirmCancel: "آیا از لغو ثبت‌نام خود اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
+    registrationCancelled: "ثبت‌نام با موفقیت لغو شد.",
+    saveChanges: "ذخیره تغییرات",
+    groupOf: "گروه",
+
+    // Registration error messages
+    sessionsUnavailableError: "ظرفیت تعدادی از جلسات انتخابی تکمیل شده است. لطفاً جلسات مشخص شده را از انتخاب خارج کنید.",
+    phoneNotAllowedError: "شماره تلفن شما مجاز به ثبت‌نام در این رویداد نیست.",
+    maxRegistrationsError: "حداکثر تعداد ثبت‌نام با این شماره تلفن به پایان رسیده است.",
+    duplicateEmailError: "این آدرس ایمیل قبلاً برای این رویداد ثبت‌نام کرده است.",
+    capacityFullError: "ظرفیت کلی رویداد تکمیل شده است.",
+
+    // Registration rules (admin)
+    registrationRules: "قوانین ثبت‌نام",
+    maxCapacity: "حداکثر ظرفیت کلی",
+    maxCapacityHint: "خالی = بدون محدودیت",
+    allowedPhones: "شماره تلفن‌های مجاز",
+    allowedPhonesHint: "هر شماره در یک خط — خالی = همه مجاز",
+    maxRegistrationsPerPhone: "حداکثر ثبت‌نام برای هر شماره",
+    maxRegistrationsHint: "۱ = یک بار؛ ۲ = دو جلسه؛ خالی = بدون محدودیت",
+    blockDuplicateEmail: "جلوگیری از ثبت‌نام تکراری با ایمیل یکسان",
+
+    // Admin session stats table
+    sessionStats: "آمار جلسات",
+    confirmed: "تأیید شده",
+    buffer: "بافر",
+    open: "باز",
+    full: "پر",
+    registrationCount: "تعداد ثبت‌نام",
+
+    // Registration mode
+    registrationMode: "نوع ثبت‌نام",
+    noRegistration: "بدون ثبت‌نام",
+    registrationFormMode: "فرم ثبت‌نام",
+    eventRegistrationMode: "ثبت‌نام رویداد",
+    noTopicsYet: "ابتدا یک حوزه اضافه کنید تا بتوانید فعالیت ایجاد کنید.",
+
+    // Session selection validation
+    selectAtLeastOneSession: "لطفاً حداقل یک جلسه را انتخاب کنید.",
+
+    // Lookup field (form builder)
+    useLookupField: "استفاده از این فیلد برای تأیید هویت در جستجوی ثبت‌نام",
+    lookupFieldHint: "فقط یک فیلد می‌تواند به عنوان فیلد تأیید انتخاب شود.",
+
+    // Event registration templates
+    eventRegistrations: "ثبت‌نام‌های رویداد",
+    eventRegTemplates: "قالب‌های رویداد",
+    addEventRegTemplate: "افزودن قالب رویداد",
+    editEventRegTemplate: "ویرایش قالب رویداد",
+    noEventRegTemplates: "قالب رویدادی تعریف نشده است.",
+    eventFormTemplate: "قالب رویداد",
+    eventFormMode: "منبع رویداد",
   },
   sv: {
     // Landing
@@ -428,6 +521,99 @@ export const translations = {
     switchArea: "Byt till detta område",
     switchingArea: "Byter...",
     demoAreaNote: "Att byta demoområde laddar om sidan. Verklig data påverkas inte.",
+
+    // Event Sessions (admin builder)
+    sessions: "Evenemangspass",
+    session: "Pass",
+    addSession: "Lägg till pass",
+    sessionName: "Passnamn",
+    sessionDate: "Datum (valfritt)",
+    sessionCapacity: "Ordinarie kapacitet",
+    sessionBuffer: "Administrativ buffert",
+    sessionBufferHint: "Extra platser dolda tills ordinarie kapacitet är full",
+    noSessions: "Inga pass definierade.",
+    removeSession: "Ta bort pass",
+
+    // Session availability (public)
+    spotsRemaining: "platser kvar",
+    regularFull: "Ordinarie kapacitet full",
+    bufferSpotsRemaining: "buffertplatser kvar",
+    fullyBooked: "Fullbokat",
+    confirmedStatus: "Bekräftad",
+    bufferStatus: "Reservlista",
+    nowFullDeselect: "Fullbokat — vänligen avmarkera",
+
+    // Group size
+    howManyPeople: "Hur många personer i er grupp?",
+    groupSize: "Antal personer",
+    person: "person",
+
+    // Registration success card
+    saveRegistrationId: "Spara ditt registrerings-ID",
+    saveRegistrationIdHint: "Använd detta ID för att se, ändra eller avboka din registrering.",
+    yourRegistrationId: "Ditt registrerings-ID",
+    selectedSessions: "Valda pass",
+
+    // Registration lookup
+    findMyRegistration: "Hitta min registrering",
+    registrationId: "Registrerings-ID",
+    findRegistration: "Sök",
+    registrationFound: "Registrering hittad",
+    registrationNotFound: "Ingen registrering hittades med denna information.",
+    modifyRegistration: "Ändra registrering",
+    cancelRegistration: "Avboka registrering",
+    confirmCancel: "Är du säker på att du vill avboka din registrering? Detta kan inte ångras.",
+    registrationCancelled: "Din registrering har avbokats.",
+    saveChanges: "Spara ändringar",
+    groupOf: "Grupp om",
+
+    // Registration error messages
+    sessionsUnavailableError: "Kapaciteten för vissa valda pass är full. Vänligen avmarkera de markerade passen.",
+    phoneNotAllowedError: "Ditt telefonnummer är inte behörigt att registrera sig för detta evenemang.",
+    maxRegistrationsError: "Maximalt antal registreringar för detta telefonnummer har nåtts.",
+    duplicateEmailError: "Denna e-postadress har redan registrerats för detta evenemang.",
+    capacityFullError: "Evenemangets totala kapacitet är full.",
+
+    // Registration rules (admin)
+    registrationRules: "Registreringsregler",
+    maxCapacity: "Maximal totalkapacitet",
+    maxCapacityHint: "Tom = ingen begränsning",
+    allowedPhones: "Tillåtna telefonnummer",
+    allowedPhonesHint: "Ett nummer per rad — tom = alla tillåtna",
+    maxRegistrationsPerPhone: "Max registreringar per telefonnummer",
+    maxRegistrationsHint: "1 = en gång; 2 = två pass; tom = ingen begränsning",
+    blockDuplicateEmail: "Förhindra dubbelregistrering med samma e-post",
+
+    // Admin session stats table
+    sessionStats: "Passstatistik",
+    confirmed: "Bekräftad",
+    buffer: "Buffert",
+    open: "Öppen",
+    full: "Full",
+    registrationCount: "Antal registreringar",
+
+    // Registration mode
+    registrationMode: "Registreringstyp",
+    noRegistration: "Ingen registrering",
+    registrationFormMode: "Registreringsformulär",
+    eventRegistrationMode: "Evenemangsregistrering",
+    noTopicsYet: "Lägg till ett ämne först för att kunna skapa aktiviteter.",
+
+    // Session selection validation
+    selectAtLeastOneSession: "Välj minst ett pass.",
+
+    // Lookup field (form builder)
+    useLookupField: "Använd detta fält för att verifiera identitet vid registreringssökning",
+    lookupFieldHint: "Endast ett fält kan väljas som verifieringsfält.",
+
+    // Event registration templates
+    eventRegistrations: "Evenemangsregistreringar",
+    eventRegTemplates: "Evenemangsmallar",
+    addEventRegTemplate: "Lägg till evenemangsmall",
+    editEventRegTemplate: "Redigera evenemangsmall",
+    noEventRegTemplates: "Inga evenemangsmallar definierade.",
+    eventFormTemplate: "Evenemangsmall",
+    eventFormMode: "Evenemangskälla",
   },
 } as const;
 

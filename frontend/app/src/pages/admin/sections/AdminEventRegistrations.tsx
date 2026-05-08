@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, MessageSquare, Inbox, Filter, Users } from "lucide-react";
-import Toast from "../../../components/Toast";
+import { Loader2, Mail, Phone, Users, Inbox, Filter } from "lucide-react";
 import { useI18n } from "../../../i18n";
 import type { RegistrationReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
 
@@ -15,7 +14,6 @@ interface RegItem {
   name: string;
   email: string;
   phone: string;
-  message: string;
   personCount: number;
   selectedSessions: { sessionId: number; sessionName: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
@@ -29,95 +27,76 @@ interface ActivityOption {
   topicId: number;
 }
 
-export default function AdminRegistrations({ token }: Props) {
+export default function AdminEventRegistrations({ token }: Props) {
   const { t, lang } = useI18n();
   const [registrations, setRegistrations] = useState<RegItem[]>([]);
   const [activities, setActivities] = useState<ActivityOption[]>([]);
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
-    message: "", type: "success", visible: false,
-  });
 
   useEffect(() => {
     import("../../../actor").then(({ backend }) => {
       backend.getTopics().then(async (topics: TopicReturn[]) => {
-        const allActivities: ActivityOption[] = [];
+        const eventActivities: ActivityOption[] = [];
         for (const topic of topics) {
           const acts: ActivityReturn[] = await backend.getActivitiesByTopic(topic.id);
           for (const a of acts) {
-            const mode = a.registrationMode ?? (a.hasRegistration ? (a.sessions.length > 0 ? "event" : "form") : "none");
-            if (mode === "event") continue; // event activities handled in the Event Registrations section
-            allActivities.push({
-              id: Number(a.id),
-              title_sv: a.title_sv,
-              title_fa: a.title_fa,
-              topicId: Number(topic.id),
-            });
+            const mode = a.registrationMode ?? (a.hasRegistration && a.sessions.length > 0 ? "event" : "");
+            if (mode === "event") {
+              eventActivities.push({
+                id: Number(a.id),
+                title_sv: a.title_sv,
+                title_fa: a.title_fa,
+                topicId: Number(topic.id),
+              });
+            }
           }
         }
-        setActivities(allActivities);
+        setActivities(eventActivities);
+        if (eventActivities.length > 0) setSelectedActivityId(eventActivities[0].id);
+        setLoading(false);
       });
     });
   }, []);
 
   const fetchRegistrations = useCallback(async () => {
+    if (selectedActivityId === null) return;
     setLoading(true);
     try {
       const { backend } = await import("../../../actor");
-      let data: RegistrationReturn[];
-      if (selectedActivityId !== null) {
-        data = await backend.getRegistrations(token, BigInt(selectedActivityId));
-        backend.getSessionStats(token, BigInt(selectedActivityId)).then(setSessionStats);
-      } else {
-        const all = await backend.getAllRegistrations(token);
-        // Exclude registrations that belong to event-mode activities
-        const allActs: ActivityReturn[] = [];
-        for (const topic of await backend.getTopics()) {
-          const acts: ActivityReturn[] = await backend.getActivitiesByTopic(topic.id);
-          allActs.push(...acts);
-        }
-        const eventActIds = new Set(allActs
-          .filter((a) => (a.registrationMode ?? (a.sessions.length > 0 ? "event" : "form")) === "event")
-          .map((a) => Number(a.id)));
-        data = all.filter((r) => !eventActIds.has(Number(r.activityId)));
-        setSessionStats([]);
-      }
-      const mapped = data
-        .map((r) => ({
-          id: Number(r.id),
-          activityId: Number(r.activityId),
-          name: r.name,
-          email: r.email,
-          phone: r.phone,
-          message: r.message,
-          personCount: Number(r.personCount),
-          selectedSessions: (r.selectedSessions ?? []).map((ss) => ({
-            sessionId: Number(ss.sessionId),
-            sessionName: ss.sessionName,
-          })),
-          fieldValues: (r.fieldValues || []).map((fv) => ({
-            fieldId: Number(fv.fieldId),
-            fieldLabel: fv.fieldLabel,
-            value: fv.value,
-          })),
-          createdAt: Number(r.createdAt),
-        }))
-        .sort((a, b) => b.createdAt - a.createdAt);
-      setRegistrations(mapped);
-      // Filter activity dropdown to only activities with registrations (only when loading all)
-      if (selectedActivityId === null) {
-        setActivities((prev) => {
-          const idsWithRegs = new Set(mapped.map((r) => r.activityId));
-          return prev.filter((a) => idsWithRegs.has(a.id));
-        });
-      }
+      const [data, stats] = await Promise.all([
+        backend.getRegistrations(token, BigInt(selectedActivityId)),
+        backend.getSessionStats(token, BigInt(selectedActivityId)),
+      ]);
+      setSessionStats(stats);
+      setRegistrations(
+        data
+          .map((r: RegistrationReturn) => ({
+            id: Number(r.id),
+            activityId: Number(r.activityId),
+            name: r.name,
+            email: r.email,
+            phone: r.phone,
+            personCount: Number(r.personCount),
+            selectedSessions: (r.selectedSessions ?? []).map((ss) => ({
+              sessionId: Number(ss.sessionId),
+              sessionName: ss.sessionName,
+            })),
+            fieldValues: (r.fieldValues || []).map((fv) => ({
+              fieldId: Number(fv.fieldId),
+              fieldLabel: fv.fieldLabel,
+              value: fv.value,
+            })),
+            createdAt: Number(r.createdAt),
+          }))
+          .sort((a: RegItem, b: RegItem) => b.createdAt - a.createdAt)
+      );
     } catch {
-      setToast({ message: t("failedToLoadRegistrations"), type: "error", visible: true });
+      // ignore
     }
     setLoading(false);
-  }, [token, selectedActivityId, t]);
+  }, [token, selectedActivityId]);
 
   useEffect(() => {
     fetchRegistrations();
@@ -126,21 +105,12 @@ export default function AdminRegistrations({ token }: Props) {
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
     return new Date(ms).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
     });
   };
 
-  const getActivityTitle = (activityId: number) => {
-    const act = activities.find((a) => a.id === activityId);
-    if (!act) return `#${activityId}`;
-    return lang === "fa" ? act.title_fa : act.title_sv;
-  };
-
-  if (loading) {
+  if (loading && activities.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={32} className="text-primary animate-spin" />
@@ -151,7 +121,7 @@ export default function AdminRegistrations({ token }: Props) {
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-        <h2 className="text-2xl font-bold text-white">{t("registrations")}</h2>
+        <h2 className="text-2xl font-bold text-white">{t("eventRegistrations")}</h2>
         <div className="flex items-center gap-3">
           <Filter size={16} className="text-white/40" />
           <select
@@ -159,7 +129,6 @@ export default function AdminRegistrations({ token }: Props) {
             onChange={(e) => setSelectedActivityId(e.target.value ? Number(e.target.value) : null)}
             className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
           >
-            <option value="" className="bg-black/70">{t("allActivities")}</option>
             {activities.map((a) => (
               <option key={a.id} value={a.id} className="bg-black/70">
                 {lang === "fa" ? a.title_fa : a.title_sv}
@@ -167,12 +136,12 @@ export default function AdminRegistrations({ token }: Props) {
             ))}
           </select>
           <span className="text-sm text-white/40">
-            {registrations.length} {registrations.length === 1 ? t("registration") : t("registrations")}
+            {registrations.length} {t("registrations")}
           </span>
         </div>
       </div>
 
-      {/* Session stats table */}
+      {/* Session stats — prominent */}
       {sessionStats.length > 0 && (
         <div className="mb-8 rounded-xl border border-white/10 overflow-hidden">
           <div className="px-4 py-3 bg-white/[0.03] border-b border-white/10">
@@ -191,18 +160,10 @@ export default function AdminRegistrations({ token }: Props) {
                     {lang === "fa" ? ss.name_fa : ss.name_sv}
                   </span>
                   {ss.date && <span className="text-xs text-white/40">{ss.date}</span>}
-                  <span className="text-xs text-white/60">
-                    {confirmed}/{cap} {t("confirmed")}
-                  </span>
-                  {buf > 0 && (
-                    <span className="text-xs text-white/60">
-                      {buffered}/{buf} {t("buffer")}
-                    </span>
-                  )}
+                  <span className="text-xs text-white/60">{confirmed}/{cap} {t("confirmed")}</span>
+                  {buf > 0 && <span className="text-xs text-white/60">{buffered}/{buf} {t("buffer")}</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                    isFull
-                      ? "bg-red-500/15 text-red-400 border-red-500/20"
-                      : "bg-green-500/15 text-green-400 border-green-500/20"
+                    isFull ? "bg-red-500/15 text-red-400 border-red-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
                   }`}>
                     {isFull ? t("full") : t("open")}
                   </span>
@@ -216,12 +177,8 @@ export default function AdminRegistrations({ token }: Props) {
         </div>
       )}
 
-      {registrations.length === 0 ? (
-        <motion.div
-          className="glass rounded-2xl p-12 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+      {registrations.length === 0 && !loading ? (
+        <motion.div className="glass rounded-2xl p-12 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Inbox size={48} className="text-white/20 mx-auto mb-4" />
           <p className="text-white/40">{t("noRegistrations")}</p>
         </motion.div>
@@ -233,7 +190,7 @@ export default function AdminRegistrations({ token }: Props) {
               className="glass rounded-2xl p-5"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
+              transition={{ delay: idx * 0.04 }}
             >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1 min-w-0">
@@ -249,9 +206,7 @@ export default function AdminRegistrations({ token }: Props) {
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <span className="flex items-center gap-1.5 text-sm text-white/40">
                       <Mail size={13} />
-                      <a href={`mailto:${reg.email}`} className="hover:text-primary transition-colors">
-                        {reg.email}
-                      </a>
+                      <a href={`mailto:${reg.email}`} className="hover:text-primary transition-colors">{reg.email}</a>
                     </span>
                     {reg.phone && (
                       <span className="flex items-center gap-1.5 text-sm text-white/40">
@@ -263,9 +218,7 @@ export default function AdminRegistrations({ token }: Props) {
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className="text-xs text-white/30">{formatDate(reg.createdAt)}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary/80 border border-primary/20">
-                    {getActivityTitle(reg.activityId)}
-                  </span>
+                  <span className="text-xs font-mono text-primary/60">#{reg.id}</span>
                 </div>
               </div>
 
@@ -273,20 +226,10 @@ export default function AdminRegistrations({ token }: Props) {
               {reg.selectedSessions.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {reg.selectedSessions.map((ss) => (
-                    <span
-                      key={ss.sessionId}
-                      className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] text-white/60 border border-white/10"
-                    >
+                    <span key={ss.sessionId} className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] text-white/60 border border-white/10">
                       {ss.sessionName}
                     </span>
                   ))}
-                </div>
-              )}
-
-              {reg.message && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                  <MessageSquare size={14} className="text-white/20 mt-0.5 shrink-0" />
-                  <p className="text-sm text-white/60 whitespace-pre-wrap break-words">{reg.message}</p>
                 </div>
               )}
 
@@ -304,13 +247,6 @@ export default function AdminRegistrations({ token }: Props) {
           ))}
         </div>
       )}
-
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        visible={toast.visible}
-        onClose={() => setToast({ ...toast, visible: false })}
-      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import type {
   SocialLinkReturn,
   RegistrationReturn,
   FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) =>
@@ -81,6 +82,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>Detta program syftar till att skapa ett utrymme för att lära känna och engagera medlemmar i det iranska samhället i Sverige. Deltagarna kommer att ha möjlighet att delta i workshops och interaktiva sessioner.</p><p>Kontakta oss för mer information och registrering.</p>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -91,9 +95,19 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "جشن آغاز بهار و سال نو ایرانی با برنامه‌های متنوع",
     excerpt_sv: "Firande av den iranska nyårsfesten med varierade program",
     ...body("جشن نوروز", "Nowruz-firande"),
-    formTemplateId: 7001n,
+    sessions: [
+      { id: 101n, name_fa: "جلسه صبح", name_sv: "Förmiddagssession", date: "2026-03-21", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "جلسه عصر", name_sv: "Eftermiddagssession", date: "2026-03-21", capacity: 25n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام کامل خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+      { id: 4n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal deltagare", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, sortOrder: 4n },
+    ],
+    regMaxCapacity: 50n,
     icon: "Sun", imageUrl: img("nowruz", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    hasRegistration: true, registrationMode: "event", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 2002n, topicId: 1001n, slug: "yalda-night",
@@ -102,13 +116,13 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Firande av årets längsta natt med poesi och musik",
     ...body("شب یلدا", "Yalda-natt"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "تعداد مهمانان", label_sv: "Antal gäster", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "نوع غذا", label_sv: "Matpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "عادی", sv: "Vanlig" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "توضیحات اضافی", label_sv: "Övrig information", placeholder_fa: "آلرژی غذایی یا نیاز خاص", placeholder_sv: "Matallergier eller speciella behov", required: false, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "تعداد مهمانان", label_sv: "Antal gäster", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "نوع غذا", label_sv: "Matpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "عادی", sv: "Vanlig" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "توضیحات اضافی", label_sv: "Övrig information", placeholder_fa: "آلرژی غذایی یا نیاز خاص", placeholder_sv: "Matallergier eller speciella behov", required: false, options: [], isLookupField: false, sortOrder: 4n },
     ],
     icon: "Moon", imageUrl: img("yalda", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 2003n, topicId: 1001n, slug: "persian-poetry-evening",
@@ -117,7 +131,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Poesiuppläsningskväll med verk av Hafez, Rumi och samtida poeter",
     ...body("شب شعر فارسی", "Persisk poesikväll"),
     icon: "BookOpen", imageUrl: img("poetry", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   {
     id: 2004n, topicId: 1001n, slug: "iranian-film-night",
@@ -126,7 +140,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Visning av utvalda iranska filmer följt av diskussion",
     ...body("شب فیلم ایرانی", "Iransk filmkväll"),
     icon: "Film", imageUrl: img("film-night", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(45),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(45),
   },
   {
     id: 2005n, topicId: 1001n, slug: "cultural-exhibition",
@@ -135,7 +149,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Utställning av iranska hantverk och traditionell konst",
     ...body("نمایشگاه فرهنگی", "Kulturutställning"),
     icon: "Landmark", imageUrl: img("exhibition", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(40),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(40),
   },
   // ── Education ──
   {
@@ -146,7 +160,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("کلاس زبان فارسی", "Persiska språkkurser"),
     formTemplateId: 7002n,
     icon: "Languages", imageUrl: img("persian-class", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(58),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
   {
     id: 2007n, topicId: 1002n, slug: "swedish-integration-course",
@@ -155,7 +169,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Introduktion till svensk kultur, lagar och samhällssystem",
     ...body("دوره آشنایی با جامعه سوئد", "Svensk integrationskurs"),
     icon: "GraduationCap", imageUrl: img("swedish-course", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(52),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(52),
   },
   {
     id: 2008n, topicId: 1002n, slug: "homework-help",
@@ -164,7 +178,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Gratis läxhjälp för elever i alla årskurser",
     ...body("کمک درسی دانش‌آموزان", "Läxhjälp för elever"),
     icon: "PenTool", imageUrl: img("homework", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(48),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(48),
   },
   {
     id: 2009n, topicId: 1002n, slug: "computer-skills-workshop",
@@ -172,9 +186,19 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "آموزش مهارت‌های پایه و پیشرفته کامپیوتر",
     excerpt_sv: "Utbildning i grundläggande och avancerade datorkunskaper",
     ...body("کارگاه مهارت‌های کامپیوتری", "Workshop i datorkunskap"),
-    formTemplateId: 7002n,
+    sessions: [
+      { id: 211n, name_fa: "گروه صبح", name_sv: "Morgongrupp", date: "2026-07-07", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 212n, name_fa: "گروه بعدازظهر", name_sv: "Eftermiddagsgrupp", date: "2026-07-14", capacity: 15n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "checkbox", label_fa: "قوانین را می‌پذیرم", label_sv: "Jag accepterar reglerna", placeholder_fa: "موافقم", placeholder_sv: "Jag godkänner", required: true, options: [], isLookupField: false, sortOrder: 4n },
+    ],
+    regMaxCapacity: 30n,
     icon: "Monitor", imageUrl: img("computer", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(43),
+    hasRegistration: true, registrationMode: "event", sortOrder: 4n, createdAt: ts(43),
   },
   {
     id: 2010n, topicId: 1002n, slug: "parenting-seminar",
@@ -183,7 +207,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Seminarium om barnuppfostran i en mångkulturell miljö",
     ...body("سمینار فرزندپروری", "Föräldraskapsseminarium"),
     icon: "Heart", imageUrl: img("parenting", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(38),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(38),
   },
   // ── Sports ──
   {
@@ -194,7 +218,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("تیم فوتبال", "Fotbollslag"),
     formTemplateId: 7003n,
     icon: "CircleDot", imageUrl: img("football", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(57),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
   {
     id: 2012n, topicId: 1003n, slug: "volleyball-club",
@@ -203,7 +227,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Volleybollträning för herrar och damer",
     ...body("باشگاه والیبال", "Volleybollklubb"),
     icon: "Activity", imageUrl: img("volleyball", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(51),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(51),
   },
   {
     id: 2013n, topicId: 1003n, slug: "yoga-wellness",
@@ -212,7 +236,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Yoga- och meditationsklasser för kroppsligt och själsligt välmående",
     ...body("یوگا و تندرستی", "Yoga och välmående"),
     icon: "Flower2", imageUrl: img("yoga", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(46),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(46),
   },
   {
     id: 2014n, topicId: 1003n, slug: "swimming-lessons",
@@ -222,7 +246,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("کلاس شنا", "Simlektioner"),
     formTemplateId: 7003n,
     icon: "Waves", imageUrl: img("swimming", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(41),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(41),
   },
   {
     id: 2015n, topicId: 1003n, slug: "hiking-group",
@@ -231,7 +255,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Gruppvandring och friluftsliv i svensk natur",
     ...body("گروه کوهنوردی", "Vandringsgrupp"),
     icon: "Mountain", imageUrl: img("hiking", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(36),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(36),
   },
   // ── Art ──
   {
@@ -242,7 +266,7 @@ export const mockActivities: ActivityReturn[] = [
     ...body("کارگاه خوشنویسی", "Kalligrafiworkshop"),
     formTemplateId: 7002n,
     icon: "PenTool", imageUrl: img("calligraphy", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(56),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
   {
     id: 2017n, topicId: 1004n, slug: "painting-class",
@@ -251,7 +275,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Akvarell- och oljemålarklass för alla nivåer",
     ...body("کلاس نقاشی", "Målarklass"),
     icon: "Palette", imageUrl: img("painting", 800, 600),
-    hasRegistration: true, sortOrder: 2n, createdAt: ts(49),
+    hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(49),
   },
   {
     id: 2018n, topicId: 1004n, slug: "music-ensemble",
@@ -260,7 +284,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Ensemble för traditionell och modern iransk musik",
     ...body("گروه موسیقی", "Musikensemble"),
     icon: "Music", imageUrl: img("music", 800, 600),
-    hasRegistration: false, sortOrder: 3n, createdAt: ts(44),
+    hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(44),
   },
   {
     id: 2019n, topicId: 1004n, slug: "theater-group",
@@ -269,14 +293,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Skådespelarworkshop och framförande av persiska och svenska pjäser",
     ...body("گروه تئاتر", "Teatergrupp"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "تجربه بازیگری", label_sv: "Skådespelarerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "بدون تجربه", sv: "Ingen erfarenhet" }, { fa: "آماتور", sv: "Amatör" }, { fa: "حرفه‌ای", sv: "Professionell" }], sortOrder: 3n },
-      { id: 4n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "چرا می‌خواهید در گروه تئاتر شرکت کنید؟", label_sv: "Varför vill du gå med i teatergruppen?", placeholder_fa: "انگیزه خود را بنویسید", placeholder_sv: "Beskriv din motivation", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "تجربه بازیگری", label_sv: "Skådespelarerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "بدون تجربه", sv: "Ingen erfarenhet" }, { fa: "آماتور", sv: "Amatör" }, { fa: "حرفه‌ای", sv: "Professionell" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "چرا می‌خواهید در گروه تئاتر شرکت کنید؟", label_sv: "Varför vill du gå med i teatergruppen?", placeholder_fa: "انگیزه خود را بنویسید", placeholder_sv: "Beskriv din motivation", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     icon: "Theater", imageUrl: img("theater", 800, 600),
-    hasRegistration: true, sortOrder: 4n, createdAt: ts(39),
+    hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },
   {
     id: 2020n, topicId: 1004n, slug: "photography-club",
@@ -285,7 +309,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Fotografiundervisning och utställning av medlemmarnas verk",
     ...body("باشگاه عکاسی", "Fotoklubb"),
     icon: "Camera", imageUrl: img("photography", 800, 600),
-    hasRegistration: false, sortOrder: 5n, createdAt: ts(34),
+    hasRegistration: false, registrationMode: "none", sortOrder: 5n, createdAt: ts(34),
   },
   // ── Community ──
   {
@@ -295,7 +319,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Delta i volontäraktiviteter och samhällstjänster",
     ...body("برنامه داوطلبانه", "Volontärprogram"),
     icon: "HandHeart", imageUrl: img("volunteer", 800, 600),
-    hasRegistration: true, sortOrder: 1n, createdAt: ts(54),
+    hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
   {
     id: 2022n, topicId: 1005n, slug: "family-day",
@@ -304,7 +328,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Underhållningsprogram för familjer med spel och förfriskningar",
     ...body("روز خانواده", "Familjedag"),
     icon: "Users", imageUrl: img("family-day", 800, 600),
-    hasRegistration: false, sortOrder: 2n, createdAt: ts(47),
+    hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(47),
   },
   {
     id: 2023n, topicId: 1005n, slug: "mentorship-program",
@@ -313,15 +337,15 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Vägledning och rådgivning för nyanlända till Sverige",
     ...body("برنامه منتورشیپ", "Mentorskapsprogram"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "نقش مورد نظر", label_sv: "Önskad roll", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "منتور (راهنما)", sv: "Mentor" }, { fa: "منتی (جوینده راهنمایی)", sv: "Adept" }], sortOrder: 4n },
-      { id: 5n, fieldType: "select", label_fa: "زبان ترجیحی", label_sv: "Föredraget språk", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }], sortOrder: 5n },
-      { id: 6n, fieldType: "textarea", label_fa: "درباره خودتان بنویسید", label_sv: "Berätta om dig själv", placeholder_fa: "تجربیات و علایق خود را شرح دهید", placeholder_sv: "Beskriv dina erfarenheter och intressen", required: false, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "نقش مورد نظر", label_sv: "Önskad roll", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "منتور (راهنما)", sv: "Mentor" }, { fa: "منتی (جوینده راهنمایی)", sv: "Adept" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "select", label_fa: "زبان ترجیحی", label_sv: "Föredraget språk", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "textarea", label_fa: "درباره خودتان بنویسید", label_sv: "Berätta om dig själv", placeholder_fa: "تجربیات و علایق خود را شرح دهید", placeholder_sv: "Beskriv dina erfarenheter och intressen", required: false, options: [], isLookupField: false, sortOrder: 6n },
     ],
     icon: "Compass", imageUrl: img("mentorship", 800, 600),
-    hasRegistration: true, sortOrder: 3n, createdAt: ts(42),
+    hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(42),
   },
   {
     id: 2024n, topicId: 1005n, slug: "senior-gathering",
@@ -330,7 +354,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Veckovisa träffar för seniorer med te och samtal",
     ...body("دورهمی بزرگسالان", "Seniorträff"),
     icon: "Coffee", imageUrl: img("senior", 800, 600),
-    hasRegistration: false, sortOrder: 4n, createdAt: ts(37),
+    hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(37),
   },
   {
     id: 2025n, topicId: 1005n, slug: "youth-leadership",
@@ -339,7 +363,30 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Ledarskapsutbildning för ungdomar",
     ...body("رهبری جوانان", "Ungdomsledarskap"),
     icon: "Rocket", imageUrl: img("youth", 800, 600),
-    hasRegistration: true, sortOrder: 5n, createdAt: ts(32),
+    hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(32),
+  },
+
+  // ── Multi-day summer school — session/capacity demo ──────────────────────
+  {
+    id: 2030n, topicId: 1001n, slug: "summer-school",
+    title_fa: "مدرسه تابستانه فرهنگی", title_sv: "Kulturell sommarskola",
+    excerpt_fa: "سه روز غوطه‌وری در زبان، موسیقی و آشپزی ایرانی — ظرفیت محدود",
+    excerpt_sv: "Tre dagar av fördjupning i persiskt språk, musik och matlagning — begränsat antal platser",
+    ...body("مدرسه تابستانه فرهنگی", "Kulturell sommarskola"),
+    sessions: [
+      { id: 201n, name_fa: "روز اول — زبان فارسی", name_sv: "Dag 1 — Persiskt språk", date: "2026-07-14", capacity: 8n, bufferCapacity: 4n, sortOrder: 1n },
+      { id: 202n, name_fa: "روز دوم — موسیقی سنتی", name_sv: "Dag 2 — Traditionell musik", date: "2026-07-15", capacity: 10n, bufferCapacity: 5n, sortOrder: 2n },
+      { id: 203n, name_fa: "روز سوم — آشپزی ایرانی", name_sv: "Dag 3 — Iransk matlagning", date: "2026-07-16", capacity: 6n, bufferCapacity: 3n, sortOrder: 3n },
+    ],
+    customFormFields: [
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+    ],
+    regMaxCapacity: 30n,
+    regBlockDuplicateEmail: true,
+    icon: "GraduationCap", imageUrl: img("summer-school", 800, 600),
+    hasRegistration: true, registrationMode: "event", sortOrder: 6n, createdAt: ts(28),
   },
 ];
 
@@ -389,23 +436,51 @@ export const mockSocialLinks: SocialLinkReturn[] = [
 // ─── Registrations ────────────────────────────────────────────────────────────
 
 export const mockRegistrations: RegistrationReturn[] = [
+  // ── Nowruz event registrations (activityId 2001n) ───────────────────────────
+  // Morning (101n cap20/buf5), Evening (102n cap25/buf5)
   {
-    id: 6001n, activityId: 2001n, name: "", email: "", phone: "", message: "",
+    id: 1778090001n, activityId: 2001n, name: "", email: "", phone: "+46701111001", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Nima Karimi" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "nima@example.com" },
-      { fieldId: 3n, fieldLabel: "پیام / Meddelande", value: "مشتاقانه منتظر جشن نوروز هستم!" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111001" },
+      { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "2" },
     ],
+    personCount: 2n, selectedSessions: [{ sessionId: 101n, sessionName: "جلسه صبح" }],
     createdAt: ts(3),
   },
   {
-    id: 6002n, activityId: 2001n, name: "", email: "", phone: "", message: "",
+    id: 1778080002n, activityId: 2001n, name: "", email: "", phone: "+46701111002", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Lisa Svensson" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "lisa.s@example.com" },
-      { fieldId: 3n, fieldLabel: "پیام / Meddelande", value: "Jag vill gärna delta med min familj." },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111002" },
+      { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "3" },
     ],
+    personCount: 3n, selectedSessions: [{ sessionId: 102n, sessionName: "جلسه عصر" }],
     createdAt: ts(4),
+  },
+  {
+    id: 1778070003n, activityId: 2001n, name: "", email: "", phone: "+46701111003", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Parisa Tehrani" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "parisa.t@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111003" },
+      { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "4" },
+    ],
+    personCount: 4n, selectedSessions: [{ sessionId: 101n, sessionName: "جلسه صبح" }, { sessionId: 102n, sessionName: "جلسه عصر" }],
+    createdAt: ts(5),
+  },
+  {
+    id: 1778060004n, activityId: 2001n, name: "", email: "", phone: "+46701111004", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Henrik Lindgren" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "henrik.l@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111004" },
+      { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "1" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "جلسه عصر" }],
+    createdAt: ts(6),
   },
   {
     id: 6003n, activityId: 2006n, name: "", email: "", phone: "", message: "",
@@ -416,6 +491,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "مبتدی" },
       { fieldId: 5n, fieldLabel: "توضیحات اضافی / Ytterligare information", value: "می‌خواهم فرزندم را برای کلاس فارسی ثبت‌نام کنم." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(6),
   },
   {
@@ -428,6 +504,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 5n, fieldLabel: "اندازه تی‌شرت / T-shirtstorlek", value: "L" },
       { fieldId: 6n, fieldLabel: "قوانین را می‌پذیرم / Jag accepterar reglerna", value: "true" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(8),
   },
   {
@@ -439,10 +516,11 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "متوسط" },
       { fieldId: 5n, fieldLabel: "توضیحات اضافی / Ytterligare information", value: "خیلی علاقه‌مند به یادگیری خوشنویسی هستم." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(12),
   },
-  { id: 6006n, activityId: 2005n, name: "Amir Tehrani", email: "amir.t@example.com", phone: "+46701239876", message: "آیا بچه‌ها هم می‌توانند در نمایشگاه شرکت کنند؟", fieldValues: [], createdAt: ts(7) },
-  { id: 6007n, activityId: 2007n, name: "Fatima Nilsson", email: "fatima.n@example.com", phone: "+46708884321", message: "Jag vill anmäla mig och min man till kursen.", fieldValues: [], createdAt: ts(9) },
+  { id: 6006n, activityId: 2005n, name: "Amir Tehrani", email: "amir.t@example.com", phone: "+46701239876", message: "آیا بچه‌ها هم می‌توانند در نمایشگاه شرکت کنند؟", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(7) },
+  { id: 6007n, activityId: 2007n, name: "Fatima Nilsson", email: "fatima.n@example.com", phone: "+46708884321", message: "Jag vill anmäla mig och min man till kursen.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(9) },
   {
     id: 6008n, activityId: 2002n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -451,7 +529,166 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 3n, fieldLabel: "نوع غذا / Matpreferens", value: "گیاهی" },
       { fieldId: 4n, fieldLabel: "توضیحات اضافی / Övrig information", value: "یکی از مهمانان آلرژی به آجیل دارد." },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
+  },
+
+  // ── Computer skills event registrations (activityId 2009n) ──────────────────
+  // Morning group (211n cap12/buf3), Afternoon group (212n cap15/buf3)
+  {
+    id: 1778050005n, activityId: 2009n, name: "", email: "leila.m@example.com", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Leila Moradi" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "leila.m@example.com" },
+      { fieldId: 3n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "مبتدی" },
+      { fieldId: 4n, fieldLabel: "قوانین را می‌پذیرم / Jag accepterar reglerna", value: "true" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 211n, sessionName: "گروه صبح" }],
+    createdAt: ts(2),
+  },
+  {
+    id: 1778040006n, activityId: 2009n, name: "", email: "arash.g@example.com", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Arash Ghorbani" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "arash.g@example.com" },
+      { fieldId: 3n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "متوسط" },
+      { fieldId: 4n, fieldLabel: "قوانین را می‌پذیرم / Jag accepterar reglerna", value: "true" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 212n, sessionName: "گروه بعدازظهر" }],
+    createdAt: ts(3),
+  },
+  {
+    id: 1778030007n, activityId: 2009n, name: "", email: "sofia.k@example.com", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Sofia Karlsson" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "sofia.k@example.com" },
+      { fieldId: 3n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "پیشرفته" },
+      { fieldId: 4n, fieldLabel: "قوانین را می‌پذیرم / Jag accepterar reglerna", value: "true" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 211n, sessionName: "گروه صبح" }, { sessionId: 212n, sessionName: "گروه بعدازظهر" }],
+    createdAt: ts(4),
+  },
+
+  // ── Summer school session-based registrations (activityId 2030n) ──────────
+  // Day1=201n(cap8,buf4), Day2=202n(cap10,buf5), Day3=203n(cap6,buf3)
+  // Final state: Day1 totally full, Day2 has 1 spot, Day3 totally full
+  {
+    id: 1778020008n, activityId: 2030n,
+    name: "Sara Ahmadi", email: "sara.a@example.com", phone: "+46701000001", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Sara Ahmadi" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "sara.a@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000001" },
+    ],
+    personCount: 2n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+      { sessionId: 202n, sessionName: "روز دوم — موسیقی سنتی" },
+    ],
+    createdAt: ts(10),
+  },
+  {
+    id: 1778010009n, activityId: 2030n,
+    name: "Ali Hassan", email: "ali.h@example.com", phone: "+46701000002", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Ali Hassan" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "ali.h@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000002" },
+    ],
+    personCount: 3n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+      { sessionId: 203n, sessionName: "روز سوم — آشپزی ایرانی" },
+    ],
+    createdAt: ts(9),
+  },
+  {
+    id: 1778000010n, activityId: 2030n,
+    name: "Maryam Johansson", email: "maryam.j@example.com", phone: "+46701000003", message: "بسیار مشتاقم!",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Maryam Johansson" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "maryam.j@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000003" },
+    ],
+    personCount: 3n,
+    selectedSessions: [
+      { sessionId: 202n, sessionName: "روز دوم — موسیقی سنتی" },
+      { sessionId: 203n, sessionName: "روز سوم — آشپزی ایرانی" },
+    ],
+    createdAt: ts(8),
+  },
+  {
+    id: 1777990011n, activityId: 2030n,
+    name: "Karim Lindström", email: "karim.l@example.com", phone: "+46701000004", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Karim Lindström" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "karim.l@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000004" },
+    ],
+    personCount: 2n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+      { sessionId: 202n, sessionName: "روز دوم — موسیقی سنتی" },
+    ],
+    createdAt: ts(7),
+  },
+  {
+    id: 1777980012n, activityId: 2030n,
+    name: "Nasrin Berg", email: "nasrin.b@example.com", phone: "+46701000005", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Nasrin Berg" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "nasrin.b@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000005" },
+    ],
+    personCount: 1n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+    ],
+    createdAt: ts(6),
+  },
+  {
+    id: 1777970013n, activityId: 2030n,
+    name: "Dariush Svensson", email: "dariush.s@example.com", phone: "+46701000006", message: "ممنون از فرصت ثبت‌نام",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Dariush Svensson" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "dariush.s@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000006" },
+    ],
+    personCount: 2n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+      { sessionId: 203n, sessionName: "روز سوم — آشپزی ایرانی" },
+    ],
+    createdAt: ts(5),
+  },
+  {
+    id: 1777960014n, activityId: 2030n,
+    name: "Leila Ekström", email: "leila.e@example.com", phone: "+46701000007", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Leila Ekström" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "leila.e@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000007" },
+    ],
+    personCount: 2n,
+    selectedSessions: [
+      { sessionId: 201n, sessionName: "روز اول — زبان فارسی" },
+      { sessionId: 202n, sessionName: "روز دوم — موسیقی سنتی" },
+    ],
+    createdAt: ts(4),
+  },
+  {
+    id: 1777950015n, activityId: 2030n,
+    name: "Reza Tehrani", email: "reza.t@example.com", phone: "+46701000008", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Reza Tehrani" },
+      { fieldId: 2n, fieldLabel: "ایمیل", value: "reza.t@example.com" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000008" },
+    ],
+    personCount: 1n,
+    selectedSessions: [
+      { sessionId: 203n, sessionName: "روز سوم — آشپزی ایرانی" },
+    ],
+    createdAt: ts(3),
   },
 ];
 
@@ -462,9 +699,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 7001n, name_fa: "ثبت‌نام پایه", name_sv: "Grundregistrering",
     description_fa: "فرم ساده با نام، ایمیل و پیام", description_sv: "Enkelt formulär med namn, e-post och meddelande",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "ایمیل خود را وارد کنید", placeholder_sv: "Ange din e-post", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "پیام خود را بنویسید", placeholder_sv: "Skriv ditt meddelande", required: false, options: [], sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "ایمیل خود را وارد کنید", placeholder_sv: "Ange din e-post", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "پیام خود را بنویسید", placeholder_sv: "Skriv ditt meddelande", required: false, options: [], isLookupField: false, sortOrder: 3n },
     ],
     createdAt: ts(100),
   },
@@ -472,11 +709,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 7002n, name_fa: "ثبت‌نام کارگاه", name_sv: "Workshopregistrering",
     description_fa: "فرم مناسب برای ثبت‌نام در کارگاه‌ها و دوره‌ها", description_sv: "Formulär lämpligt för workshop- och kursregistrering",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "توضیحات اضافی", label_sv: "Ytterligare information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "توضیحات اضافی", label_sv: "Ytterligare information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(95),
   },
@@ -484,13 +721,51 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 7003n, name_fa: "ثبت‌نام ورزشی", name_sv: "Sportregistrering",
     description_fa: "فرم مناسب برای ثبت‌نام در فعالیت‌های ورزشی", description_sv: "Formulär för registrering i sportaktiviteter",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "select", label_fa: "اندازه تی‌شرت", label_sv: "T-shirtstorlek", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "S", sv: "S" }, { fa: "M", sv: "M" }, { fa: "L", sv: "L" }, { fa: "XL", sv: "XL" }], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "قوانین را می‌پذیرم", label_sv: "Jag accepterar reglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "select", label_fa: "اندازه تی‌شرت", label_sv: "T-shirtstorlek", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "S", sv: "S" }, { fa: "M", sv: "M" }, { fa: "L", sv: "L" }, { fa: "XL", sv: "XL" }], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "قوانین را می‌پذیرم", label_sv: "Jag accepterar reglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(90),
   },
 ];
+
+// ─── Event Registration Templates ────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 8001n,
+    name_fa: "فستیوال فرهنگی", name_sv: "Kulturfestival",
+    description_fa: "قالب پیش‌فرض برای جشن‌های فرهنگی با جلسات صبح و عصر", description_sv: "Standardmall för kulturfestivaler med förmiddags- och eftermiddagssessioner",
+    sessions: [
+      { id: 0n, name_fa: "جلسه صبح", name_sv: "Förmiddagssession", date: "", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 0n, name_fa: "جلسه عصر", name_sv: "Eftermiddagssession", date: "", capacity: 25n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام کامل خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+      { id: 4n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal deltagare", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: ts(30),
+  },
+  {
+    id: 8002n,
+    name_fa: "کارگاه گروهی", name_sv: "Gruppworkshop",
+    description_fa: "قالب مناسب برای کارگاه‌های آموزشی با گروه‌بندی زمانی", description_sv: "Mall för utbildningsworkshops med tidsgrupperingar",
+    sessions: [
+      { id: 0n, name_fa: "گروه صبح", name_sv: "Morgongrupp", date: "", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 0n, name_fa: "گروه بعدازظهر", name_sv: "Eftermiddagsgrupp", date: "", capacity: 15n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "checkbox", label_fa: "قوانین را می‌پذیرم", label_sv: "Jag accepterar reglerna", placeholder_fa: "موافقم", placeholder_sv: "Jag godkänner", required: true, options: [], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: ts(25),
+  },
+];
+

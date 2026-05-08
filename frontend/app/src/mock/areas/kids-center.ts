@@ -2,6 +2,7 @@ import type {
   SiteSettingsReturn, TopicReturn, ActivityReturn, HeroSlideReturn,
   AboutContentReturn, ContactMessageReturn, SocialLinkReturn,
   RegistrationReturn, FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
@@ -12,6 +13,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>I en säker, kreativ och rolig miljö upptäcker barn sina talanger. Våra tränare är specialiserade på att arbeta med barn och förvandlar varje pass till en oförglömlig upplevelse.</p><ul><li>Små grupper för mer uppmärksamhet</li><li>Helt säker och övervakad miljö</li><li>Aktiviteter anpassade efter ålder och förmåga</li></ul>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockSettings: SiteSettingsReturn = {
@@ -46,7 +50,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کودکان ۵ تا ۱۰ ساله با رنگ‌های آکریلیک نقاشی می‌کشند", excerpt_sv: "Barn 5–10 år målar med akrylfärger",
     ...body("کارگاه نقاشی آکریلیک", "Workshop i akrylfärger"),
     formTemplateId: 87020n,
-    icon: "Palette", imageUrl: img("painting-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    icon: "Palette", imageUrl: img("painting-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 82002n, topicId: 81001n, slug: "pottery-kids",
@@ -54,20 +58,20 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "چرخ سفالگری، قالب‌سازی و لعاب‌کاری برای ۷ تا ۱۴ ساله", excerpt_sv: "Keramikhjul, formning och glasering för 7–14 år",
     ...body("سفالگری کودکان", "Keramik för barn"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "text", label_fa: "آلرژی به مواد", label_sv: "Allergi mot material", placeholder_fa: "مثلاً لاتکس، رنگ‌های خاص", placeholder_sv: "T.ex. latex, specifika färger", required: false, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "text", label_fa: "آلرژی به مواد", label_sv: "Allergi mot material", placeholder_fa: "مثلاً لاتکس، رنگ‌های خاص", placeholder_sv: "T.ex. latex, specifika färger", required: false, options: [], isLookupField: false, sortOrder: 5n },
     ],
-    icon: "Layers", imageUrl: img("pottery-kids", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    icon: "Layers", imageUrl: img("pottery-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 82003n, topicId: 81001n, slug: "digital-art",
     title_fa: "هنر دیجیتال", title_sv: "Digital konst",
     excerpt_fa: "طراحی و نقاشی دیجیتال با تبلت برای کودکان ۹ تا ۱۴ ساله", excerpt_sv: "Digital design och målning med surfplatta för barn 9–14 år",
     ...body("هنر دیجیتال", "Digital konst"),
-    icon: "Monitor", imageUrl: img("digital-art-kids", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    icon: "Monitor", imageUrl: img("digital-art-kids", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   // Science
   {
@@ -76,7 +80,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ساخت ربات با لِگو Mindstorms برای کودکان ۸ تا ۱۲ ساله", excerpt_sv: "Bygg robotar med Lego Mindstorms för barn 8–12 år",
     ...body("رباتیک مقدماتی", "Robotteknik junior"),
     formTemplateId: 87021n,
-    icon: "Cpu", imageUrl: img("robotics-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(48),
+    icon: "Cpu", imageUrl: img("robotics-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(48),
   },
   {
     id: 83002n, topicId: 81002n, slug: "chemistry-experiments",
@@ -84,14 +88,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "آتشفشان سرکه، رنگ‌های جادویی و آزمایش‌های هیجان‌انگیز", excerpt_sv: "Ättiksvulkan, magiska färger och spännande experiment",
     ...body("آزمایش‌های شیمی", "Kemiexperiment"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "select", label_fa: "پایه تحصیلی", label_sv: "Skolklass", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "کلاس اول و دوم", sv: "Klass 1–2" }, { fa: "کلاس سوم و چهارم", sv: "Klass 3–4" }, { fa: "کلاس پنجم و ششم", sv: "Klass 5–6" }], sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "text", label_fa: "آلرژی شیمیایی", label_sv: "Kemisk allergi", placeholder_fa: "مثلاً لاتکس، برخی رنگ‌ها", placeholder_sv: "T.ex. latex, vissa färger", required: false, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "فرزندم قوانین ایمنی آزمایشگاه را رعایت می‌کند", label_sv: "Mitt barn följer laboratoriesäkerhetsreglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "select", label_fa: "پایه تحصیلی", label_sv: "Skolklass", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "کلاس اول و دوم", sv: "Klass 1–2" }, { fa: "کلاس سوم و چهارم", sv: "Klass 3–4" }, { fa: "کلاس پنجم و ششم", sv: "Klass 5–6" }], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "text", label_fa: "آلرژی شیمیایی", label_sv: "Kemisk allergi", placeholder_fa: "مثلاً لاتکس، برخی رنگ‌ها", placeholder_sv: "T.ex. latex, vissa färger", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "فرزندم قوانین ایمنی آزمایشگاه را رعایت می‌کند", label_sv: "Mitt barn följer laboratoriesäkerhetsreglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],
-    icon: "FlaskConical", imageUrl: img("chemistry-kids", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(45),
+    icon: "FlaskConical", imageUrl: img("chemistry-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(45),
   },
   // Music
   {
@@ -100,14 +104,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "دوره ۱۰ هفته‌ای اوکلله با کنسرت پایانی — ابزار در اختیار", excerpt_sv: "10-veckorskurs i ukulele med avslutningskonsert — instrument ingår",
     ...body("اوکلله برای کودکان", "Ukulele för barn"),
     formTemplateId: 87020n,
-    icon: "Music", imageUrl: img("ukulele-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(42),
+    icon: "Music", imageUrl: img("ukulele-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(42),
   },
   {
     id: 84002n, topicId: 81003n, slug: "kids-choir",
     title_fa: "گروه کر کودکان", title_sv: "Barnkör",
     excerpt_fa: "آواز گروهی، تنفس صحیح و هماهنگی برای ۷ تا ۱۲ ساله", excerpt_sv: "Kör, korrekt andning och harmoni för 7–12 år",
     ...body("گروه کر کودکان", "Barnkör"),
-    icon: "Mic", imageUrl: img("kids-choir", 800, 600), hasRegistration: false, sortOrder: 2n, createdAt: ts(38),
+    icon: "Mic", imageUrl: img("kids-choir", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(38),
   },
   // Drama
   {
@@ -116,12 +120,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "اعتماد به نفس، خلاقیت و مهارت‌های اجتماعی از طریق نمایش", excerpt_sv: "Självförtroende, kreativitet och sociala färdigheter genom teater",
     ...body("تئاتر بداهه", "Improvisationsteater"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "تجربه قبلی نمایش", label_sv: "Tidigare teatererfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "هیچ تجربه‌ای ندارم", sv: "Ingen erfarenhet" }, { fa: "کمی تجربه دارم", sv: "Lite erfarenhet" }, { fa: "در گروه نمایشی بوده‌ام", sv: "Har medverkat i teatergrupp" }], sortOrder: 3n },
-      { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "تجربه قبلی نمایش", label_sv: "Tidigare teatererfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "هیچ تجربه‌ای ندارم", sv: "Ingen erfarenhet" }, { fa: "کمی تجربه دارم", sv: "Lite erfarenhet" }, { fa: "در گروه نمایشی بوده‌ام", sv: "Har medverkat i teatergrupp" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Star", imageUrl: img("improv-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(35),
+    icon: "Star", imageUrl: img("improv-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(35),
   },
   // Outdoor
   {
@@ -130,7 +134,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ماهانه — پیاده‌روی و شناسایی گیاهان برای ۵ تا ۱۲ ساله", excerpt_sv: "Månadsvis — vandring och växtidentifiering för 5–12 år",
     ...body("کاشف‌های طبیعت", "Naturutforskare"),
     formTemplateId: 87020n,
-    icon: "TreePine", imageUrl: img("nature-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(30),
+    icon: "TreePine", imageUrl: img("nature-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(30),
   },
   {
     id: 86002n, topicId: 81005n, slug: "survival-skills-teens",
@@ -138,15 +142,19 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "دوره ۲ روزه — چادر، آتش و جهت‌یابی برای ۱۱ تا ۱۶ ساله", excerpt_sv: "2-dagarskurs — tält, eld och orientering för 11–16 år",
     ...body("مهارت‌های بقا در طبیعت", "Överlevnadskunskaper"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "تجربه در طبیعت", label_sv: "Utomhuserfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بدون تجربه قبلی", sv: "Ingen tidigare erfarenhet" }, { fa: "چند سفر کمپینگ", sv: "Några campingresor" }, { fa: "تجربه پیاده‌روی و کمپینگ زیاد", sv: "Stor erfarenhet av vandring och camping" }], sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا محدودیت‌های فعالیت", label_sv: "Medicinska tillstånd eller aktivitetsbegränsningar", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 6n },
-      { id: 7n, fieldType: "checkbox", label_fa: "خطرات فعالیت‌های خارج از درب را می‌پذیرم و تمام دستورالعمل‌ها را رعایت می‌کنم", label_sv: "Jag accepterar riskerna med utomhusaktiviteter och följer alla instruktioner", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 7n },
+      { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "تجربه در طبیعت", label_sv: "Utomhuserfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بدون تجربه قبلی", sv: "Ingen tidigare erfarenhet" }, { fa: "چند سفر کمپینگ", sv: "Några campingresor" }, { fa: "تجربه پیاده‌روی و کمپینگ زیاد", sv: "Stor erfarenhet av vandring och camping" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "phone", label_fa: "تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 5n },
+      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا محدودیت‌های فعالیت", label_sv: "Medicinska tillstånd eller aktivitetsbegränsningar", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 7n, fieldType: "checkbox", label_fa: "خطرات فعالیت‌های خارج از درب را می‌پذیرم و تمام دستورالعمل‌ها را رعایت می‌کنم", label_sv: "Jag accepterar riskerna med utomhusaktiviteter och följer alla instruktioner", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 7n },
     ],
-    icon: "TreePine", imageUrl: img("survival-kids", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(25),
+    sessions: [
+      { id: 101n, name_fa: "روز اول — شنبه", name_sv: "Dag 1 — Lördag", date: "2026-09-19", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 102n, name_fa: "روز دوم — یکشنبه", name_sv: "Dag 2 — Söndag", date: "2026-09-20", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    icon: "TreePine", imageUrl: img("survival-kids", 800, 600), hasRegistration: true, registrationMode: "event", sortOrder: 2n, createdAt: ts(25),
   },
 ];
 
@@ -167,15 +175,15 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 87020n, name_fa: "ثبت‌نام فعالیت کودکان", name_sv: "Barnaktivitetsregistrering",
     description_fa: "فرم استاندارد با اطلاعات کودک، والدین و تماس اضطراری", description_sv: "Standardformulär med barnuppgifter, föräldrar och nödkontakt",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "جنسیت", label_sv: "Kön", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "پسر", sv: "Pojke" }, { fa: "دختر", sv: "Flicka" }, { fa: "ترجیح نمی‌دهم بگویم", sv: "Föredrar att inte ange" }], sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefonnummer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
-      { id: 7n, fieldType: "phone", label_fa: "شماره اضطراری (غیر از شماره بالا)", label_sv: "Nödtelefon (annan än ovan)", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 7n },
-      { id: 8n, fieldType: "textarea", label_fa: "نیازهای پزشکی یا آلرژی", label_sv: "Medicinska behov eller allergier", placeholder_fa: "هر آلرژی، دارو یا نیاز پزشکی که باید بدانیم", placeholder_sv: "Allergier, mediciner eller medicinska behov vi bör känna till", required: false, options: [], sortOrder: 8n },
-      { id: 9n, fieldType: "checkbox", label_fa: "رضایت می‌دهم عکس‌های کودکم در رسانه‌های مرکز استفاده شود", label_sv: "Jag godkänner att mitt barns foton används i centrets medier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 9n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "نام کامل کودک", placeholder_sv: "Barnets fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "جنسیت", label_sv: "Kön", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "پسر", sv: "Pojke" }, { fa: "دختر", sv: "Flicka" }, { fa: "ترجیح نمی‌دهم بگویم", sv: "Föredrar att inte ange" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefonnummer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 7n, fieldType: "phone", label_fa: "شماره اضطراری (غیر از شماره بالا)", label_sv: "Nödtelefon (annan än ovan)", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 7n },
+      { id: 8n, fieldType: "textarea", label_fa: "نیازهای پزشکی یا آلرژی", label_sv: "Medicinska behov eller allergier", placeholder_fa: "هر آلرژی، دارو یا نیاز پزشکی که باید بدانیم", placeholder_sv: "Allergier, mediciner eller medicinska behov vi bör känna till", required: false, options: [], isLookupField: false, sortOrder: 8n },
+      { id: 9n, fieldType: "checkbox", label_fa: "رضایت می‌دهم عکس‌های کودکم در رسانه‌های مرکز استفاده شود", label_sv: "Jag godkänner att mitt barns foton används i centrets medier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 9n },
     ],
     createdAt: ts(100),
   },
@@ -183,12 +191,12 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 87021n, name_fa: "ثبت‌نام علوم / رباتیک", name_sv: "STEM / Robotteknik-registrering",
     description_fa: "فرم با اطلاعات پایه تحصیلی و رضایت ایمنی آزمایشگاه", description_sv: "Formulär med skolklass och laboratoriesäkerhetsmedgivande",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "پایه تحصیلی", label_sv: "Skolklass", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "کلاس اول و دوم", sv: "Klass 1–2" }, { fa: "کلاس سوم و چهارم", sv: "Klass 3–4" }, { fa: "کلاس پنجم و ششم", sv: "Klass 5–6" }, { fa: "راهنمایی / کلاس ۷–۹", sv: "Klass 7–9" }], sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "فرزندم قوانین ایمنی آزمایشگاه / کارگاه را رعایت می‌کند", label_sv: "Mitt barn följer säkerhetsreglerna i laboratoriet/verkstaden", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "پایه تحصیلی", label_sv: "Skolklass", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "کلاس اول و دوم", sv: "Klass 1–2" }, { fa: "کلاس سوم و چهارم", sv: "Klass 3–4" }, { fa: "کلاس پنجم و ششم", sv: "Klass 5–6" }, { fa: "راهنمایی / کلاس ۷–۹", sv: "Klass 7–9" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Förälderns e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "فرزندم قوانین ایمنی آزمایشگاه / کارگاه را رعایت می‌کند", label_sv: "Mitt barn följer säkerhetsreglerna i laboratoriet/verkstaden", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(95),
   },
@@ -212,6 +220,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 6n, fieldLabel: "ایمیل والدین / Förälderns e-post", value: "maryam@example.com" },
       { fieldId: 7n, fieldLabel: "شماره اضطراری / Nödtelefon", value: "070-9998877" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(3),
   },
   {
@@ -224,6 +233,54 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 5n, fieldLabel: "ایمیل والدین / Förälderns e-post", value: "johan@example.se" },
       { fieldId: 6n, fieldLabel: "رضایت ایمنی / Säkerhetsmedgivande", value: "true" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(7),
+  },
+  {
+    id: 1775500001n, activityId: 86002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام نوجوان / Ungdomens namn", value: "Oliver Lindström" },
+      { fieldId: 2n, fieldLabel: "سن / Ålder", value: "13" },
+      { fieldId: 3n, fieldLabel: "تجربه در طبیعت / Utomhuserfarenhet", value: "Några campingresor" },
+      { fieldId: 4n, fieldLabel: "نام والدین / Förälderns namn", value: "Maria Lindström" },
+      { fieldId: 5n, fieldLabel: "تماس والدین / Förälderns telefon", value: "073-1234567" },
+      { fieldId: 7n, fieldLabel: "پذیرش ریسک / Acceptera risker", value: "true" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Dag 1 — Lördag" }, { sessionId: 102n, sessionName: "Dag 2 — Söndag" }],
+    createdAt: ts(2),
+  },
+  {
+    id: 1775400002n, activityId: 86002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام نوجوان / Ungdomens namn", value: "Yasmin Karimi" },
+      { fieldId: 2n, fieldLabel: "سن / Ålder", value: "14" },
+      { fieldId: 3n, fieldLabel: "تجربه در طبیعت / Utomhuserfarenhet", value: "Stor erfarenhet av vandring och camping" },
+      { fieldId: 4n, fieldLabel: "نام والدین / Förälderns namn", value: "Mina Karimi" },
+      { fieldId: 5n, fieldLabel: "تماس والدین / Förälderns telefon", value: "070-9876543" },
+      { fieldId: 7n, fieldLabel: "پذیرش ریسک / Acceptera risker", value: "true" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Dag 1 — Lördag" }],
+    createdAt: ts(4),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 88001n,
+    name_fa: "برنامه نوجوانان", name_sv: "Ungdomsprogram",
+    description_fa: "قالب رویداد برای برنامه‌های نوجوانان در طبیعت", description_sv: "Eventmall för ungdomsprogram i naturen",
+    sessions: [
+      { id: 201n, name_fa: "روز اول", name_sv: "Dag 1", date: "2026-10-17", capacity: 12n, bufferCapacity: 3n, sortOrder: 1n },
+      { id: 202n, name_fa: "روز دوم", name_sv: "Dag 2", date: "2026-10-18", capacity: 12n, bufferCapacity: 3n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Förälderns namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "phone", label_fa: "تلفن والدین", label_sv: "Förälderns telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

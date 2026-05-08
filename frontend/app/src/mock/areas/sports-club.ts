@@ -2,6 +2,7 @@ import type {
   SiteSettingsReturn, TopicReturn, ActivityReturn, HeroSlideReturn,
   AboutContentReturn, ContactMessageReturn, SocialLinkReturn,
   RegistrationReturn, FormTemplateReturn,
+  EventRegistrationTemplateReturn,
 } from "../../backend/api/backend";
 
 const img = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
@@ -12,6 +13,9 @@ const body = (fa: string, sv: string) => ({
   body_sv: `<h2>${sv}</h2><p>I detta program förbättrar du dina idrottsfärdigheter med professionella tränare. En vänlig och stödjande miljö för alla nivåer.</p><ul><li>Träning med professionell utrustning</li><li>Personligt anpassat träningsprogram</li><li>Fokus på säkerhet och kondition</li></ul>`,
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
+  sessions: [],
+  regAllowedPhones: [],
+  regBlockDuplicateEmail: false,
 });
 
 export const mockSettings: SiteSettingsReturn = {
@@ -46,13 +50,13 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "رقابت تیم‌های ۷ نفره هر یکشنبه صبح در زمین اصلی", excerpt_sv: "Lag om 7 spelare tävlar varje söndagsmorgon på huvudplanen",
     ...body("لیگ یکشنبه‌ها", "Söndagsligan"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "phone", label_fa: "شماره اضطراری", label_sv: "Nödtelefon", placeholder_fa: "شماره فرد اضطراری", placeholder_sv: "Nödkontaktens telefon", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "checkbox", label_fa: "تأیید می‌کنم که از نظر پزشکی مجاز به ورزش هستم", label_sv: "Jag bekräftar att jag är medicinskt godkänd för träning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "phone", label_fa: "شماره اضطراری", label_sv: "Nödtelefon", placeholder_fa: "شماره فرد اضطراری", placeholder_sv: "Nödkontaktens telefon", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "checkbox", label_fa: "تأیید می‌کنم که از نظر پزشکی مجاز به ورزش هستم", label_sv: "Jag bekräftar att jag är medicinskt godkänd för träning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
     ],
-    icon: "Trophy", imageUrl: img("sunday-football", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(60),
+    icon: "Trophy", imageUrl: img("sunday-football", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
   {
     id: 72002n, topicId: 71001n, slug: "youth-football",
@@ -60,14 +64,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "آموزش تکنیک‌های پایه برای بازیکنان ۱۰ تا ۱۶ ساله", excerpt_sv: "Grundläggande teknikträning för spelare 10–16 år",
     ...body("فوتبال جوانان", "Ungdomsfotboll"),
     formTemplateId: 77020n,
-    icon: "Users", imageUrl: img("youth-football", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(55),
+    icon: "Users", imageUrl: img("youth-football", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
   {
     id: 72003n, topicId: 71001n, slug: "goalkeeper-training",
     title_fa: "تمرین دروازه‌بان", title_sv: "Målvaktsträning",
     excerpt_fa: "تکنیک‌های اختصاصی دروازه‌بانی با مربی متخصص", excerpt_sv: "Specialiserade målvaktstekniker med expertcoach",
     ...body("تمرین دروازه‌بان", "Målvaktsträning"),
-    icon: "ShieldCheck", imageUrl: img("goalkeeper", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(50),
+    icon: "ShieldCheck", imageUrl: img("goalkeeper", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(50),
   },
   // Tennis
   {
@@ -76,7 +80,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "دوره ۸ هفته‌ای برای کسانی که هرگز راکت نزده‌اند", excerpt_sv: "8-veckorskurs för de som aldrig hållit i ett racket",
     ...body("تنیس مبتدیان", "Tennis för nybörjare"),
     formTemplateId: 77021n,
-    icon: "Circle", imageUrl: img("tennis-beginner", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(48),
+    icon: "Circle", imageUrl: img("tennis-beginner", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(48),
   },
   {
     id: 73002n, topicId: 71002n, slug: "tennis-advanced",
@@ -84,12 +88,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تمرین تاکتیک، سرویس قوی و بازی دوبل برای بازیکنان باتجربه", excerpt_sv: "Taktikträning, stark serve och dubbelspel för erfarna spelare",
     ...body("تنیس پیشرفته", "Avancerad tennis"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح بازی", label_sv: "Spelnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "متوسط — ۱ تا ۳ سال تجربه", sv: "Medel — 1–3 års erfarenhet" }, { fa: "پیشرفته — بیش از ۳ سال", sv: "Avancerad — mer än 3 år" }, { fa: "نیمه‌حرفه‌ای", sv: "Halvprofessionell" }], sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "تماس اضطراری (نام: شماره)", label_sv: "Nödkontakt (namn: telefon)", placeholder_fa: "نام: ۰۹۱۲...", placeholder_sv: "Namn: 070-...", required: true, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح بازی", label_sv: "Spelnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "متوسط — ۱ تا ۳ سال تجربه", sv: "Medel — 1–3 års erfarenhet" }, { fa: "پیشرفته — بیش از ۳ سال", sv: "Avancerad — mer än 3 år" }, { fa: "نیمه‌حرفه‌ای", sv: "Halvprofessionell" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "تماس اضطراری (نام: شماره)", label_sv: "Nödkontakt (namn: telefon)", placeholder_fa: "نام: ۰۹۱۲...", placeholder_sv: "Namn: 070-...", required: true, options: [], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Circle", imageUrl: img("tennis-advanced", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(45),
+    icon: "Circle", imageUrl: img("tennis-advanced", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(45),
   },
   // Swimming
   {
@@ -98,14 +102,14 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "یاد گرفتن یا بهبود تکنیک شنا در گروه‌های کوچک ۶ نفره", excerpt_sv: "Lär dig simma eller förbättra tekniken i små grupper om 6",
     ...body("شنا برای بزرگسالان", "Simkurs för vuxna"),
     formTemplateId: 77021n,
-    icon: "Waves", imageUrl: img("swim-adult", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(42),
+    icon: "Waves", imageUrl: img("swim-adult", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(42),
   },
   {
     id: 74002n, topicId: 71003n, slug: "swim-competition-prep",
     title_fa: "آمادگی برای مسابقات", title_sv: "Tävlingsförberedelse",
     excerpt_fa: "برنامه فشرده برای شناگران رقابتی", excerpt_sv: "Intensivt program för tävlingsimmare",
     ...body("آمادگی برای مسابقات", "Tävlingsförberedelse"),
-    icon: "Medal", imageUrl: img("swim-competition", 800, 600), hasRegistration: false, sortOrder: 2n, createdAt: ts(38),
+    icon: "Medal", imageUrl: img("swim-competition", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 2n, createdAt: ts(38),
   },
   // Martial Arts
   {
@@ -114,7 +118,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "انضباط، احترام و دفاع از خود برای کودکان ۶ تا ۱۲ ساله", excerpt_sv: "Disciplin, respekt och självförsvar för barn 6–12 år",
     ...body("کاراته کودکان", "Karate för barn"),
     formTemplateId: 77020n,
-    icon: "Shield", imageUrl: img("karate-kids", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(35),
+    icon: "Shield", imageUrl: img("karate-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(35),
   },
   {
     id: 75002n, topicId: 71004n, slug: "self-defense-adults",
@@ -122,12 +126,12 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تکنیک‌های کاربردی دفاع شخصی برای موقعیت‌های واقعی", excerpt_sv: "Praktiska självförsvarstekniker för verkliga situationer",
     ...body("دفاع شخصی بزرگسالان", "Självförsvar för vuxna"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "پایین — تازه شروع کرده‌ام", sv: "Låg — precis börjat" }, { fa: "متوسط", sv: "Medel" }, { fa: "بالا — به طور منظم ورزش می‌کنم", sv: "Hög — tränar regelbundet" }], sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "آسیب‌دیدگی‌ها یا محدودیت‌های پزشکی", label_sv: "Skador eller medicinska begränsningar", placeholder_fa: "اگر محدودیتی دارید توضیح دهید", placeholder_sv: "Beskriv eventuella begränsningar", required: false, options: [], sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "پایین — تازه شروع کرده‌ام", sv: "Låg — precis börjat" }, { fa: "متوسط", sv: "Medel" }, { fa: "بالا — به طور منظم ورزش می‌کنم", sv: "Hög — tränar regelbundet" }], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "آسیب‌دیدگی‌ها یا محدودیت‌های پزشکی", label_sv: "Skador eller medicinska begränsningar", placeholder_fa: "اگر محدودیتی دارید توضیح دهید", placeholder_sv: "Beskriv eventuella begränsningar", required: false, options: [], isLookupField: false, sortOrder: 4n },
     ],
-    icon: "Shield", imageUrl: img("self-defense", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(32),
+    icon: "Shield", imageUrl: img("self-defense", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(32),
   },
   // Running
   {
@@ -136,7 +140,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "۸ هفته برنامه تمرینی ساختارمند برای مبتدیان", excerpt_sv: "8 veckors strukturerat träningsprogram för nybörjare",
     ...body("از صفر تا ۵ کیلومتر", "Från noll till 5 km"),
     formTemplateId: 77021n,
-    icon: "Wind", imageUrl: img("running-5k", 800, 600), hasRegistration: true, sortOrder: 1n, createdAt: ts(28),
+    icon: "Wind", imageUrl: img("running-5k", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(28),
   },
   {
     id: 76002n, topicId: 71005n, slug: "marathon-prep",
@@ -144,22 +148,26 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "۱۶ هفته تخصصی برای اولین ماراتن شما", excerpt_sv: "16 specialiserade veckor för ditt första maraton",
     ...body("آمادگی برای ماراتن", "Maratonförberedelse"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه دویدن", label_sv: "Löparerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "هیچ تجربه‌ای ندارم", sv: "Ingen erfarenhet" }, { fa: "گاهی می‌دوم", sv: "Springer ibland" }, { fa: "به طور منظم ۵–۱۰ کیلومتر", sv: "Regelbundet 5–10 km" }, { fa: "نیمه ماراتن دویده‌ام", sv: "Springer halvmaraton" }], sortOrder: 4n },
-      { id: 5n, fieldType: "text", label_fa: "بهترین زمان (اختیاری)", label_sv: "Personligt rekord (valfritt)", placeholder_fa: "مثلاً ۴۵ دقیقه ۱۰ کیلومتر", placeholder_sv: "T.ex. 45 min på 10 km", required: false, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "text", label_fa: "تماس اضطراری", label_sv: "Nödkontakt", placeholder_fa: "نام: شماره", placeholder_sv: "Namn: telefon", required: true, options: [], sortOrder: 6n },
-      { id: 7n, fieldType: "textarea", label_fa: "شرایط پزشکی مرتبط", label_sv: "Relevanta medicinska tillstånd", placeholder_fa: "هر شرایطی که مربی باید بداند", placeholder_sv: "Tillstånd tränaren bör känna till", required: false, options: [], sortOrder: 7n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه دویدن", label_sv: "Löparerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "هیچ تجربه‌ای ندارم", sv: "Ingen erfarenhet" }, { fa: "گاهی می‌دوم", sv: "Springer ibland" }, { fa: "به طور منظم ۵–۱۰ کیلومتر", sv: "Regelbundet 5–10 km" }, { fa: "نیمه ماراتن دویده‌ام", sv: "Springer halvmaraton" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "text", label_fa: "بهترین زمان (اختیاری)", label_sv: "Personligt rekord (valfritt)", placeholder_fa: "مثلاً ۴۵ دقیقه ۱۰ کیلومتر", placeholder_sv: "T.ex. 45 min på 10 km", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "text", label_fa: "تماس اضطراری", label_sv: "Nödkontakt", placeholder_fa: "نام: شماره", placeholder_sv: "Namn: telefon", required: true, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 7n, fieldType: "textarea", label_fa: "شرایط پزشکی مرتبط", label_sv: "Relevanta medicinska tillstånd", placeholder_fa: "هر شرایطی که مربی باید بداند", placeholder_sv: "Tillstånd tränaren bör känna till", required: false, options: [], isLookupField: false, sortOrder: 7n },
     ],
-    icon: "Wind", imageUrl: img("marathon", 800, 600), hasRegistration: true, sortOrder: 2n, createdAt: ts(25),
+    sessions: [
+      { id: 101n, name_fa: "دوره بهاره (شروع فروردین ۱۴۰۵)", name_sv: "Vårtermin (start april 2026)", date: "2026-04-13", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 102n, name_fa: "دوره پاییزه (شروع شهریور ۱۴۰۵)", name_sv: "Hösttermin (start september 2026)", date: "2026-09-14", capacity: 20n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    icon: "Wind", imageUrl: img("marathon", 800, 600), hasRegistration: true, registrationMode: "event", sortOrder: 2n, createdAt: ts(25),
   },
   {
     id: 76003n, topicId: 71005n, slug: "trail-running",
     title_fa: "دویدن در طبیعت", title_sv: "Terränglöpning",
     excerpt_fa: "کشف مسیرهای طبیعی در اطراف شهر با گروه هفتگی", excerpt_sv: "Utforska naturleder runt staden med vecklig grupp",
     ...body("دویدن در طبیعت", "Terränglöpning"),
-    icon: "Wind", imageUrl: img("trail-running", 800, 600), hasRegistration: false, sortOrder: 3n, createdAt: ts(20),
+    icon: "Wind", imageUrl: img("trail-running", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 3n, createdAt: ts(20),
   },
 ];
 
@@ -181,12 +189,12 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 77020n, name_fa: "ثبت‌نام ورزش جوانان", name_sv: "Ungdomsidrottsregistrering",
     description_fa: "فرم ثبت‌نام برنامه‌های ورزشی جوانان با اطلاعات والدین", description_sv: "Registreringsformulär för ungdomsprogram med föräldraruppgifter",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک / بازیکن", label_sv: "Barnets / spelarens namn", placeholder_fa: "نام کامل", placeholder_sv: "Fullständigt namn", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "۰۹۱۲ ...", placeholder_sv: "070-...", required: true, options: [], sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "آسیب‌دیدگی‌های قبلی", label_sv: "Tidigare skador", placeholder_fa: "هر آسیب‌دیدگی مرتبطی که مربی باید بداند", placeholder_sv: "Eventuella relevanta skador tränaren bör känna till", required: false, options: [], sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "رضایت می‌دهم که تصاویر در رسانه‌های باشگاه استفاده شود", label_sv: "Jag godkänner att bilder används i klubbens medier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک / بازیکن", label_sv: "Barnets / spelarens namn", placeholder_fa: "نام کامل", placeholder_sv: "Fullständigt namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "سن (سال)", placeholder_sv: "Ålder (år)", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین / سرپرست", label_sv: "Förälderns / vårdnadshavarens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "phone", label_fa: "شماره تماس والدین", label_sv: "Förälderns telefon", placeholder_fa: "۰۹۱۲ ...", placeholder_sv: "070-...", required: true, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "آسیب‌دیدگی‌های قبلی", label_sv: "Tidigare skador", placeholder_fa: "هر آسیب‌دیدگی مرتبطی که مربی باید بداند", placeholder_sv: "Eventuella relevanta skador tränaren bör känna till", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "رضایت می‌دهم که تصاویر در رسانه‌های باشگاه استفاده شود", label_sv: "Jag godkänner att bilder används i klubbens medier", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 6n },
     ],
     createdAt: ts(100),
   },
@@ -194,11 +202,11 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 77021n, name_fa: "ثبت‌نام ورزش بزرگسالان", name_sv: "Vuxenidrottsregistrering",
     description_fa: "فرم استاندارد ثبت‌نام برنامه‌های ورزشی بزرگسالان", description_sv: "Standardregistrering för vuxnas idrottsprogram",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "شماره تماس", label_sv: "Telefonnummer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], sortOrder: 4n },
-      { id: 5n, fieldType: "checkbox", label_fa: "تأیید می‌کنم از نظر پزشکی مجاز به ورزش هستم", label_sv: "Jag bekräftar att jag är medicinskt godkänd för träning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تماس", label_sv: "Telefonnummer", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "سطح آمادگی جسمانی", label_sv: "Konditionsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 5n, fieldType: "checkbox", label_fa: "تأیید می‌کنم از نظر پزشکی مجاز به ورزش هستم", label_sv: "Jag bekräftar att jag är medicinskt godkänd för träning", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
     ],
     createdAt: ts(98),
   },
@@ -220,6 +228,7 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 4n, fieldLabel: "شماره اضطراری / Nödtelefon", value: "070-9876543" },
       { fieldId: 5n, fieldLabel: "تأیید پزشکی / Medicinskt godkännande", value: "true" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(2),
   },
   {
@@ -232,6 +241,67 @@ export const mockRegistrations: RegistrationReturn[] = [
       { fieldId: 5n, fieldLabel: "بهترین زمان / Personligt rekord", value: "52 min / 10 km" },
       { fieldId: 6n, fieldLabel: "تماس اضطراری / Nödkontakt", value: "Anna Johansson: 073-9876543" },
     ],
+    personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
+  },
+  {
+    id: 1770500001n, activityId: 76002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Karin Persson" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "karin.p@example.se" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "073-5555555" },
+      { fieldId: 4n, fieldLabel: "تجربه دویدن / Löparerfarenhet", value: "Springer halvmaraton" },
+      { fieldId: 5n, fieldLabel: "بهترین زمان / Personligt rekord", value: "1:55 halvmaraton" },
+      { fieldId: 6n, fieldLabel: "تماس اضطراری / Nödkontakt", value: "Lars Persson: 070-1111111" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (start april 2026)" }],
+    createdAt: ts(1),
+  },
+  {
+    id: 1770400002n, activityId: 76002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Hassan Rahimi" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "hassan.r@example.com" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "076-2222222" },
+      { fieldId: 4n, fieldLabel: "تجربه دویدن / Löparerfarenhet", value: "Ingen erfarenhet" },
+      { fieldId: 5n, fieldLabel: "بهترین زمان / Personligt rekord", value: "" },
+      { fieldId: 6n, fieldLabel: "تماس اضطراری / Nödkontakt", value: "Mina Rahimi: 073-3333333" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Hösttermin (start september 2026)" }],
+    createdAt: ts(4),
+  },
+  {
+    id: 1770300003n, activityId: 76002n, name: "", email: "", phone: "", message: "",
+    fieldValues: [
+      { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Emma Ström" },
+      { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "emma.strom@example.se" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "070-4444444" },
+      { fieldId: 4n, fieldLabel: "تجربه دویدن / Löparerfarenhet", value: "Regelbundet 5–10 km" },
+      { fieldId: 5n, fieldLabel: "بهترین زمان / Personligt rekord", value: "58 min / 10 km" },
+      { fieldId: 6n, fieldLabel: "تماس اضطراری / Nödkontakt", value: "Johan Ström: 076-6666666" },
+    ],
+    personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (start april 2026)" }],
+    createdAt: ts(7),
+  },
+];
+
+// ─── Event Registration Templates ─────────────────────────────────────────────
+
+export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] = [
+  {
+    id: 78001n,
+    name_fa: "رویداد ورزشی", name_sv: "Sportevenemang",
+    description_fa: "قالب رویداد برای رویدادهای ورزشی و مسابقات", description_sv: "Eventmall för sportevenemang och tävlingar",
+    sessions: [
+      { id: 201n, name_fa: "ترم بهاره", name_sv: "Vårtermin", date: "2026-04-20", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
+      { id: 202n, name_fa: "ترم پاییزه", name_sv: "Hösttermin", date: "2026-09-21", capacity: 20n, bufferCapacity: 5n, sortOrder: 2n },
+    ],
+    fields: [
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+    ],
+    createdAt: 1748000000000000000n,
   },
 ];

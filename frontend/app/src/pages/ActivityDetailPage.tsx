@@ -7,9 +7,9 @@ import { useAssetUrl } from "../hooks/useAssetUrl";
 import Background from "../components/Background";
 import GlassCard from "../components/GlassCard";
 import RegistrationForm from "../components/RegistrationForm";
-import Toast from "../components/Toast";
+import RegistrationLookup from "../components/RegistrationLookup";
 import LoadingSpinner from "../components/LoadingSpinner";
-import type { TopicReturn, ActivityReturn, FormFieldReturn } from "../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn } from "../backend/api/backend";
 
 interface Activity {
   id: number;
@@ -21,6 +21,8 @@ interface Activity {
   body_sv: string;
   imageUrl: string;
   hasRegistration: boolean;
+  registrationMode: string;
+  sessions: EventSessionReturn[];
 }
 
 interface Topic {
@@ -38,12 +40,8 @@ export default function ActivityDetailPage() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [loading, setLoading] = useState(true);
   const [formFields, setFormFields] = useState<FormFieldReturn[] | null>(null);
+  const [availability, setAvailability] = useState<SessionAvailabilityReturn[]>([]);
   const activityImage = useAssetUrl(activity?.imageUrl);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-    visible: boolean;
-  }>({ message: "", type: "success", visible: false });
 
   useEffect(() => {
     if (!topicSlug || !activitySlug) return;
@@ -62,13 +60,22 @@ export default function ActivityDetailPage() {
             return;
           }
           const actId = Number(actData.id);
-          setActivity({ ...actData, id: actId, topicId: Number(actData.topicId) });
+          const act: Activity = {
+            ...actData,
+            id: actId,
+            topicId: Number(actData.topicId),
+            sessions: actData.sessions ?? [],
+          };
+          setActivity(act);
 
-          // Fetch dynamic form fields if registration is enabled
           if (actData.hasRegistration) {
             backend.getActivityFormFields(BigInt(actId)).then((fields: FormFieldReturn[] | null) => {
               setFormFields(fields);
             });
+
+            if ((actData.sessions ?? []).length > 0) {
+              backend.getSessionAvailability(BigInt(actId)).then(setAvailability);
+            }
           }
           setLoading(false);
         });
@@ -162,6 +169,7 @@ export default function ActivityDetailPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
+            className="space-y-4"
           >
             <GlassCard hover={false}>
               <h2 className="text-2xl font-bold text-white mb-6">
@@ -170,20 +178,31 @@ export default function ActivityDetailPage() {
               <RegistrationForm
                 activityId={activity.id}
                 formFields={formFields}
-                onSuccess={() => setToast({ message: t("registrationSuccess"), type: "success", visible: true })}
-                onError={() => setToast({ message: t("registrationError"), type: "error", visible: true })}
+                sessions={activity.sessions}
               />
             </GlassCard>
+
+            {/* Self-service lookup — event registrations only */}
+            {activity.registrationMode === "event" && (
+              <GlassCard hover={false}>
+                <RegistrationLookup
+                activityId={activity.id}
+                availability={availability}
+                lookupField={
+                  formFields?.find((f) => f.isLookupField)
+                    ? {
+                        fieldId: formFields.find((f) => f.isLookupField)!.id,
+                        label_fa: formFields.find((f) => f.isLookupField)!.label_fa,
+                        label_sv: formFields.find((f) => f.isLookupField)!.label_sv,
+                      }
+                    : undefined
+                }
+              />
+            </GlassCard>
+            )}
           </motion.div>
         )}
       </div>
-
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        visible={toast.visible}
-        onClose={() => setToast({ ...toast, visible: false })}
-      />
     </div>
   );
 }
