@@ -9,6 +9,10 @@ import GlassCard from "../components/GlassCard";
 import RegistrationForm from "../components/RegistrationForm";
 import RegistrationLookup from "../components/RegistrationLookup";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettings } from "../hooks/useSeoSettings";
+import { activityBreadcrumb, articleSchema, eventSchema } from "../lib/jsonld";
+import { useSeoSettingsContext } from "../contexts/SeoSettingsContext";
 import type { TopicReturn, ActivityReturn, FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn } from "../backend/api/backend";
 
 interface Activity {
@@ -42,6 +46,36 @@ export default function ActivityDetailPage() {
   const [formFields, setFormFields] = useState<FormFieldReturn[] | null>(null);
   const [availability, setAvailability] = useState<SessionAvailabilityReturn[]>([]);
   const activityImage = useAssetUrl(activity?.imageUrl);
+  const { seoSettings } = useSeoSettingsContext();
+
+  const activityTitle = activity ? localized(activity.title_fa, activity.title_sv) : undefined;
+  const activityBody = activity ? localized(activity.body_fa, activity.body_sv) : "";
+  const activityDesc = activityBody.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 160);
+  const activityUrl = `${seoSettings.canonicalBaseUrl}/${lang}/topics/${topicSlug}/${activitySlug}`;
+  const topicTitle = topic ? localized(topic.title_fa, topic.title_sv) : "";
+
+  const seoJsonLd = activity && topic
+    ? [
+        activityBreadcrumb(
+          t("topics"),
+          `${seoSettings.canonicalBaseUrl}/${lang}/topics`,
+          topicTitle,
+          `${seoSettings.canonicalBaseUrl}/${lang}/topics/${topicSlug}`,
+          activityTitle!,
+          activityUrl
+        ),
+        activity.registrationMode === "event"
+          ? eventSchema(activity, activityUrl, lang, seoSettings.canonicalBaseUrl)
+          : articleSchema(activity, activityUrl, lang, seoSettings.canonicalBaseUrl),
+      ]
+    : null;
+
+  const seo = useSeoSettings({
+    title: activityTitle,
+    description: activityDesc || undefined,
+    ogImage: activityImage || undefined,
+    jsonLd: seoJsonLd ? { "@graph": seoJsonLd } : null,
+  });
 
   useEffect(() => {
     if (!topicSlug || !activitySlug) return;
@@ -90,6 +124,7 @@ export default function ActivityDetailPage() {
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16">
+      <SeoHead {...seo} ogType="article" />
       <Background url={activity.imageUrl} />
 
       <div className="max-w-4xl mx-auto">
@@ -134,7 +169,7 @@ export default function ActivityDetailPage() {
           >
             <img
               src={activityImage}
-              alt=""
+              alt={localized(activity.title_fa, activity.title_sv)}
               className="w-full h-full object-cover"
             />
           </motion.div>

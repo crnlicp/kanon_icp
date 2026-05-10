@@ -321,6 +321,27 @@ export const mockBackend: backendInterface = {
   async uploadAsset() { return "/mock/asset"; },
   async deleteAsset() { return true; },
 
+  // ── SEO stubs — no-ops or empty data in mock mode ──────────────────────
+
+  async getSeoSettings() {
+    return {
+      siteName: "Kanon", titleTemplate: "{page_title} | {site_name}",
+      defaultTitle: "Kanon - Kultur, utbildning och sport",
+      defaultDescription: "", defaultOgImage: "", twitterHandle: "",
+      twitterCardType: "summary_large_image", googleVerification: "",
+      bingVerification: "", canonicalBaseUrl: "https://kanon.app",
+      defaultLang: "sv", googleAnalyticsId: "", robotsTxtExtra: "",
+    };
+  },
+  async updateSeoSettings() {},
+  async getPageSeoOverride() { return null; },
+  async setPageSeoOverride() {},
+  async deletePageSeoOverride() {},
+  async listPageSeoOverrides() { return []; },
+  async getRobotsTxt() { return "User-agent: *\nDisallow: /admin\nSitemap: https://kanon.app/sitemap.xml\n"; },
+  async getSitemapXml() { return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n</urlset>"; },
+  async http_request() { return { status_code: 404, headers: [] as Array<[string, string]>, body: new Uint8Array(), streaming_strategy: undefined }; },
+
   // ── Auth operations — these should NEVER be called on mockBackend ─────
   // They exist only to satisfy the interface. The proxy routes them to the real backend.
 

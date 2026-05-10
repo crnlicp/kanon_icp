@@ -102,6 +102,33 @@ export interface HeroSlideReturn {
   'title_sv' : string,
   'topicId' : bigint,
 }
+export interface HttpRequest {
+  'url' : string,
+  'method' : string,
+  'body' : Uint8Array,
+  'headers' : Array<[string, string]>,
+}
+export interface HttpResponse {
+  'body' : Uint8Array,
+  'headers' : Array<[string, string]>,
+  'streaming_strategy' : [] | [StreamingStrategy],
+  'status_code' : number,
+}
+export type HttpToken = {};
+export interface PageSeoOverride {
+  'title' : string,
+  'slug' : string,
+  'description' : string,
+  'lastModified' : string,
+  'ogImage' : string,
+  'noIndex' : boolean,
+  'sitemapInclude' : boolean,
+  'canonicalUrl' : string,
+  'noFollow' : boolean,
+  'jsonLd' : string,
+  'sitemapPriority' : string,
+  'sitemapChangefreq' : string,
+}
 export interface RegistrationFieldValueReturn {
   'value' : string,
   'fieldLabel' : string,
@@ -131,6 +158,21 @@ export interface RegistrationWithStatusReturn {
   'email' : string,
   'personCount' : bigint,
   'phone' : string,
+}
+export interface SeoSettings {
+  'defaultLang' : string,
+  'defaultDescription' : string,
+  'siteName' : string,
+  'googleAnalyticsId' : string,
+  'robotsTxtExtra' : string,
+  'twitterCardType' : string,
+  'defaultOgImage' : string,
+  'bingVerification' : string,
+  'twitterHandle' : string,
+  'defaultTitle' : string,
+  'googleVerification' : string,
+  'titleTemplate' : string,
+  'canonicalBaseUrl' : string,
 }
 export interface SessionAvailabilityReturn {
   'sortOrder' : bigint,
@@ -178,6 +220,13 @@ export interface SocialLinkReturn {
   'sortOrder' : bigint,
   'platform' : string,
 }
+export interface StreamingCallbackResponse {
+  'token' : [] | [HttpToken],
+  'body' : Uint8Array,
+}
+export type StreamingStrategy = {
+    'Callback' : { 'token' : HttpToken, 'callback' : [Principal, string] }
+  };
 export type SubmitRegistrationResult = { 'ok' : RegistrationWithStatusReturn } |
   { 'invalidInput' : null } |
   { 'duplicateEmail' : null } |
@@ -275,6 +324,7 @@ export interface _SERVICE {
   'deleteContactMessage' : ActorMethod<[string, bigint], boolean>,
   'deleteEventRegistrationTemplate' : ActorMethod<[string, bigint], boolean>,
   'deleteFormTemplate' : ActorMethod<[string, bigint], boolean>,
+  'deletePageSeoOverride' : ActorMethod<[string, string], undefined>,
   'deleteSlide' : ActorMethod<[string, bigint], boolean>,
   'deleteSocialLink' : ActorMethod<[string, bigint], boolean>,
   'deleteTopic' : ActorMethod<[string, bigint], boolean>,
@@ -300,23 +350,29 @@ export interface _SERVICE {
   >,
   'getFormTemplate' : ActorMethod<[bigint], [] | [FormTemplateReturn]>,
   'getFormTemplates' : ActorMethod<[], Array<FormTemplateReturn>>,
+  'getPageSeoOverride' : ActorMethod<[string], [] | [PageSeoOverride]>,
   'getRegistrationById' : ActorMethod<
     [bigint, string],
     [] | [RegistrationWithStatusReturn]
   >,
   'getRegistrations' : ActorMethod<[string, bigint], Array<RegistrationReturn>>,
+  'getRobotsTxt' : ActorMethod<[], string>,
+  'getSeoSettings' : ActorMethod<[], SeoSettings>,
   'getSessionAvailability' : ActorMethod<
     [bigint],
     Array<SessionAvailabilityReturn>
   >,
   'getSessionStats' : ActorMethod<[string, bigint], Array<SessionStatsReturn>>,
   'getSettings' : ActorMethod<[], SiteSettingsReturn>,
+  'getSitemapXml' : ActorMethod<[], string>,
   'getSlidesByTopic' : ActorMethod<[bigint], Array<HeroSlideReturn>>,
   'getSocialLinks' : ActorMethod<[], Array<SocialLinkReturn>>,
   'getTopic' : ActorMethod<[bigint], [] | [TopicReturn]>,
   'getTopicBySlug' : ActorMethod<[string], [] | [TopicReturn]>,
   'getTopics' : ActorMethod<[], Array<TopicReturn>>,
+  'http_request' : ActorMethod<[HttpRequest], HttpResponse>,
   'listAssets' : ActorMethod<[], Array<string>>,
+  'listPageSeoOverrides' : ActorMethod<[string], Array<PageSeoOverride>>,
   'modifyRegistration' : ActorMethod<
     [
       bigint,
@@ -328,6 +384,7 @@ export interface _SERVICE {
     SubmitRegistrationResult
   >,
   'setMockMode' : ActorMethod<[string, boolean], boolean>,
+  'setPageSeoOverride' : ActorMethod<[string, PageSeoOverride], undefined>,
   'submitContactMessage' : ActorMethod<
     [string, string, string, string],
     [] | [ContactMessageReturn]
@@ -393,6 +450,7 @@ export interface _SERVICE {
     [string, bigint, string, string, string, string, Array<FormFieldReturn>],
     [] | [FormTemplateReturn]
   >,
+  'updateSeoSettings' : ActorMethod<[string, SeoSettings], undefined>,
   'updateSettings' : ActorMethod<
     [string, string, string, string, string, string, string, string],
     SiteSettingsReturn

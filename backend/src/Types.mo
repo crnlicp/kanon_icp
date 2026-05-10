@@ -385,4 +385,37 @@ module {
     message : Text;
     createdAt : Int;
   };
+
+  // ─── SEO Types ───────────────────────────────────────────────────────────────
+
+  public type SeoSettings = {
+    siteName : Text;
+    titleTemplate : Text;      // e.g. "{page_title} | {site_name}"
+    defaultTitle : Text;
+    defaultDescription : Text;
+    defaultOgImage : Text;     // full URL
+    twitterHandle : Text;      // @handle
+    twitterCardType : Text;    // "summary_large_image" | "summary"
+    googleVerification : Text;
+    bingVerification : Text;
+    canonicalBaseUrl : Text;   // e.g. "https://kanon.app"
+    defaultLang : Text;        // "sv" or "fa"
+    googleAnalyticsId : Text;  // "G-XXXXXXXXXX" or ""
+    robotsTxtExtra : Text;     // admin-editable extra disallow rules, newline-separated
+  };
+
+  public type PageSeoOverride = {
+    slug : Text;              // matches route, e.g. "sv/topics/musik/piano"
+    title : Text;             // "" = use global template
+    description : Text;       // "" = use default
+    ogImage : Text;           // "" = use default
+    canonicalUrl : Text;      // "" = auto-generate
+    noIndex : Bool;
+    noFollow : Bool;
+    jsonLd : Text;            // raw JSON-LD string, "" if none
+    sitemapInclude : Bool;
+    sitemapPriority : Text;   // "0.5", "0.8", etc.
+    sitemapChangefreq : Text; // "weekly", "monthly", etc.
+    lastModified : Text;      // ISO date string
+  };
 }

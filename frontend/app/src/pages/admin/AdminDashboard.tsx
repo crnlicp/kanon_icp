@@ -20,6 +20,7 @@ import {
   Globe2,
   CalendarCheck,
   CalendarPlus,
+  Search,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
@@ -38,9 +39,10 @@ import AdminEventRegistrations from "./sections/AdminEventRegistrations";
 import AdminFormTemplates from "./sections/AdminFormTemplates";
 import AdminEventRegistrationTemplates from "./sections/AdminEventRegistrationTemplates";
 import AdminDemoAreas from "./sections/AdminDemoAreas";
+import AdminSeo from "./sections/AdminSeo";
 import WavingFlag from "../../components/WavingFlag";
 
-type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "eventRegistrations" | "formTemplates" | "eventRegTemplates" | "social" | "about" | "contact" | "demoAreas";
+type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "eventRegistrations" | "formTemplates" | "eventRegTemplates" | "social" | "about" | "contact" | "demoAreas" | "seo";
 
 const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] = [
   { id: "dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -55,6 +57,7 @@ const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] =
   { id: "about", labelKey: "aboutUs", icon: Info },
   { id: "contact", labelKey: "contactMessages", icon: MessageSquare },
   { id: "social", labelKey: "socialLinks", icon: Link2 },
+  { id: "seo", labelKey: "seo", icon: Search },
   { id: "demoAreas", labelKey: "demoAreas", icon: Globe2 },
 ];
 
@@ -215,6 +218,7 @@ export default function AdminDashboard() {
           {activeSection === "contact" && <AdminContact token={token!} readOnly={mockActive} />}
           {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}
           {activeSection === "demoAreas" && <AdminDemoAreas />}
+          {activeSection === "seo" && <AdminSeo token={token!} />}
         </div>
       </main>
     </div>

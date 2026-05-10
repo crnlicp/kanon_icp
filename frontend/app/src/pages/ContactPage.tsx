@@ -4,6 +4,8 @@ import { Send, Loader2 } from "lucide-react";
 import { useI18n } from "../i18n";
 import Toast from "../components/Toast";
 import GlassCard from "../components/GlassCard";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettings } from "../hooks/useSeoSettings";
 
 const PHONE_PATTERN = "\\+[0-9]{11}";
 
@@ -13,6 +15,10 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
+  });
+
+  const seo = useSeoSettings({
+    title: t("contactUs"),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +44,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16">
+      <SeoHead {...seo} ogType="website" />
       <div className="max-w-2xl mx-auto">
         <motion.div
           className="text-center mb-12"

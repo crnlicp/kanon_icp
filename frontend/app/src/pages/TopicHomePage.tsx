@@ -8,6 +8,9 @@ import HeroSlider from "../components/HeroSlider";
 import GlassCard from "../components/GlassCard";
 import AssetImage from "../components/AssetImage";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettings } from "../hooks/useSeoSettings";
+import { topicBreadcrumb } from "../lib/jsonld";
 import type { TopicReturn, HeroSlideReturn, ActivityReturn } from "../backend/api/backend";
 
 interface Topic {
@@ -52,6 +55,20 @@ export default function TopicHomePage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const topicTitle = topic ? localized(topic.title_fa, topic.title_sv) : undefined;
+  const seo = useSeoSettings({
+    title: topicTitle,
+    ogImage: topic?.backgroundUrl || undefined,
+    jsonLd: topic
+      ? topicBreadcrumb(
+          topicTitle!,
+          `/${lang}/topics/${topicSlug}`,
+          t("topics"),
+          `/${lang}/topics`
+        )
+      : null,
+  });
+
   useEffect(() => {
     if (!topicSlug) return;
     import("../actor").then(({ backend }) => {
@@ -87,6 +104,7 @@ export default function TopicHomePage() {
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16">
+      <SeoHead {...seo} ogType="website" />
       <Background url={topic.backgroundUrl} />
 
       <div className="max-w-6xl mx-auto">
@@ -119,6 +137,7 @@ export default function TopicHomePage() {
             return (
               <GlassCard
                 key={activity.id}
+                href={`/${lang}/topics/${topicSlug}/${activity.slug}`}
                 onClick={() =>
                   navigate(`/${lang}/topics/${topicSlug}/${activity.slug}`)
                 }
@@ -128,7 +147,7 @@ export default function TopicHomePage() {
                   <div className="rounded-xl overflow-hidden mb-4 -mt-2 -mx-2">
                     <AssetImage
                       src={activity.imageUrl}
-                      alt=""
+                      alt={localized(activity.title_fa, activity.title_sv)}
                       className="w-full h-40 object-cover"
                     />
                   </div>

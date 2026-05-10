@@ -5,12 +5,16 @@ import { useAssetUrl } from "../hooks/useAssetUrl";
 import Background from "../components/Background";
 import GlassCard from "../components/GlassCard";
 import WavingFlag from "../components/WavingFlag";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettingsContext } from "../contexts/SeoSettingsContext";
+import { websiteSchema, organizationSchema } from "../lib/jsonld";
 import { useEffect, useState } from "react";
 import type { SiteSettingsReturn } from "../backend/api/backend";
 
 export default function LandingPage() {
-  const { setLang, localized } = useI18n();
+  const { setLang, localized, t } = useI18n();
   const navigate = useNavigate();
+  const { seoSettings } = useSeoSettingsContext();
   const [settings, setSettings] = useState<{
     title_fa: string;
     title_sv: string;
@@ -45,8 +49,31 @@ export default function LandingPage() {
       )
     : "Kultur, utbildning och sport";
 
+  const logoAlt = seoSettings.siteName
+    ? `${seoSettings.siteName} ${t("logoAlt")}`
+    : t("logoAlt");
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 relative">
+      <SeoHead
+        lang="sv"
+        title={undefined}
+        ogType="website"
+        jsonLd={{ "@graph": [websiteSchema(seoSettings), organizationSchema(seoSettings)] }}
+        siteName={seoSettings.siteName}
+        titleTemplate={seoSettings.titleTemplate}
+        defaultTitle={seoSettings.defaultTitle}
+        description={seoSettings.defaultDescription || undefined}
+        ogImage={seoSettings.defaultOgImage || undefined}
+        twitterHandle={seoSettings.twitterHandle}
+        twitterCardType={seoSettings.twitterCardType}
+        googleVerification={seoSettings.googleVerification}
+        bingVerification={seoSettings.bingVerification}
+        googleAnalyticsId={seoSettings.googleAnalyticsId}
+        canonicalBaseUrl={seoSettings.canonicalBaseUrl}
+        canonicalUrl={seoSettings.canonicalBaseUrl + "/"}
+        hreflangAlternateUrl={seoSettings.canonicalBaseUrl + "/fa/topics"}
+      />
       <Background url={settings?.landingBackgroundUrl} />
 
       <motion.div
@@ -57,7 +84,7 @@ export default function LandingPage() {
       >
         {resolvedLogo && (
           <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl glass-strong mb-6 overflow-hidden">
-            <img src={resolvedLogo} alt="Logo" className="w-full h-full object-cover" />
+            <img src={resolvedLogo} alt={logoAlt} className="w-full h-full object-cover" />
           </div>
         )}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-4 text-glow tracking-tight">

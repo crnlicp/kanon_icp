@@ -138,6 +138,20 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'phone' : IDL.Text,
   });
+  const PageSeoOverride = IDL.Record({
+    'title' : IDL.Text,
+    'slug' : IDL.Text,
+    'description' : IDL.Text,
+    'lastModified' : IDL.Text,
+    'ogImage' : IDL.Text,
+    'noIndex' : IDL.Bool,
+    'sitemapInclude' : IDL.Bool,
+    'canonicalUrl' : IDL.Text,
+    'noFollow' : IDL.Bool,
+    'jsonLd' : IDL.Text,
+    'sitemapPriority' : IDL.Text,
+    'sitemapChangefreq' : IDL.Text,
+  });
   const SessionStatusReturn = IDL.Record({
     'status' : IDL.Text,
     'sessionName' : IDL.Text,
@@ -159,6 +173,21 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'personCount' : IDL.Nat,
     'phone' : IDL.Text,
+  });
+  const SeoSettings = IDL.Record({
+    'defaultLang' : IDL.Text,
+    'defaultDescription' : IDL.Text,
+    'siteName' : IDL.Text,
+    'googleAnalyticsId' : IDL.Text,
+    'robotsTxtExtra' : IDL.Text,
+    'twitterCardType' : IDL.Text,
+    'defaultOgImage' : IDL.Text,
+    'bingVerification' : IDL.Text,
+    'twitterHandle' : IDL.Text,
+    'defaultTitle' : IDL.Text,
+    'googleVerification' : IDL.Text,
+    'titleTemplate' : IDL.Text,
+    'canonicalBaseUrl' : IDL.Text,
   });
   const SessionAvailabilityReturn = IDL.Record({
     'sortOrder' : IDL.Nat,
@@ -194,6 +223,33 @@ export const idlFactory = ({ IDL }) => {
     'mockMode' : IDL.Bool,
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
+  });
+  const HttpRequest = IDL.Record({
+    'url' : IDL.Text,
+    'method' : IDL.Text,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+  });
+  const HttpToken = IDL.Record({});
+  const StreamingCallbackResponse = IDL.Record({
+    'token' : IDL.Opt(HttpToken),
+    'body' : IDL.Vec(IDL.Nat8),
+  });
+  const StreamingStrategy = IDL.Variant({
+    'Callback' : IDL.Record({
+      'token' : HttpToken,
+      'callback' : IDL.Func(
+          [HttpToken],
+          [StreamingCallbackResponse],
+          ['query'],
+        ),
+    }),
+  });
+  const HttpResponse = IDL.Record({
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'streaming_strategy' : IDL.Opt(StreamingStrategy),
+    'status_code' : IDL.Nat16,
   });
   const SubmitRegistrationResult = IDL.Variant({
     'ok' : RegistrationWithStatusReturn,
@@ -310,6 +366,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteFormTemplate' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+    'deletePageSeoOverride' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'deleteSlide' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteSocialLink' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'deleteTopic' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
@@ -358,6 +415,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getFormTemplates' : IDL.Func([], [IDL.Vec(FormTemplateReturn)], ['query']),
+    'getPageSeoOverride' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(PageSeoOverride)],
+        ['query'],
+      ),
     'getRegistrationById' : IDL.Func(
         [IDL.Nat, IDL.Text],
         [IDL.Opt(RegistrationWithStatusReturn)],
@@ -368,6 +430,8 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(RegistrationReturn)],
         ['query'],
       ),
+    'getRobotsTxt' : IDL.Func([], [IDL.Text], ['query']),
+    'getSeoSettings' : IDL.Func([], [SeoSettings], ['query']),
     'getSessionAvailability' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(SessionAvailabilityReturn)],
@@ -379,6 +443,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getSettings' : IDL.Func([], [SiteSettingsReturn], ['query']),
+    'getSitemapXml' : IDL.Func([], [IDL.Text], ['query']),
     'getSlidesByTopic' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(HeroSlideReturn)],
@@ -388,7 +453,13 @@ export const idlFactory = ({ IDL }) => {
     'getTopic' : IDL.Func([IDL.Nat], [IDL.Opt(TopicReturn)], ['query']),
     'getTopicBySlug' : IDL.Func([IDL.Text], [IDL.Opt(TopicReturn)], ['query']),
     'getTopics' : IDL.Func([], [IDL.Vec(TopicReturn)], ['query']),
+    'http_request' : IDL.Func([HttpRequest], [HttpResponse], ['query']),
     'listAssets' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'listPageSeoOverrides' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(PageSeoOverride)],
+        ['query'],
+      ),
     'modifyRegistration' : IDL.Func(
         [
           IDL.Nat,
@@ -401,6 +472,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'setMockMode' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Bool], []),
+    'setPageSeoOverride' : IDL.Func([IDL.Text, PageSeoOverride], [], []),
     'submitContactMessage' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Opt(ContactMessageReturn)],
@@ -480,6 +552,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(FormTemplateReturn)],
         [],
       ),
+    'updateSeoSettings' : IDL.Func([IDL.Text, SeoSettings], [], []),
     'updateSettings' : IDL.Func(
         [
           IDL.Text,

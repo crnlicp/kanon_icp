@@ -6,6 +6,8 @@ import { useI18n } from "../i18n";
 import Background from "../components/Background";
 import GlassCard from "../components/GlassCard";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettings } from "../hooks/useSeoSettings";
 import type { TopicReturn, ActivityReturn } from "../backend/api/backend";
 
 interface Topic {
@@ -27,6 +29,11 @@ export default function TopicsPage() {
   const [activityCounts, setActivityCounts] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [bgUrl, setBgUrl] = useState("");
+
+  const seo = useSeoSettings({
+    title: t("topics"),
+    description: t("topicsSeoDescription"),
+  });
 
   useEffect(() => {
     import("../actor").then(({ backend }) => {
@@ -56,6 +63,7 @@ export default function TopicsPage() {
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16">
+      <SeoHead {...seo} ogType="website" />
       <Background url={bgUrl} />
 
       <div className="max-w-6xl mx-auto">
@@ -79,6 +87,7 @@ export default function TopicsPage() {
             return (
               <GlassCard
                 key={topic.id}
+                href={`/${lang}/topics/${topic.slug}`}
                 onClick={() => navigate(`/${lang}/topics/${topic.slug}`)}
                 delay={idx * 0.1}
               >

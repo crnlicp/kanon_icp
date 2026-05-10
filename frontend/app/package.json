@@ -8,7 +8,8 @@
     "generate": "icp-bindgen --did-file ../../backend/backend.did --out-dir ./src/backend/api --force",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prerender": "npm run build && vite preview --port 4173 & sleep 3 && npx tsx scripts/prerender.ts"
   },
   "dependencies": {
     "@icp-sdk/core": "~5.2.0",
@@ -16,6 +17,7 @@
     "lucide-react": "^0.500.0",
     "react": "~19.1.1",
     "react-dom": "~19.1.1",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^6.30.0"
   },
   "devDependencies": {

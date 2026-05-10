@@ -209,10 +209,19 @@ export const translations = {
     // Demo areas
     demoAreas: "حوزه‌های نمایشی",
     demoAreasDescription: "یک حوزه نمایشی انتخاب کنید تا ببینید پلتفرم برای سازمان‌های مختلف چگونه به نظر می‌رسد",
+    seo: "SEO",
     activeArea: "حوزه فعال",
     switchArea: "تغییر به این حوزه",
     switchingArea: "در حال تغییر...",
     demoAreaNote: "تغییر حوزه نمایشی صفحه را مجدداً بارگذاری می‌کند. اطلاعات واقعی تأثیر نمی‌پذیرد.",
+
+    // 404 page
+    notFoundHeading: "صفحه‌ای پیدا نشد",
+    notFoundSubtext: "صفحه‌ای که دنبال آن می‌گردید وجود ندارد یا منتقل شده است.",
+
+    // SEO
+    topicsSeoDescription: "همه موضوعات فرهنگی، آموزشی و ورزشی کانون",
+    logoAlt: "لوگو",
 
     // Event Sessions (admin builder)
     sessions: "جلسات رویداد",
@@ -521,10 +530,19 @@ export const translations = {
     // Demo areas
     demoAreas: "Demoområden",
     demoAreasDescription: "Välj ett demoområde för att se hur plattformen ser ut för olika typer av organisationer",
+    seo: "SEO",
     activeArea: "Aktivt område",
     switchArea: "Byt till detta område",
     switchingArea: "Byter...",
     demoAreaNote: "Att byta demoområde laddar om sidan. Verklig data påverkas inte.",
+
+    // 404 page
+    notFoundHeading: "Sidan hittades inte",
+    notFoundSubtext: "Sidan du letar efter finns inte eller har flyttats.",
+
+    // SEO
+    topicsSeoDescription: "Alla kulturella, utbildnings- och sportämnen på Kanon",
+    logoAlt: "logotyp",
 
     // Event Sessions (admin builder)
     sessions: "Evenemangspass",

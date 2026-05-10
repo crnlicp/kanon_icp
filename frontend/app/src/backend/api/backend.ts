@@ -51,6 +51,29 @@ function candid_none<T>(): [] {
 function record_opt_to_undefined<T>(arg: T | null): T | undefined {
     return arg == null ? undefined : arg;
 }
+export interface SeoSettings {
+    defaultLang: string;
+    defaultDescription: string;
+    siteName: string;
+    googleAnalyticsId: string;
+    robotsTxtExtra: string;
+    twitterCardType: string;
+    defaultOgImage: string;
+    bingVerification: string;
+    twitterHandle: string;
+    defaultTitle: string;
+    googleVerification: string;
+    titleTemplate: string;
+    canonicalBaseUrl: string;
+}
+export interface HttpToken {
+}
+export interface HttpRequest {
+    url: string;
+    method: string;
+    body: Uint8Array;
+    headers: Array<[string, string]>;
+}
 export interface RegistrationWithStatusReturn {
     id: bigint;
     name: string;
@@ -139,6 +162,20 @@ export interface TopicReturn {
     title_fa: string;
     title_sv: string;
 }
+export interface PageSeoOverride {
+    title: string;
+    slug: string;
+    description: string;
+    lastModified: string;
+    ogImage: string;
+    noIndex: boolean;
+    sitemapInclude: boolean;
+    canonicalUrl: string;
+    noFollow: boolean;
+    jsonLd: string;
+    sitemapPriority: string;
+    sitemapChangefreq: string;
+}
 export interface HeroSlideReturn {
     id: bigint;
     ctaText_fa: string;
@@ -186,6 +223,13 @@ export interface ActivityReturn {
     title_sv: string;
     topicId: bigint;
 }
+export type StreamingStrategy = {
+    __kind__: "Callback";
+    Callback: {
+        token: HttpToken;
+        callback: [Principal, string];
+    };
+};
 export interface RegistrationFieldValueReturn {
     value: string;
     fieldLabel: string;
@@ -195,6 +239,10 @@ export interface SessionStatusReturn {
     status: string;
     sessionName: string;
     sessionId: bigint;
+}
+export interface StreamingCallbackResponse {
+    token?: HttpToken;
+    body: Uint8Array;
 }
 export interface SessionStatsReturn {
     sortOrder: bigint;
@@ -207,6 +255,12 @@ export interface SessionStatsReturn {
     capacity: bigint;
     bufferCount: bigint;
     registrationCount: bigint;
+}
+export interface HttpResponse {
+    body: Uint8Array;
+    headers: Array<[string, string]>;
+    streaming_strategy?: StreamingStrategy;
+    status_code: number;
 }
 export type SubmitRegistrationResult = {
     __kind__: "ok";
@@ -281,6 +335,7 @@ export interface backendInterface {
     deleteContactMessage(token: string, id: bigint): Promise<boolean>;
     deleteEventRegistrationTemplate(token: string, id: bigint): Promise<boolean>;
     deleteFormTemplate(token: string, id: bigint): Promise<boolean>;
+    deletePageSeoOverride(token: string, slug: string): Promise<void>;
     deleteSlide(token: string, id: bigint): Promise<boolean>;
     deleteSocialLink(token: string, id: bigint): Promise<boolean>;
     deleteTopic(token: string, id: bigint): Promise<boolean>;
@@ -297,22 +352,29 @@ export interface backendInterface {
     getEventRegistrationTemplates(): Promise<Array<EventRegistrationTemplateReturn>>;
     getFormTemplate(id: bigint): Promise<FormTemplateReturn | null>;
     getFormTemplates(): Promise<Array<FormTemplateReturn>>;
+    getPageSeoOverride(slug: string): Promise<PageSeoOverride | null>;
     getRegistrationById(id: bigint, lookupValue: string): Promise<RegistrationWithStatusReturn | null>;
     getRegistrations(token: string, activityId: bigint): Promise<Array<RegistrationReturn>>;
+    getRobotsTxt(): Promise<string>;
+    getSeoSettings(): Promise<SeoSettings>;
     getSessionAvailability(activityId: bigint): Promise<Array<SessionAvailabilityReturn>>;
     getSessionStats(token: string, activityId: bigint): Promise<Array<SessionStatsReturn>>;
     getSettings(): Promise<SiteSettingsReturn>;
+    getSitemapXml(): Promise<string>;
     getSlidesByTopic(topicId: bigint): Promise<Array<HeroSlideReturn>>;
     getSocialLinks(): Promise<Array<SocialLinkReturn>>;
     getTopic(id: bigint): Promise<TopicReturn | null>;
     getTopicBySlug(slug: string): Promise<TopicReturn | null>;
     getTopics(): Promise<Array<TopicReturn>>;
+    http_request(req: HttpRequest): Promise<HttpResponse>;
     listAssets(): Promise<Array<string>>;
+    listPageSeoOverrides(token: string): Promise<Array<PageSeoOverride>>;
     modifyRegistration(id: bigint, lookupValue: string, newPersonCount: bigint, newSelectedSessionIds: Array<bigint>, newFieldValues: Array<{
         value: string;
         fieldId: bigint;
     }>): Promise<SubmitRegistrationResult>;
     setMockMode(token: string, enabled: boolean): Promise<boolean>;
+    setPageSeoOverride(token: string, override: PageSeoOverride): Promise<void>;
     submitContactMessage(name: string, email: string, phone: string, message: string): Promise<ContactMessageReturn | null>;
     submitRegistration(activityId: bigint, name: string, email: string, phone: string, message: string, personCount: bigint, selectedSessionIds: Array<bigint>, fieldValues: Array<{
         value: string;
@@ -322,13 +384,14 @@ export interface backendInterface {
     updateActivity(token: string, id: bigint, topicId: bigint, slug: string, title_fa: string, title_sv: string, excerpt_fa: string, excerpt_sv: string, body_fa: string, body_sv: string, icon: string, imageUrl: string, hasRegistration: boolean, registrationMode: string, formTemplateId: bigint | null, customFormFields: Array<FormFieldReturn>, actSessions: Array<EventSessionReturn>, regMaxCapacity: bigint | null, regAllowedPhones: Array<string>, regMaxRegistrationsPerPhone: bigint | null, regBlockDuplicateEmail: boolean, sortOrder: bigint): Promise<ActivityReturn | null>;
     updateEventRegistrationTemplate(token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, tmplSessions: Array<EventSessionReturn>, fields: Array<FormFieldReturn>): Promise<EventRegistrationTemplateReturn | null>;
     updateFormTemplate(token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, fields: Array<FormFieldReturn>): Promise<FormTemplateReturn | null>;
+    updateSeoSettings(token: string, settings: SeoSettings): Promise<void>;
     updateSettings(token: string, logoUrl: string, title_fa: string, title_sv: string, subtitle_fa: string, subtitle_sv: string, landingBackgroundUrl: string, topicsBackgroundUrl: string): Promise<SiteSettingsReturn>;
     updateSlide(token: string, id: bigint, topicId: bigint, imageUrl: string, title_fa: string, title_sv: string, subtitle_fa: string, subtitle_sv: string, ctaText_fa: string, ctaText_sv: string, ctaLink: string, sortOrder: bigint): Promise<HeroSlideReturn | null>;
     updateSocialLink(token: string, id: bigint, platform: string, url: string, sortOrder: bigint): Promise<SocialLinkReturn | null>;
     updateTopic(token: string, id: bigint, slug: string, title_fa: string, title_sv: string, description_fa: string, description_sv: string, icon: string, backgroundUrl: string, sortOrder: bigint): Promise<TopicReturn | null>;
     uploadAsset(token: string, name: string, contentType: string, data: Uint8Array): Promise<string>;
 }
-import type { ActivityReturn as _ActivityReturn, ContactMessageReturn as _ContactMessageReturn, EventRegistrationTemplateReturn as _EventRegistrationTemplateReturn, EventSessionReturn as _EventSessionReturn, FormFieldReturn as _FormFieldReturn, FormTemplateReturn as _FormTemplateReturn, HeroSlideReturn as _HeroSlideReturn, RegistrationWithStatusReturn as _RegistrationWithStatusReturn, SocialLinkReturn as _SocialLinkReturn, SubmitRegistrationResult as _SubmitRegistrationResult, TopicReturn as _TopicReturn } from "./declarations/backend.did";
+import type { ActivityReturn as _ActivityReturn, ContactMessageReturn as _ContactMessageReturn, EventRegistrationTemplateReturn as _EventRegistrationTemplateReturn, EventSessionReturn as _EventSessionReturn, FormFieldReturn as _FormFieldReturn, FormTemplateReturn as _FormTemplateReturn, HeroSlideReturn as _HeroSlideReturn, HttpResponse as _HttpResponse, HttpToken as _HttpToken, PageSeoOverride as _PageSeoOverride, RegistrationWithStatusReturn as _RegistrationWithStatusReturn, SocialLinkReturn as _SocialLinkReturn, StreamingStrategy as _StreamingStrategy, SubmitRegistrationResult as _SubmitRegistrationResult, TopicReturn as _TopicReturn } from "./declarations/backend.did";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>){}
     async adminLogin(arg0: string): Promise<string | null> {
@@ -395,6 +458,10 @@ export class Backend implements backendInterface {
         const result = await this.actor.deleteFormTemplate(arg0, arg1);
         return result;
     }
+    async deletePageSeoOverride(arg0: string, arg1: string): Promise<void> {
+        const result = await this.actor.deletePageSeoOverride(arg0, arg1);
+        return result;
+    }
     async deleteSlide(arg0: string, arg1: bigint): Promise<boolean> {
         const result = await this.actor.deleteSlide(arg0, arg1);
         return result;
@@ -459,12 +526,24 @@ export class Backend implements backendInterface {
         const result = await this.actor.getFormTemplates();
         return from_candid_vec_n24(result);
     }
+    async getPageSeoOverride(arg0: string): Promise<PageSeoOverride | null> {
+        const result = await this.actor.getPageSeoOverride(arg0);
+        return from_candid_opt_n25(result);
+    }
     async getRegistrationById(arg0: bigint, arg1: string): Promise<RegistrationWithStatusReturn | null> {
         const result = await this.actor.getRegistrationById(arg0, arg1);
-        return from_candid_opt_n25(result);
+        return from_candid_opt_n26(result);
     }
     async getRegistrations(arg0: string, arg1: bigint): Promise<Array<RegistrationReturn>> {
         const result = await this.actor.getRegistrations(arg0, arg1);
+        return result;
+    }
+    async getRobotsTxt(): Promise<string> {
+        const result = await this.actor.getRobotsTxt();
+        return result;
+    }
+    async getSeoSettings(): Promise<SeoSettings> {
+        const result = await this.actor.getSeoSettings();
         return result;
     }
     async getSessionAvailability(arg0: bigint): Promise<Array<SessionAvailabilityReturn>> {
@@ -479,6 +558,10 @@ export class Backend implements backendInterface {
         const result = await this.actor.getSettings();
         return result;
     }
+    async getSitemapXml(): Promise<string> {
+        const result = await this.actor.getSitemapXml();
+        return result;
+    }
     async getSlidesByTopic(arg0: bigint): Promise<Array<HeroSlideReturn>> {
         const result = await this.actor.getSlidesByTopic(arg0);
         return result;
@@ -489,18 +572,26 @@ export class Backend implements backendInterface {
     }
     async getTopic(arg0: bigint): Promise<TopicReturn | null> {
         const result = await this.actor.getTopic(arg0);
-        return from_candid_opt_n26(result);
+        return from_candid_opt_n27(result);
     }
     async getTopicBySlug(arg0: string): Promise<TopicReturn | null> {
         const result = await this.actor.getTopicBySlug(arg0);
-        return from_candid_opt_n26(result);
+        return from_candid_opt_n27(result);
     }
     async getTopics(): Promise<Array<TopicReturn>> {
         const result = await this.actor.getTopics();
         return result;
     }
+    async http_request(arg0: HttpRequest): Promise<HttpResponse> {
+        const result = await this.actor.http_request(arg0);
+        return from_candid_HttpResponse_n28(result);
+    }
     async listAssets(): Promise<Array<string>> {
         const result = await this.actor.listAssets();
+        return result;
+    }
+    async listPageSeoOverrides(arg0: string): Promise<Array<PageSeoOverride>> {
+        const result = await this.actor.listPageSeoOverrides(arg0);
         return result;
     }
     async modifyRegistration(arg0: bigint, arg1: string, arg2: bigint, arg3: Array<bigint>, arg4: Array<{
@@ -508,22 +599,26 @@ export class Backend implements backendInterface {
         fieldId: bigint;
     }>): Promise<SubmitRegistrationResult> {
         const result = await this.actor.modifyRegistration(arg0, arg1, arg2, arg3, arg4);
-        return from_candid_SubmitRegistrationResult_n27(result);
+        return from_candid_SubmitRegistrationResult_n33(result);
     }
     async setMockMode(arg0: string, arg1: boolean): Promise<boolean> {
         const result = await this.actor.setMockMode(arg0, arg1);
         return result;
     }
+    async setPageSeoOverride(arg0: string, arg1: PageSeoOverride): Promise<void> {
+        const result = await this.actor.setPageSeoOverride(arg0, arg1);
+        return result;
+    }
     async submitContactMessage(arg0: string, arg1: string, arg2: string, arg3: string): Promise<ContactMessageReturn | null> {
         const result = await this.actor.submitContactMessage(arg0, arg1, arg2, arg3);
-        return from_candid_opt_n29(result);
+        return from_candid_opt_n35(result);
     }
     async submitRegistration(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: bigint, arg6: Array<bigint>, arg7: Array<{
         value: string;
         fieldId: bigint;
     }>): Promise<SubmitRegistrationResult> {
         const result = await this.actor.submitRegistration(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-        return from_candid_SubmitRegistrationResult_n27(result);
+        return from_candid_SubmitRegistrationResult_n33(result);
     }
     async updateAboutContent(arg0: string, arg1: string, arg2: string, arg3: string): Promise<AboutContentReturn> {
         const result = await this.actor.updateAboutContent(arg0, arg1, arg2, arg3);
@@ -541,21 +636,25 @@ export class Backend implements backendInterface {
         const result = await this.actor.updateFormTemplate(arg0, arg1, arg2, arg3, arg4, arg5, to_candid_vec_n3(arg6));
         return from_candid_opt_n23(result);
     }
+    async updateSeoSettings(arg0: string, arg1: SeoSettings): Promise<void> {
+        const result = await this.actor.updateSeoSettings(arg0, arg1);
+        return result;
+    }
     async updateSettings(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string): Promise<SiteSettingsReturn> {
         const result = await this.actor.updateSettings(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         return result;
     }
     async updateSlide(arg0: string, arg1: bigint, arg2: bigint, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: bigint): Promise<HeroSlideReturn | null> {
         const result = await this.actor.updateSlide(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
-        return from_candid_opt_n30(result);
+        return from_candid_opt_n36(result);
     }
     async updateSocialLink(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: bigint): Promise<SocialLinkReturn | null> {
         const result = await this.actor.updateSocialLink(arg0, arg1, arg2, arg3, arg4);
-        return from_candid_opt_n31(result);
+        return from_candid_opt_n37(result);
     }
     async updateTopic(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: bigint): Promise<TopicReturn | null> {
         const result = await this.actor.updateTopic(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-        return from_candid_opt_n26(result);
+        return from_candid_opt_n27(result);
     }
     async uploadAsset(arg0: string, arg1: string, arg2: string, arg3: Uint8Array): Promise<string> {
         const result = await this.actor.uploadAsset(arg0, arg1, arg2, arg3);
@@ -574,8 +673,14 @@ function from_candid_FormFieldReturn_n10(value: _FormFieldReturn): FormFieldRetu
 function from_candid_FormTemplateReturn_n15(value: _FormTemplateReturn): FormTemplateReturn {
     return from_candid_record_n16(value);
 }
-function from_candid_SubmitRegistrationResult_n27(value: _SubmitRegistrationResult): SubmitRegistrationResult {
-    return from_candid_variant_n28(value);
+function from_candid_HttpResponse_n28(value: _HttpResponse): HttpResponse {
+    return from_candid_record_n29(value);
+}
+function from_candid_StreamingStrategy_n31(value: _StreamingStrategy): StreamingStrategy {
+    return from_candid_variant_n32(value);
+}
+function from_candid_SubmitRegistrationResult_n33(value: _SubmitRegistrationResult): SubmitRegistrationResult {
+    return from_candid_variant_n34(value);
 }
 function from_candid_opt_n1(value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
@@ -598,19 +703,25 @@ function from_candid_opt_n21(value: [] | [_EventRegistrationTemplateReturn]): Ev
 function from_candid_opt_n23(value: [] | [_FormTemplateReturn]): FormTemplateReturn | null {
     return value.length === 0 ? null : from_candid_FormTemplateReturn_n15(value[0]);
 }
-function from_candid_opt_n25(value: [] | [_RegistrationWithStatusReturn]): RegistrationWithStatusReturn | null {
+function from_candid_opt_n25(value: [] | [_PageSeoOverride]): PageSeoOverride | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n26(value: [] | [_TopicReturn]): TopicReturn | null {
+function from_candid_opt_n26(value: [] | [_RegistrationWithStatusReturn]): RegistrationWithStatusReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n29(value: [] | [_ContactMessageReturn]): ContactMessageReturn | null {
+function from_candid_opt_n27(value: [] | [_TopicReturn]): TopicReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n30(value: [] | [_HeroSlideReturn]): HeroSlideReturn | null {
+function from_candid_opt_n30(value: [] | [_StreamingStrategy]): StreamingStrategy | null {
+    return value.length === 0 ? null : from_candid_StreamingStrategy_n31(value[0]);
+}
+function from_candid_opt_n35(value: [] | [_ContactMessageReturn]): ContactMessageReturn | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n31(value: [] | [_SocialLinkReturn]): SocialLinkReturn | null {
+function from_candid_opt_n36(value: [] | [_HeroSlideReturn]): HeroSlideReturn | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n37(value: [] | [_SocialLinkReturn]): SocialLinkReturn | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n8(value: [] | [bigint]): bigint | null {
@@ -721,6 +832,24 @@ function from_candid_record_n16(value: {
         name_sv: value.name_sv
     };
 }
+function from_candid_record_n29(value: {
+    body: Uint8Array;
+    headers: Array<[string, string]>;
+    streaming_strategy: [] | [_StreamingStrategy];
+    status_code: number;
+}): {
+    body: Uint8Array;
+    headers: Array<[string, string]>;
+    streaming_strategy?: StreamingStrategy;
+    status_code: number;
+} {
+    return {
+        body: value.body,
+        headers: value.headers,
+        streaming_strategy: record_opt_to_undefined(from_candid_opt_n30(value.streaming_strategy)),
+        status_code: value.status_code
+    };
+}
 function from_candid_record_n7(value: {
     id: bigint;
     regAllowedPhones: Array<string>;
@@ -793,7 +922,24 @@ function from_candid_record_n7(value: {
         topicId: value.topicId
     };
 }
-function from_candid_variant_n28(value: {
+function from_candid_variant_n32(value: {
+    Callback: {
+        token: _HttpToken;
+        callback: [Principal, string];
+    };
+}): {
+    __kind__: "Callback";
+    Callback: {
+        token: HttpToken;
+        callback: [Principal, string];
+    };
+} {
+    return "Callback" in value ? {
+        __kind__: "Callback",
+        Callback: value.Callback
+    } : value;
+}
+function from_candid_variant_n34(value: {
     ok: _RegistrationWithStatusReturn;
 } | {
     invalidInput: null;

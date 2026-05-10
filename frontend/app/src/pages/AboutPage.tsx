@@ -3,12 +3,22 @@ import { motion } from "framer-motion";
 import { useI18n } from "../i18n";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SeoHead from "../components/SeoHead";
+import { useSeoSettings } from "../hooks/useSeoSettings";
+import { organizationSchema } from "../lib/jsonld";
+import { useSeoSettingsContext } from "../contexts/SeoSettingsContext";
 import type { AboutContentReturn } from "../backend/api/backend";
 
 export default function AboutPage() {
   const { t, localized } = useI18n();
   const [content, setContent] = useState<AboutContentReturn | null>(null);
   const [loading, setLoading] = useState(true);
+  const { seoSettings } = useSeoSettingsContext();
+
+  const seo = useSeoSettings({
+    title: t("aboutUs"),
+    jsonLd: organizationSchema(seoSettings),
+  });
 
   useEffect(() => {
     import("../actor").then(({ backend }) => {
@@ -26,6 +36,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16">
+      <SeoHead {...seo} ogType="website" />
       <div className="max-w-4xl mx-auto">
         <motion.div
           className="text-center mb-12"
