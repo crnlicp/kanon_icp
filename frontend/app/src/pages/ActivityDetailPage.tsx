@@ -187,13 +187,13 @@ export default function ActivityDetailPage() {
 
         {/* Body Content */}
         <motion.div
-          className="prose prose-invert prose-lg max-w-none mb-14"
+          className="mb-14"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
           <div
-            className="text-white/80 leading-relaxed text-base sm:text-lg"
+            className="rich-html text-base sm:text-lg"
             dangerouslySetInnerHTML={{ __html: localized(activity.body_fa, activity.body_sv) }}
           />
         </motion.div>

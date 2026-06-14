@@ -18,6 +18,8 @@ interface Topic {
   slug: string;
   title_fa: string;
   title_sv: string;
+  description_fa: string;
+  description_sv: string;
   backgroundUrl: string;
 }
 
@@ -44,6 +46,7 @@ interface Activity {
   imageUrl: string;
   hasRegistration: boolean;
   registrationMode: string;
+  highlighted: boolean;
 }
 
 export default function TopicHomePage() {
@@ -122,13 +125,25 @@ export default function TopicHomePage() {
 
         {/* Topic Title */}
         <motion.h1
-          className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-10 text-glow text-center"
+          className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 text-glow text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
           {localized(topic.title_fa, topic.title_sv)}
         </motion.h1>
+
+        {/* Topic Description */}
+        {(topic.description_fa || topic.description_sv) && (
+          <motion.p
+            className="text-base sm:text-lg text-white/65 max-w-3xl mx-auto text-center mb-10 leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            {localized(topic.description_fa, topic.description_sv)}
+          </motion.p>
+        )}
 
         {/* Activities Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -144,21 +159,41 @@ export default function TopicHomePage() {
                 delay={idx * 0.1}
               >
                 {activity.imageUrl && (
-                  <div className="rounded-xl overflow-hidden mb-4 -mt-2 -mx-2">
+                  <div className="relative rounded-xl overflow-hidden mb-4 -mt-2 -mx-2">
                     <AssetImage
                       src={activity.imageUrl}
                       alt={localized(activity.title_fa, activity.title_sv)}
                       className="w-full h-40 object-cover"
                     />
+                    {activity.highlighted && (
+                      <span
+                        className="absolute top-2 end-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/90 text-white text-[10px] font-semibold shadow-md backdrop-blur-sm"
+                        title={t("highlighted")}
+                      >
+                        <LucideIcons.Star size={10} className="fill-white" />
+                        {t("highlighted")}
+                      </span>
+                    )}
                   </div>
                 )}
                 <div className="flex flex-col gap-3">
-                  <motion.div
-                    className="p-3 rounded-xl bg-primary/10 border border-primary/20 w-fit"
-                    whileHover={{ scale: 1.15, rotate: 5 }}
-                  >
-                    <Icon size={32} className="text-primary" />
-                  </motion.div>
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      className="p-3 rounded-xl bg-primary/10 border border-primary/20 w-fit"
+                      whileHover={{ scale: 1.15, rotate: 5 }}
+                    >
+                      <Icon size={32} className="text-primary" />
+                    </motion.div>
+                    {!activity.imageUrl && activity.highlighted && (
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/90 text-white text-[10px] font-semibold"
+                        title={t("highlighted")}
+                      >
+                        <LucideIcons.Star size={10} className="fill-white" />
+                        {t("highlighted")}
+                      </span>
+                    )}
+                  </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white">
                     {localized(activity.title_fa, activity.title_sv)}
                   </h3>

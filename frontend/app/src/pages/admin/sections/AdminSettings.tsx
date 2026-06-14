@@ -20,6 +20,8 @@ export default function AdminSettings({ token }: Props) {
     subtitle_sv: "",
     landingBackgroundUrl: "",
     topicsBackgroundUrl: "",
+    contactIntro_fa: "",
+    contactIntro_sv: "",
   });
   const [mockMode, setMockMode] = useState(false);
   const [togglingMock, setTogglingMock] = useState(false);
@@ -38,6 +40,8 @@ export default function AdminSettings({ token }: Props) {
           subtitle_sv: s.subtitle_sv,
           landingBackgroundUrl: s.landingBackgroundUrl,
           topicsBackgroundUrl: s.topicsBackgroundUrl,
+          contactIntro_fa: s.contactIntro_fa || "",
+          contactIntro_sv: s.contactIntro_sv || "",
         });
         setMockMode(s.mockMode);
         setLoading(false);
@@ -77,7 +81,9 @@ export default function AdminSettings({ token }: Props) {
         form.subtitle_fa,
         form.subtitle_sv,
         form.landingBackgroundUrl,
-        form.topicsBackgroundUrl
+        form.topicsBackgroundUrl,
+        form.contactIntro_fa,
+        form.contactIntro_sv,
       );
       setToast({ message: t("settingsSaved"), type: "success", visible: true });
     } catch {

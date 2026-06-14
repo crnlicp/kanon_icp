@@ -16,6 +16,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Centrum för världens språk",
   landingBackgroundUrl: img("lingua-landing", 1920, 1080),
   topicsBackgroundUrl: img("lingua-topics", 1920, 1080),
+  contactIntro_fa: "<p>می‌خواهید زبان جدیدی یاد بگیرید؟ با ما تماس بگیرید تا کلاس مناسب را پیدا کنید.</p>",
+  contactIntro_sv: "<p>Vill du lära dig ett nytt språk? Kontakta oss för att hitta rätt kurs.</p>",
   mockMode: true,
 };
 
@@ -35,6 +37,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 // Reusable CEFR level form fields
@@ -58,6 +61,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "دوره فشرده سوئدی برای مهاجران با تمرکز بر کاربردهای روزانه",
     excerpt_sv: "Intensiv svenska för invandrare med fokus på daglig användning",
     ...body("SFI پلاس", "SFI Plus"),
+    highlighted: true,
     customFormFields: cefrFields("sv"),
     icon: "MessageCircle", imageUrl: img("sfi-course", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
@@ -102,6 +106,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ارائه، مذاکره، ایمیل رسمی و انگلیسی جلسات",
     excerpt_sv: "Presentationer, förhandlingar, formella mejl och mötesengelska",
     ...body("انگلیسی تجاری", "Affärsengelska"),
+    highlighted: true,
     customFormFields: cefrFields("en"),
     icon: "Briefcase", imageUrl: img("business-english", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
   },
@@ -157,6 +162,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "اولین قدم‌های اسپانیایی — تلفظ، اعداد، رنگ‌ها و معرفی",
     excerpt_sv: "Första stegen i spanska — uttal, siffror, färger och presentation",
     ...body("اسپانیایی مبتدیان", "Spanska för nybörjare"),
+    highlighted: true,
     customFormFields: cefrFields("es"),
     icon: "MapPin", imageUrl: img("spanish-begin", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
   },
@@ -201,6 +207,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "۱۵۰ کاراکتر پایه، تلفظ پین‌یین و مکالمه ابتدایی",
     excerpt_sv: "150 grundkaraktärer, Pinyin-uttal och grundläggande konversation",
     ...body("ماندارین HSK1", "Mandarin HSK1"),
+    highlighted: true,
     customFormFields: cefrFields("zh"),
     icon: "Languages", imageUrl: img("mandarin-hsk1", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
   },
@@ -227,6 +234,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "فلسفه، آداب، غذا و تاریخ چین از منظر زبان‌شناسی",
     excerpt_sv: "Filosofi, etikett, mat och Kinas historia ur ett lingvistiskt perspektiv",
     ...body("فرهنگ و تمدن چین", "Kinesisk kultur och civilisation"),
+    highlighted: true,
     icon: "Globe", imageUrl: img("chinese-culture", 800, 600), hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(39),
   },
   {

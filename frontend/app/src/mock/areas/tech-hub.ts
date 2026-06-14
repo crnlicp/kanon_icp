@@ -27,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Inlärningscenter för programmering och teknik",
   landingBackgroundUrl: img("codespace-landing", 1920, 1080),
   topicsBackgroundUrl: img("codespace-topics", 1920, 1080),
+  contactIntro_fa: "<p>ایده فناورانه‌ای دارید؟ تیم ما آماده گفتگو با شماست.</p>",
+  contactIntro_sv: "<p>Har du en teknisk idé? Vårt team är redo att prata med dig.</p>",
   mockMode: true,
 };
 
@@ -85,6 +87,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -95,6 +98,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ساخت رابط‌های کاربری مدرن با React و TypeScript",
     excerpt_sv: "Bygg moderna användargränssnitt med React och TypeScript",
     ...body("مقدمه‌ای بر React", "Introduktion till React"),
+    highlighted: true,
     formTemplateId: 27002n,
     icon: "Code2", imageUrl: img("react-course", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
@@ -151,6 +155,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "مبانی برنامه‌نویسی با پایتون و کتابخانه‌های علم داده",
     excerpt_sv: "Programmeringsgrunder med Python och datavetenskapsbibliotek",
     ...body("پایتون برای مبتدیان", "Python för nybörjare"),
+    highlighted: true,
     formTemplateId: 27002n,
     icon: "Terminal", imageUrl: img("python-course", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
@@ -200,6 +205,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "ساخت اپلیکیشن‌های کراس‌پلتفرم با React Native و Expo",
     excerpt_sv: "Bygg plattformsoberoende appar med React Native och Expo",
     ...body("کارگاه React Native", "React Native-workshop"),
+    highlighted: true,
     formTemplateId: 27002n,
     icon: "Smartphone", imageUrl: img("react-native", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -248,6 +254,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "EC2، S3، Lambda و معماری ابری برای توسعه‌دهندگان",
     excerpt_sv: "EC2, S3, Lambda och molnarkitektur för utvecklare",
     ...body("اصول AWS", "AWS-grunder"),
+    highlighted: true,
     formTemplateId: 27002n,
     icon: "Cloud", imageUrl: img("aws-course", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
@@ -277,6 +284,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "مدیریت زیرساخت با Terraform و Pulumi",
     excerpt_sv: "Hantera infrastruktur med Terraform och Pulumi",
     ...body("زیرساخت به‌عنوان کد", "Infrastruktur som kod"),
+    highlighted: true,
     formTemplateId: 27002n,
     icon: "Settings2", imageUrl: img("iac-course", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),

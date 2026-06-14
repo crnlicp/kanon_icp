@@ -131,6 +131,10 @@ module {
         case (?r) { (r.maxCapacity, r.allowedPhones, r.maxRegistrationsPerPhone, r.blockDuplicateEmail) };
         case null  { rulesDefaults() };
       };
+    let highlighted = switch (a.highlighted) {
+      case (?b) { b };
+      case null  { false };
+    };
     {
       id = a.id;
       topicId = a.topicId;
@@ -152,6 +156,7 @@ module {
       regAllowedPhones;
       regMaxRegistrationsPerPhone;
       regBlockDuplicateEmail;
+      highlighted;
       sortOrder = a.sortOrder;
       createdAt = a.createdAt;
     }
@@ -308,7 +313,7 @@ module {
     }
   };
 
-  public func settingsToReturn(s : T.SiteSettings, mock : Bool) : T.SiteSettingsReturn {
+  public func settingsToReturn(s : T.SiteSettings, mock : Bool, contactIntro : T.LocalizedText) : T.SiteSettingsReturn {
     {
       logoUrl = s.logoUrl;
       title_fa = s.title.fa;
@@ -317,6 +322,8 @@ module {
       subtitle_sv = s.subtitle.sv;
       landingBackgroundUrl = s.landingBackgroundUrl;
       topicsBackgroundUrl = s.topicsBackgroundUrl;
+      contactIntro_fa = contactIntro.fa;
+      contactIntro_sv = contactIntro.sv;
       mockMode = mock;
     }
   };

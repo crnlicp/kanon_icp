@@ -27,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Äventyrsklubb i naturen",
   landingBackgroundUrl: img("wildpath-landing", 1920, 1080),
   topicsBackgroundUrl: img("wildpath-topics", 1920, 1080),
+  contactIntro_fa: "<p>ماجراجویی بعدی شما اینجا شروع می‌شود. برای رزرو یا اطلاعات بیشتر تماس بگیرید.</p>",
+  contactIntro_sv: "<p>Ditt nästa äventyr börjar här. Kontakta oss för bokning eller mer information.</p>",
   mockMode: true,
 };
 
@@ -85,6 +87,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -95,6 +98,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "پیاده‌روی ۱۰ کیلومتری در مسیرهای نزدیک شهر برای مبتدیان",
     excerpt_sv: "10 km vandring på leder nära staden för nybörjare",
     ...body("پیاده‌روی در مسیرهای محلی", "Vandring på lokala leder"),
+    highlighted: true,
     formTemplateId: 47001n,
     icon: "Footprints", imageUrl: img("local-trail", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
@@ -154,6 +158,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "صخره‌نوردی بدون طناب بر روی سنگ‌های کم‌ارتفاع با زیرانداز ایمنی",
     excerpt_sv: "Klättring utan rep på låga stenar med säkerhetsmatta",
     ...body("مقدمه‌ای بر بولدرینگ", "Introduktion till bouldering"),
+    highlighted: true,
     formTemplateId: 47002n,
     icon: "Anchor", imageUrl: img("bouldering", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
@@ -210,6 +215,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تورهای هفتگی ۵۰ تا ۱۰۰ کیلومتری برای دوچرخه‌سواران جاده",
     excerpt_sv: "Veckovisa turer på 50–100 km för vägcyklister",
     ...body("گروه دوچرخه‌سواری جاده", "Vägcykelgrupp"),
+    highlighted: true,
     formTemplateId: 47001n,
     icon: "Bike", imageUrl: img("road-cycling", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -258,6 +264,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "اصول پارو زدن، ایمنی در آب و تکنیک‌های مانور کایاک",
     excerpt_sv: "Grunderna för paddling, säkerhet på vattnet och manövreringstekniker",
     ...body("مقدمه‌ای بر کایاک", "Introduktion till kajak"),
+    highlighted: true,
     formTemplateId: 47002n,
     icon: "Waves", imageUrl: img("kayaking", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
@@ -286,6 +293,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کنوسواری یک‌روزه در رودخانه با پیک‌نیک در کنار آب",
     excerpt_sv: "Endagskanottur på floden med picknick vid vattnet",
     ...body("سفر با قایق کنو", "Kanotresa"),
+    highlighted: true,
     formTemplateId: 47001n,
     icon: "Anchor", imageUrl: img("canoe-trip", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),

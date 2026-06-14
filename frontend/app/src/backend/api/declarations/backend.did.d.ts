@@ -27,6 +27,7 @@ export interface ActivityReturn {
   'slug' : string,
   'regMaxRegistrationsPerPhone' : [] | [bigint],
   'regBlockDuplicateEmail' : boolean,
+  'highlighted' : boolean,
   'customFormFields' : Array<FormFieldReturn>,
   'imageUrl' : string,
   'sessions' : Array<EventSessionReturn>,
@@ -205,6 +206,8 @@ export interface SessionStatusReturn {
   'sessionId' : bigint,
 }
 export interface SiteSettingsReturn {
+  'contactIntro_fa' : string,
+  'contactIntro_sv' : string,
   'landingBackgroundUrl' : string,
   'topicsBackgroundUrl' : string,
   'subtitle_fa' : string,
@@ -274,6 +277,7 @@ export interface _SERVICE {
       [] | [bigint],
       Array<string>,
       [] | [bigint],
+      boolean,
       boolean,
       bigint,
     ],
@@ -429,6 +433,7 @@ export interface _SERVICE {
       Array<string>,
       [] | [bigint],
       boolean,
+      boolean,
       bigint,
     ],
     [] | [ActivityReturn]
@@ -452,7 +457,18 @@ export interface _SERVICE {
   >,
   'updateSeoSettings' : ActorMethod<[string, SeoSettings], undefined>,
   'updateSettings' : ActorMethod<
-    [string, string, string, string, string, string, string, string],
+    [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+    ],
     SiteSettingsReturn
   >,
   'updateSlide' : ActorMethod<

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Trash2, Mail, Phone, MessageSquare, Inbox } from "lucide-react";
+import { Loader2, Trash2, Mail, Phone, MessageSquare, Inbox, Save } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
-import type { ContactMessageReturn } from "../../../backend/api/backend";
+import type { ContactMessageReturn, SiteSettingsReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
@@ -23,6 +23,10 @@ export default function AdminContact({ token, readOnly }: Props) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<ContactMsg[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<SiteSettingsReturn | null>(null);
+  const [introFa, setIntroFa] = useState("");
+  const [introSv, setIntroSv] = useState("");
+  const [savingIntro, setSavingIntro] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
   });
@@ -52,6 +56,41 @@ export default function AdminContact({ token, readOnly }: Props) {
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
+
+  useEffect(() => {
+    import("../../../actor").then(({ backend }) => {
+      backend.getSettings().then((s: SiteSettingsReturn) => {
+        setSettings(s);
+        setIntroFa(s.contactIntro_fa || "");
+        setIntroSv(s.contactIntro_sv || "");
+      }).catch(() => undefined);
+    });
+  }, []);
+
+  const handleSaveIntro = async () => {
+    if (!settings) return;
+    setSavingIntro(true);
+    try {
+      const { backend } = await import("../../../actor");
+      await backend.updateSettings(
+        token,
+        settings.logoUrl,
+        settings.title_fa,
+        settings.title_sv,
+        settings.subtitle_fa,
+        settings.subtitle_sv,
+        settings.landingBackgroundUrl,
+        settings.topicsBackgroundUrl,
+        introFa,
+        introSv,
+      );
+      setSettings({ ...settings, contactIntro_fa: introFa, contactIntro_sv: introSv });
+      setToast({ message: t("contactIntroSaved"), type: "success", visible: true });
+    } catch {
+      setToast({ message: t("failedToSaveSettings"), type: "error", visible: true });
+    }
+    setSavingIntro(false);
+  };
 
   const handleDelete = async (id: number) => {
     if (!confirm(t("confirmDeleteMessage"))) return;
@@ -90,6 +129,56 @@ export default function AdminContact({ token, readOnly }: Props) {
 
   return (
     <div>
+      {/* Contact Intro HTML editor (displayed above the contact form on the public page) */}
+      {!readOnly && (
+        <motion.div
+          className="glass rounded-2xl p-6 mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-white">{t("contactIntro")}</h2>
+              <p className="text-xs text-white/40 mt-1">{t("contactIntroDescription")}</p>
+            </div>
+            <motion.button
+              onClick={handleSaveIntro}
+              disabled={savingIntro || !settings}
+              className="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Save size={15} />
+              {savingIntro ? t("saving") : t("save")}
+            </motion.button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">{t("contactIntro")} (فارسی)</label>
+              <textarea
+                value={introFa}
+                onChange={(e) => setIntroFa(e.target.value)}
+                rows={8}
+                dir="rtl"
+                placeholder="<p>…</p>"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">{t("contactIntro")} (Svenska)</label>
+              <textarea
+                value={introSv}
+                onChange={(e) => setIntroSv(e.target.value)}
+                rows={8}
+                placeholder="<p>…</p>"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm font-mono"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-white">{t("contactMessages")}</h2>
         <span className="text-sm text-white/40">

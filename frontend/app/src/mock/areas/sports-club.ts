@@ -16,6 +16,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockSettings: SiteSettingsReturn = {
@@ -26,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Starkare, snabbare, bättre — gå med i en gemenskap av passionerade idrottare",
   landingBackgroundUrl: img("vitaforce-landing", 1920, 1080),
   topicsBackgroundUrl: img("vitaforce-topics", 1920, 1080),
+  contactIntro_fa: "<p>به باشگاه ورزشی ما بپیوندید. برای ثبت‌نام یا اطلاعات تماس بگیرید.</p>",
+  contactIntro_sv: "<p>Gå med i vår sportklubb. Kontakta oss för registrering eller information.</p>",
   mockMode: true,
 };
 
@@ -49,6 +52,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "لیگ یکشنبه‌ها", title_sv: "Söndagsligan",
     excerpt_fa: "رقابت تیم‌های ۷ نفره هر یکشنبه صبح در زمین اصلی", excerpt_sv: "Lag om 7 spelare tävlar varje söndagsmorgon på huvudplanen",
     ...body("لیگ یکشنبه‌ها", "Söndagsligan"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "date", label_fa: "تاریخ تولد", label_sv: "Födelsedatum", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -79,6 +83,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "تنیس مبتدیان", title_sv: "Tennis för nybörjare",
     excerpt_fa: "دوره ۸ هفته‌ای برای کسانی که هرگز راکت نزده‌اند", excerpt_sv: "8-veckorskurs för de som aldrig hållit i ett racket",
     ...body("تنیس مبتدیان", "Tennis för nybörjare"),
+    highlighted: true,
     formTemplateId: 77021n,
     icon: "Circle", imageUrl: img("tennis-beginner", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(48),
   },
@@ -101,6 +106,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "شنا برای بزرگسالان", title_sv: "Simkurs för vuxna",
     excerpt_fa: "یاد گرفتن یا بهبود تکنیک شنا در گروه‌های کوچک ۶ نفره", excerpt_sv: "Lär dig simma eller förbättra tekniken i små grupper om 6",
     ...body("شنا برای بزرگسالان", "Simkurs för vuxna"),
+    highlighted: true,
     formTemplateId: 77021n,
     icon: "Waves", imageUrl: img("swim-adult", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(42),
   },
@@ -117,6 +123,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "کاراته کودکان", title_sv: "Karate för barn",
     excerpt_fa: "انضباط، احترام و دفاع از خود برای کودکان ۶ تا ۱۲ ساله", excerpt_sv: "Disciplin, respekt och självförsvar för barn 6–12 år",
     ...body("کاراته کودکان", "Karate för barn"),
+    highlighted: true,
     formTemplateId: 77020n,
     icon: "Shield", imageUrl: img("karate-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(35),
   },
@@ -139,6 +146,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "از صفر تا ۵ کیلومتر", title_sv: "Från noll till 5 km",
     excerpt_fa: "۸ هفته برنامه تمرینی ساختارمند برای مبتدیان", excerpt_sv: "8 veckors strukturerat träningsprogram för nybörjare",
     ...body("از صفر تا ۵ کیلومتر", "Från noll till 5 km"),
+    highlighted: true,
     formTemplateId: 77021n,
     icon: "Wind", imageUrl: img("running-5k", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(28),
   },

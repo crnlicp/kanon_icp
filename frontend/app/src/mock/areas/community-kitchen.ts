@@ -16,6 +16,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Matlagningsskola och matgemenskap",
   landingBackgroundUrl: img("casaverde-landing", 1920, 1080),
   topicsBackgroundUrl: img("casaverde-topics", 1920, 1080),
+  contactIntro_fa: "<p>ما عاشق آشپزی هستیم! اگر سوالی درباره کلاس‌ها یا رویدادها دارید، با ما تماس بگیرید.</p>",
+  contactIntro_sv: "<p>Vi älskar matlagning! Kontakta oss om du har frågor om kurser eller evenemang.</p>",
   mockMode: true,
 };
 
@@ -35,6 +37,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -45,6 +48,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "یادگیری تهیه پاستای تازه با آرد سمولینا و تخم‌مرغ",
     excerpt_sv: "Lär dig göra färsk pasta med semolina och ägg",
     ...body("پاستا دست‌ساز", "Pasta från grunden"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -95,6 +99,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تهیه و نگهداری خمیرمایه و پخت نان خمیرترش اصیل",
     excerpt_sv: "Skapa och underhålla surdeg och baka äkta surdegsbröd",
     ...body("نان خمیرمایه طبیعی", "Surdegsbröd"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -154,6 +159,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تاکوی مکزیکی اصیل با ترتیلای دست‌ساز و سالسای تازه",
     excerpt_sv: "Äkta mexikanska tacos med handgjorda tortillas och färsk salsa",
     ...body("شب تاکو", "Tacokvällen"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -203,6 +209,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کیمچی سنتی کره‌ای با تخمیر طبیعی باکتری‌های سالم",
     excerpt_sv: "Traditionell koreansk kimchi med naturlig fermentering av nyttiga bakterier",
     ...body("کیمچی‌سازی", "Kimchitillverkning"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -234,6 +241,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تهیه کفیر شیری، کفیر آبی و ماست یونانی غلیظ",
     excerpt_sv: "Tillverkning av mjölkkefir, vattenkefir och tjock grekisk yoghurt",
     ...body("کفیر و ماست خانگی", "Kefir och hemgjord yoghurt"),
+    highlighted: true,
     formTemplateId: 57002n,
     icon: "Milk", imageUrl: img("kefir-yogurt", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },

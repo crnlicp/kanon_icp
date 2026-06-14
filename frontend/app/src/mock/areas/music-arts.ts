@@ -27,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Akademi för musik, konst och dans",
   landingBackgroundUrl: img("harmonia-landing", 1920, 1080),
   topicsBackgroundUrl: img("harmonia-topics", 1920, 1080),
+  contactIntro_fa: "<p>از موسیقی و هنر صحبت کنیم. سوالی دارید؟ پیام بفرستید.</p>",
+  contactIntro_sv: "<p>Låt oss prata musik och konst. Har du en fråga? Skicka ett meddelande.</p>",
   mockMode: true,
 };
 
@@ -85,6 +87,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -95,6 +98,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تسلط بر مبانی پیانو: نُت‌خوانی، پوزیشن دست و ریتم",
     excerpt_sv: "Bemästra pianots grunder: notläsning, handposition och rytm",
     ...body("پیانو مبتدیان", "Nybörjarpiano"),
+    highlighted: true,
     formTemplateId: 37001n,
     icon: "Piano", imageUrl: img("beginner-piano", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
@@ -144,6 +148,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تمرین‌های تنفس، گرم‌کردن صدا و تکنیک‌های اساسی آواز",
     excerpt_sv: "Andningsövningar, röstuppvärmning och grundläggande sångtekniker",
     ...body("مبانی صدا", "Röstgrunder"),
+    highlighted: true,
     formTemplateId: 37001n,
     icon: "Mic", imageUrl: img("voice-basics", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
@@ -198,6 +203,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تکنیک‌های آبرنگ از لایه‌گذاری تا رنگ‌آمیزی آزاد",
     excerpt_sv: "Akvarelltekniker från skiktning till frihandsmålning",
     ...body("نقاشی آبرنگ", "Akvarellmålning"),
+    highlighted: true,
     formTemplateId: 37002n,
     icon: "Palette", imageUrl: img("watercolor", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -247,6 +253,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تکنیک‌های پایه باله، پوزیشن‌های کلاسیک و آداپتاسیون بدن",
     excerpt_sv: "Grundläggande balettekniker, klassiska positioner och kropp adaptation",
     ...body("مقدمه‌ای بر باله", "Introduktion till balett"),
+    highlighted: true,
     formTemplateId: 37001n,
     icon: "Footprints", imageUrl: img("ballet", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
@@ -276,6 +283,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "حرکت آزادانه، تنش‌زدایی عضلانی و شادی از طریق رقص",
     excerpt_sv: "Fri rörelse, muskelavspänning och glädje genom dans",
     ...body("رقص برای سلامتی", "Dans för välmående"),
+    highlighted: true,
     icon: "Heart", imageUrl: img("dance-wellness", 800, 600),
     hasRegistration: false, registrationMode: "none", sortOrder: 4n, createdAt: ts(39),
   },

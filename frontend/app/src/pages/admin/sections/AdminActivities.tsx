@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, Trash2, Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Save, ChevronDown, ChevronUp, Star } from "lucide-react";
 import Toast from "../../../components/Toast";
 import Modal from "../../../components/Modal";
 import FileUpload from "../../../components/FileUpload";
@@ -37,6 +37,7 @@ interface ActivityItem {
   regAllowedPhones: string;
   regMaxRegistrationsPerPhone: string;
   regBlockDuplicateEmail: boolean;
+  highlighted: boolean;
   sortOrder: number;
 }
 
@@ -69,6 +70,7 @@ const emptyForm = {
   regAllowedPhones: "",
   regMaxRegistrationsPerPhone: "",
   regBlockDuplicateEmail: false,
+  highlighted: false,
   sortOrder: 0,
 };
 
@@ -117,6 +119,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       regAllowedPhones: (a.regAllowedPhones ?? []).join("\n"),
       regMaxRegistrationsPerPhone: a.regMaxRegistrationsPerPhone != null ? String(Number(a.regMaxRegistrationsPerPhone)) : "",
       regBlockDuplicateEmail: a.regBlockDuplicateEmail ?? false,
+      highlighted: a.highlighted ?? false,
       sortOrder: Number(a.sortOrder),
     })));
   }, [selectedTopicId]);
@@ -164,6 +167,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
           sessions,
           regMaxCapacity, regAllowedPhones,
           regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
+          form.highlighted,
           BigInt(form.sortOrder)
         );
         setToast({ message: t("activityUpdated"), type: "success", visible: true });
@@ -178,6 +182,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
           sessions,
           regMaxCapacity, regAllowedPhones,
           regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
+          form.highlighted,
           BigInt(form.sortOrder)
         );
         setToast({ message: t("activityCreated"), type: "success", visible: true });
@@ -233,6 +238,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       regAllowedPhones: act.regAllowedPhones ?? "",
       regMaxRegistrationsPerPhone: act.regMaxRegistrationsPerPhone ?? "",
       regBlockDuplicateEmail: act.regBlockDuplicateEmail ?? false,
+      highlighted: act.highlighted ?? false,
       sortOrder: act.sortOrder,
     });
     setShowForm(true);
@@ -340,6 +346,26 @@ export default function AdminActivities({ token, readOnly }: Props) {
             label="Image"
             accept="image/*"
           />
+
+          {/* Highlighted toggle */}
+          <div className={`flex items-start justify-between gap-3 p-4 rounded-xl border ${form.highlighted ? "bg-accent/10 border-accent/30" : "bg-white/[0.02] border-white/10"}`}>
+            <div className="flex items-start gap-3">
+              <Star size={18} className={form.highlighted ? "text-accent fill-accent mt-0.5" : "text-white/40 mt-0.5"} />
+              <div>
+                <p className={`text-sm font-semibold ${form.highlighted ? "text-accent" : "text-white/70"}`}>{t("markAsHighlighted")}</p>
+                <p className="text-xs text-white/40 mt-0.5">{t("markAsHighlightedHint")}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, highlighted: !form.highlighted })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none shrink-0 ${form.highlighted ? "bg-accent" : "bg-white/20"}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${form.highlighted ? "ltr:translate-x-6 rtl:-translate-x-6" : "ltr:translate-x-1 rtl:-translate-x-1"}`}
+              />
+            </button>
+          </div>
 
           {/* Registration Mode — 3-way toggle */}
           <div>
@@ -543,6 +569,12 @@ export default function AdminActivities({ token, readOnly }: Props) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-xs text-primary/60 font-mono">{act.slug}</span>
+                  {act.highlighted && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold">
+                      <Star size={10} className="fill-accent" />
+                      {t("highlighted")}
+                    </span>
+                  )}
                   {act.registrationMode !== "none" && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary/70">
                       {act.registrationMode === "event" ? t("eventRegistrationMode") : t("registrationFormMode")}

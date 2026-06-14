@@ -27,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Yoga, meditation och välmåendestudio",
   landingBackgroundUrl: img("serenity-landing", 1920, 1080),
   topicsBackgroundUrl: img("serenity-topics", 1920, 1080),
+  contactIntro_fa: "<p>سفر سلامتی شما اینجا آغاز می‌شود. پیام خود را برای ما ارسال کنید.</p>",
+  contactIntro_sv: "<p>Din välmåenderesa börjar här. Skicka oss ditt meddelande.</p>",
   mockMode: true,
 };
 
@@ -85,6 +87,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -95,6 +98,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کلاس یوگا ویناسا در سپیده‌دم برای بیداری بدن و ذهن",
     excerpt_sv: "Vinyasayogaklass vid gryningen för att väcka kropp och sinne",
     ...body("جریان طلوع آفتاب", "Soluppgångsflöde"),
+    highlighted: true,
     formTemplateId: 17001n,
     icon: "Sun", imageUrl: img("sunrise-yoga", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
@@ -149,6 +153,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "جلسات مدیتیشن با راهنمایی مربی برای تمرکز و آرامش",
     excerpt_sv: "Meditationssessioner med instruktörens vägledning för koncentration",
     ...body("مدیتیشن هدایت‌شده", "Guidad meditation"),
+    highlighted: true,
     formTemplateId: 17001n,
     icon: "Brain", imageUrl: img("guided-meditation", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
@@ -197,6 +202,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کارگاه طراحی برنامه غذایی متعادل برای سلامت بهتر",
     excerpt_sv: "Workshop för att utforma en balanserad kostplan för bättre hälsa",
     ...body("برنامه‌ریزی غذایی", "Måltidsplanering"),
+    highlighted: true,
     formTemplateId: 17002n,
     icon: "ClipboardList", imageUrl: img("meal-planning", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -245,6 +251,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "دو روز یوگا، مدیتیشن و آشپزی سالم در طبیعت",
     excerpt_sv: "Två dagar med yoga, meditation och hälsosam matlagning i naturen",
     ...body("اردوی رفاهی آخر هفته", "Välmåenderetreat på helgen"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
@@ -284,6 +291,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "یک روز سکوت کامل، مراقبه و درون‌نگری",
     excerpt_sv: "En dag av fullständig tystnad, meditation och introspection",
     ...body("اردوی سکوت", "Tystnadretreat"),
+    highlighted: true,
     icon: "VolumeX", imageUrl: img("silent-retreat", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 4n, createdAt: ts(39),
   },

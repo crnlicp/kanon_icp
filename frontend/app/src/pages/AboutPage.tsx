@@ -66,7 +66,7 @@ export default function AboutPage() {
 
         {bodyHtml && (
           <motion.div
-            className="glass rounded-2xl p-6 sm:p-10 prose prose-invert prose-primary max-w-none"
+            className="glass rounded-2xl p-6 sm:p-10 rich-html"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}

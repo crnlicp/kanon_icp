@@ -44,6 +44,7 @@ export const idlFactory = ({ IDL }) => {
     'slug' : IDL.Text,
     'regMaxRegistrationsPerPhone' : IDL.Opt(IDL.Nat),
     'regBlockDuplicateEmail' : IDL.Bool,
+    'highlighted' : IDL.Bool,
     'customFormFields' : IDL.Vec(FormFieldReturn),
     'imageUrl' : IDL.Text,
     'sessions' : IDL.Vec(EventSessionReturn),
@@ -215,6 +216,8 @@ export const idlFactory = ({ IDL }) => {
     'registrationCount' : IDL.Nat,
   });
   const SiteSettingsReturn = IDL.Record({
+    'contactIntro_fa' : IDL.Text,
+    'contactIntro_sv' : IDL.Text,
     'landingBackgroundUrl' : IDL.Text,
     'topicsBackgroundUrl' : IDL.Text,
     'subtitle_fa' : IDL.Text,
@@ -289,6 +292,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Nat),
           IDL.Vec(IDL.Text),
           IDL.Opt(IDL.Nat),
+          IDL.Bool,
           IDL.Bool,
           IDL.Nat,
         ],
@@ -520,6 +524,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Vec(IDL.Text),
           IDL.Opt(IDL.Nat),
           IDL.Bool,
+          IDL.Bool,
           IDL.Nat,
         ],
         [IDL.Opt(ActivityReturn)],
@@ -555,6 +560,8 @@ export const idlFactory = ({ IDL }) => {
     'updateSeoSettings' : IDL.Func([IDL.Text, SeoSettings], [], []),
     'updateSettings' : IDL.Func(
         [
+          IDL.Text,
+          IDL.Text,
           IDL.Text,
           IDL.Text,
           IDL.Text,

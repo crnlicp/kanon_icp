@@ -113,6 +113,9 @@ persistent actor {
     body = { fa = ""; sv = "" };
   };
 
+  // Contact page intro (HTML, localized) — separate var to keep SiteSettings upgrade-safe
+  var contactIntroContent : T.LocalizedText = { fa = ""; sv = "" };
+
   // Contact form messages
   let contactMessages = Map.empty<Nat, ContactMessage>();
   var nextContactMessageId : Nat = 1;
@@ -196,7 +199,7 @@ persistent actor {
   // ─── Site Settings ────────────────────────────────────────────────────────
 
   public query func getSettings() : async SiteSettingsReturn {
-    H.settingsToReturn(siteSettings, mockMode)
+    H.settingsToReturn(siteSettings, mockMode, contactIntroContent)
   };
 
   public func updateSettings(
@@ -208,6 +211,8 @@ persistent actor {
     subtitle_sv : Text,
     landingBackgroundUrl : Text,
     topicsBackgroundUrl : Text,
+    contactIntro_fa : Text,
+    contactIntro_sv : Text,
   ) : async SiteSettingsReturn {
     requireAuth(token);
     siteSettings := {
@@ -217,7 +222,8 @@ persistent actor {
       landingBackgroundUrl;
       topicsBackgroundUrl;
     };
-    H.settingsToReturn(siteSettings, mockMode)
+    contactIntroContent := { fa = contactIntro_fa; sv = contactIntro_sv };
+    H.settingsToReturn(siteSettings, mockMode, contactIntroContent)
   };
 
   public func setMockMode(token : Text, enabled : Bool) : async Bool {
@@ -540,6 +546,7 @@ persistent actor {
     regAllowedPhones : [Text],
     regMaxRegistrationsPerPhone : ?Nat,
     regBlockDuplicateEmail : Bool,
+    highlighted : Bool,
     sortOrder : Nat,
   ) : async ActivityReturn {
     requireAuth(token);
@@ -560,6 +567,7 @@ persistent actor {
       customFormFields = buildFormFields(customFormFields);
       sessions = buildSessions(actSessions);
       registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
+      highlighted = ?highlighted;
       sortOrder;
       createdAt = Time.now();
     };
@@ -589,6 +597,7 @@ persistent actor {
     regAllowedPhones : [Text],
     regMaxRegistrationsPerPhone : ?Nat,
     regBlockDuplicateEmail : Bool,
+    highlighted : Bool,
     sortOrder : Nat,
   ) : async ?ActivityReturn {
     requireAuth(token);
@@ -609,6 +618,7 @@ persistent actor {
           customFormFields = buildFormFields(customFormFields);
           sessions = buildSessions(actSessions);
           registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
+          highlighted = ?highlighted;
           sortOrder;
           createdAt = existing.createdAt;
         };

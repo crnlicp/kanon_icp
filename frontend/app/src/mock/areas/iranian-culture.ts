@@ -27,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Kultur, utbildning och sport för iranier i Sverige",
   landingBackgroundUrl: img("landing-bg", 1920, 1080),
   topicsBackgroundUrl: img("topics-bg", 1920, 1080),
+  contactIntro_fa: "<p>به انجمن فرهنگی ایرانی خوش آمدید. برای هر گونه پرسش یا پیشنهاد با ما در ارتباط باشید.</p>",
+  contactIntro_sv: "<p>Välkommen till den iranska kulturföreningen. Kontakta oss för frågor eller förslag.</p>",
   mockMode: true,
 };
 
@@ -85,6 +87,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockActivities: ActivityReturn[] = [
@@ -95,6 +98,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "جشن آغاز بهار و سال نو ایرانی با برنامه‌های متنوع",
     excerpt_sv: "Firande av den iranska nyårsfesten med varierade program",
     ...body("جشن نوروز", "Nowruz-firande"),
+    highlighted: true,
     sessions: [
       { id: 101n, name_fa: "جلسه صبح", name_sv: "Förmiddagssession", date: "2026-03-21", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
       { id: 102n, name_fa: "جلسه عصر", name_sv: "Eftermiddagssession", date: "2026-03-21", capacity: 25n, bufferCapacity: 5n, sortOrder: 2n },
@@ -158,6 +162,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "آموزش زبان فارسی برای کودکان و بزرگسالان در سطوح مختلف",
     excerpt_sv: "Persiska språkkurser för barn och vuxna på alla nivåer",
     ...body("کلاس زبان فارسی", "Persiska språkkurser"),
+    highlighted: true,
     formTemplateId: 7002n,
     icon: "Languages", imageUrl: img("persian-class", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(58),
@@ -216,6 +221,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "تمرینات هفتگی فوتبال برای جوانان و بزرگسالان",
     excerpt_sv: "Veckovis fotbollsträning för ungdomar och vuxna",
     ...body("تیم فوتبال", "Fotbollslag"),
+    highlighted: true,
     formTemplateId: 7003n,
     icon: "CircleDot", imageUrl: img("football", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(57),
@@ -264,6 +270,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "آموزش خوشنویسی فارسی با اساتید مجرب",
     excerpt_sv: "Persisk kalligrafiundervisning med erfarna lärare",
     ...body("کارگاه خوشنویسی", "Kalligrafiworkshop"),
+    highlighted: true,
     formTemplateId: 7002n,
     icon: "PenTool", imageUrl: img("calligraphy", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(56),
@@ -292,6 +299,7 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "کارگاه بازیگری و اجرای نمایش‌های فارسی و سوئدی",
     excerpt_sv: "Skådespelarworkshop och framförande av persiska och svenska pjäser",
     ...body("گروه تئاتر", "Teatergrupp"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },

@@ -16,6 +16,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockSettings: SiteSettingsReturn = {
@@ -26,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Där barn blomstrar — kreativa program för 3–14 år",
   landingBackgroundUrl: img("wonderland-landing", 1920, 1080),
   topicsBackgroundUrl: img("wonderland-topics", 1920, 1080),
+  contactIntro_fa: "<p>آماده گفتگو درباره برنامه کودکان شما هستیم. پیام خود را ارسال کنید!</p>",
+  contactIntro_sv: "<p>Vi pratar gärna om program för dina barn. Skicka oss ett meddelande!</p>",
   mockMode: true,
 };
 
@@ -49,6 +52,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "کارگاه نقاشی آکریلیک", title_sv: "Workshop i akrylfärger",
     excerpt_fa: "کودکان ۵ تا ۱۰ ساله با رنگ‌های آکریلیک نقاشی می‌کشند", excerpt_sv: "Barn 5–10 år målar med akrylfärger",
     ...body("کارگاه نقاشی آکریلیک", "Workshop i akrylfärger"),
+    highlighted: true,
     formTemplateId: 87020n,
     icon: "Palette", imageUrl: img("painting-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
@@ -79,6 +83,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "رباتیک مقدماتی", title_sv: "Robotteknik junior",
     excerpt_fa: "ساخت ربات با لِگو Mindstorms برای کودکان ۸ تا ۱۲ ساله", excerpt_sv: "Bygg robotar med Lego Mindstorms för barn 8–12 år",
     ...body("رباتیک مقدماتی", "Robotteknik junior"),
+    highlighted: true,
     formTemplateId: 87021n,
     icon: "Cpu", imageUrl: img("robotics-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(48),
   },
@@ -103,6 +108,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "اوکلله برای کودکان", title_sv: "Ukulele för barn",
     excerpt_fa: "دوره ۱۰ هفته‌ای اوکلله با کنسرت پایانی — ابزار در اختیار", excerpt_sv: "10-veckorskurs i ukulele med avslutningskonsert — instrument ingår",
     ...body("اوکلله برای کودکان", "Ukulele för barn"),
+    highlighted: true,
     formTemplateId: 87020n,
     icon: "Music", imageUrl: img("ukulele-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(42),
   },
@@ -119,6 +125,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "تئاتر بداهه", title_sv: "Improvisationsteater",
     excerpt_fa: "اعتماد به نفس، خلاقیت و مهارت‌های اجتماعی از طریق نمایش", excerpt_sv: "Självförtroende, kreativitet och sociala färdigheter genom teater",
     ...body("تئاتر بداهه", "Improvisationsteater"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام نوجوان", label_sv: "Ungdomens namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "number", label_fa: "سن", label_sv: "Ålder", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 17n, sortOrder: 2n },
@@ -133,6 +140,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "کاشف‌های طبیعت", title_sv: "Naturutforskare",
     excerpt_fa: "ماهانه — پیاده‌روی و شناسایی گیاهان برای ۵ تا ۱۲ ساله", excerpt_sv: "Månadsvis — vandring och växtidentifiering för 5–12 år",
     ...body("کاشف‌های طبیعت", "Naturutforskare"),
+    highlighted: true,
     formTemplateId: 87020n,
     icon: "TreePine", imageUrl: img("nature-kids", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(30),
   },

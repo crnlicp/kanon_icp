@@ -113,6 +113,7 @@ module {
     customFormFields : [FormField];
     sessions : [EventSession];
     registrationRules : ?RegistrationRules;
+    highlighted : ?Bool;       // optional for backward-compatible upgrades
     sortOrder : Nat;
     createdAt : Int;
   };
@@ -318,6 +319,7 @@ module {
     regAllowedPhones : [Text];
     regMaxRegistrationsPerPhone : ?Nat;
     regBlockDuplicateEmail : Bool;
+    highlighted : Bool;
     sortOrder : Nat;
     createdAt : Int;
   };
@@ -361,6 +363,8 @@ module {
     subtitle_sv : Text;
     landingBackgroundUrl : Text;
     topicsBackgroundUrl : Text;
+    contactIntro_fa : Text;
+    contactIntro_sv : Text;
     mockMode : Bool;
   };
 

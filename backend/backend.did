@@ -44,6 +44,8 @@ type SocialLinkReturn =
  };
 type SiteSettingsReturn = 
  record {
+   contactIntro_fa: text;
+   contactIntro_sv: text;
    landingBackgroundUrl: text;
    logoUrl: text;
    mockMode: bool;
@@ -258,6 +260,7 @@ type ActivityReturn =
    excerpt_sv: text;
    formTemplateId: opt nat;
    hasRegistration: bool;
+   highlighted: bool;
    icon: text;
    id: nat;
    imageUrl: text;
@@ -291,7 +294,8 @@ service : {
    registrationMode: text, formTemplateId: opt nat, customFormFields:
    vec FormFieldReturn, actSessions: vec EventSessionReturn, regMaxCapacity:
    opt nat, regAllowedPhones: vec text, regMaxRegistrationsPerPhone: 
-   opt nat, regBlockDuplicateEmail: bool, sortOrder: nat) -> (ActivityReturn);
+   opt nat, regBlockDuplicateEmail: bool, highlighted: bool, sortOrder:
+   nat) -> (ActivityReturn);
   createEventRegistrationTemplate: (token: text, name_fa: text, name_sv:
    text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn) ->
@@ -377,8 +381,8 @@ service : {
    bool, registrationMode: text, formTemplateId: opt nat, customFormFields:
    vec FormFieldReturn, actSessions: vec EventSessionReturn, regMaxCapacity:
    opt nat, regAllowedPhones: vec text, regMaxRegistrationsPerPhone: 
-   opt nat, regBlockDuplicateEmail: bool, sortOrder: nat) ->
-   (opt ActivityReturn);
+   opt nat, regBlockDuplicateEmail: bool, highlighted: bool, sortOrder:
+   nat) -> (opt ActivityReturn);
   updateEventRegistrationTemplate: (token: text, id: nat, name_fa: text,
    name_sv: text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn) ->
@@ -389,7 +393,8 @@ service : {
   updateSeoSettings: (token: text, settings: SeoSettings) -> ();
   updateSettings: (token: text, logoUrl: text, title_fa: text, title_sv:
    text, subtitle_fa: text, subtitle_sv: text, landingBackgroundUrl: 
-   text, topicsBackgroundUrl: text) -> (SiteSettingsReturn);
+   text, topicsBackgroundUrl: text, contactIntro_fa: text, contactIntro_sv:
+   text) -> (SiteSettingsReturn);
   updateSlide: (token: text, id: nat, topicId: nat, imageUrl: text, title_fa:
    text, title_sv: text, subtitle_fa: text, subtitle_sv: text, ctaText_fa:
    text, ctaText_sv: text, ctaLink: text, sortOrder: nat) ->

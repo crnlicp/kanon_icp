@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, Users, Inbox, Filter } from "lucide-react";
+import { Loader2, Mail, Phone, Users, Inbox, Filter, Star } from "lucide-react";
 import { useI18n } from "../../../i18n";
 import type { RegistrationReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
 
@@ -25,6 +25,7 @@ interface ActivityOption {
   title_sv: string;
   title_fa: string;
   topicId: number;
+  highlighted: boolean;
 }
 
 export default function AdminEventRegistrations({ token }: Props) {
@@ -49,6 +50,7 @@ export default function AdminEventRegistrations({ token }: Props) {
                 title_sv: a.title_sv,
                 title_fa: a.title_fa,
                 topicId: Number(topic.id),
+                highlighted: a.highlighted ?? false,
               });
             }
           }
@@ -131,10 +133,16 @@ export default function AdminEventRegistrations({ token }: Props) {
           >
             {activities.map((a) => (
               <option key={a.id} value={a.id} className="bg-black/70">
-                {lang === "fa" ? a.title_fa : a.title_sv}
+                {a.highlighted ? "★ " : ""}{lang === "fa" ? a.title_fa : a.title_sv}
               </option>
             ))}
           </select>
+          {selectedActivityId !== null && activities.find((a) => a.id === selectedActivityId)?.highlighted && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold" title={t("highlighted")}>
+              <Star size={10} className="fill-accent" />
+              {t("highlighted")}
+            </span>
+          )}
           <span className="text-sm text-white/40">
             {registrations.length} {t("registrations")}
           </span>

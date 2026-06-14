@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Loader2 } from "lucide-react";
 import { useI18n } from "../i18n";
@@ -6,13 +6,15 @@ import Toast from "../components/Toast";
 import GlassCard from "../components/GlassCard";
 import SeoHead from "../components/SeoHead";
 import { useSeoSettings } from "../hooks/useSeoSettings";
+import type { SiteSettingsReturn } from "../backend/api/backend";
 
 const PHONE_PATTERN = "\\+[0-9]{11}";
 
 export default function ContactPage() {
-  const { t, isRtl } = useI18n();
+  const { t, isRtl, localized } = useI18n();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [intro, setIntro] = useState<{ fa: string; sv: string } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
   });
@@ -20,6 +22,16 @@ export default function ContactPage() {
   const seo = useSeoSettings({
     title: t("contactUs"),
   });
+
+  useEffect(() => {
+    import("../actor").then(({ backend }) => {
+      backend.getSettings().then((s: SiteSettingsReturn) => {
+        setIntro({ fa: s.contactIntro_fa || "", sv: s.contactIntro_sv || "" });
+      }).catch(() => setIntro({ fa: "", sv: "" }));
+    });
+  }, []);
+
+  const introHtml = intro ? localized(intro.fa, intro.sv) : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +69,22 @@ export default function ContactPage() {
           </h1>
           <p className="text-lg text-white/50">{t("contactFormSubtitle")}</p>
         </motion.div>
+
+        {introHtml && introHtml.trim() && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8"
+          >
+            <GlassCard>
+              <div
+                className="rich-html"
+                dangerouslySetInnerHTML={{ __html: introHtml }}
+              />
+            </GlassCard>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

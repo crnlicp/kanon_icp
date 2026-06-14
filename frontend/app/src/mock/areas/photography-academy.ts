@@ -16,6 +16,7 @@ const body = (fa: string, sv: string) => ({
   sessions: [],
   regAllowedPhones: [],
   regBlockDuplicateEmail: false,
+  highlighted: false,
 });
 
 export const mockSettings: SiteSettingsReturn = {
@@ -26,6 +27,8 @@ export const mockSettings: SiteSettingsReturn = {
   subtitle_sv: "Fånga ögonblicket — konsten att fotografera och filma i en kreativ miljö",
   landingBackgroundUrl: img("frame-landing", 1920, 1080),
   topicsBackgroundUrl: img("frame-topics", 1920, 1080),
+  contactIntro_fa: "<p>از تجربه شما برای رشد عکاسی‌تان استقبال می‌کنیم. در تماس باشید.</p>",
+  contactIntro_sv: "<p>Vi välkomnar dig att utveckla din fotografi. Hör av dig.</p>",
   mockMode: true,
 };
 
@@ -49,6 +52,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "عکاسی پرتره در استودیو", title_sv: "Studioporträttfotografi",
     excerpt_fa: "کنترل نور، پوز و تکنیک‌های پرتره در استودیو مجهز", excerpt_sv: "Ljuskontroll, pose och porträtttekniker i välutrustad studio",
     ...body("عکاسی پرتره در استودیو", "Studioporträttfotografi"),
+    highlighted: true,
     formTemplateId: 97020n,
     icon: "User", imageUrl: img("studio-portrait", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(60),
   },
@@ -88,6 +92,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "مبانی عکاسی منظره", title_sv: "Grunderna i landskapsfotografi",
     excerpt_fa: "ترکیب‌بندی، اکسپوژر و استفاده از فیلترها در طبیعت", excerpt_sv: "Komposition, exponering och filter i naturen",
     ...body("مبانی عکاسی منظره", "Grunderna i landskapsfotografi"),
+    highlighted: true,
     formTemplateId: 97020n,
     icon: "Mountain", imageUrl: img("landscape-basics", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(48),
   },
@@ -104,6 +109,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "مقدمه‌ای بر مستندسازی", title_sv: "Introduktion till dokumentärfilm",
     excerpt_fa: "پیش‌تولید، مصاحبه و تدوین — هر شرکت‌کننده یک فیلم ۵ دقیقه‌ای می‌سازد", excerpt_sv: "Förproduktion, intervjuer och redigering — varje deltagare gör en 5-minuters kortfilm",
     ...body("مقدمه‌ای بر مستندسازی", "Introduktion till dokumentärfilm"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
@@ -119,6 +125,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "مسترکلاس لایت‌روم", title_sv: "Lightroom-masterclass",
     excerpt_fa: "از خام تا شاهکار — نور، رنگ، وضوح و ساخت پریست شخصی", excerpt_sv: "Från råbild till mästerverk — ljus, färg, skärpa och egna presets",
     ...body("مسترکلاس لایت‌روم", "Lightroom-masterclass"),
+    highlighted: true,
     formTemplateId: 97021n,
     icon: "Sliders", imageUrl: img("lightroom", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(38),
   },
@@ -136,6 +143,7 @@ export const mockActivities: ActivityReturn[] = [
     title_fa: "نقد و بررسی پرتفولیو", title_sv: "Portföljgranskning",
     excerpt_fa: "نقد گروهی ۱۰ عکس توسط عکاسان حرفه‌ای — بازخورد سازنده", excerpt_sv: "Grupportföljkritik på 10 bilder av professionella fotografer",
     ...body("نقد و بررسی پرتفولیو", "Portföljgranskning"),
+    highlighted: true,
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },

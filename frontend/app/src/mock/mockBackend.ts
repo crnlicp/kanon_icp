@@ -124,20 +124,33 @@ export const mockBackend: backendInterface = {
 
   async deleteTopic() { return true; },
 
-  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, _regMaxCap, regAllowedPhones, _regMaxPerPhone, regBlockDuplicateEmail, sortOrder) {
+  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
     return {
       id: BigInt(Date.now()), topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
       body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
-      sessions, regAllowedPhones, regBlockDuplicateEmail, sortOrder,
+      sessions,
+      regMaxCapacity: regMaxCap ?? undefined,
+      regAllowedPhones,
+      regMaxRegistrationsPerPhone: regMaxPerPhone ?? undefined,
+      regBlockDuplicateEmail,
+      highlighted,
+      sortOrder,
       createdAt: BigInt(Date.now()) * 1_000_000n,
     };
   },
 
-  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, _regMaxCap, regAllowedPhones, _regMaxPerPhone, regBlockDuplicateEmail, sortOrder) {
+  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
     return {
       id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
       body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
-      sessions, regAllowedPhones, regBlockDuplicateEmail, sortOrder, createdAt: 0n,
+      sessions,
+      regMaxCapacity: regMaxCap ?? undefined,
+      regAllowedPhones,
+      regMaxRegistrationsPerPhone: regMaxPerPhone ?? undefined,
+      regBlockDuplicateEmail,
+      highlighted,
+      sortOrder,
+      createdAt: 0n,
     };
   },
 
@@ -196,8 +209,8 @@ export const mockBackend: backendInterface = {
     return { headerImageUrl, body_fa, body_sv };
   },
 
-  async updateSettings(_token, logoUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, landingBackgroundUrl, topicsBackgroundUrl) {
-    return { logoUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, landingBackgroundUrl, topicsBackgroundUrl, mockMode: true };
+  async updateSettings(_token, logoUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, landingBackgroundUrl, topicsBackgroundUrl, contactIntro_fa, contactIntro_sv) {
+    return { logoUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, landingBackgroundUrl, topicsBackgroundUrl, contactIntro_fa, contactIntro_sv, mockMode: true };
   },
 
   async submitContactMessage(name, email, phone, message) {
