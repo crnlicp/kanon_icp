@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
-import type { RegistrationReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
+import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
@@ -16,7 +16,7 @@ interface RegItem {
   email: string;
   phone: string;
   personCount: number;
-  selectedSessions: { sessionId: number; sessionName: string }[];
+  selectedSessions: { sessionId: number; sessionName: string; status: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
   createdAt: number;
   archived: boolean;
@@ -36,6 +36,7 @@ export default function AdminEventRegistrations({ token }: Props) {
   const [activities, setActivities] = useState<ActivityOption[]>([]);
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
+  const [sessionFilter, setSessionFilter] = useState<number | "all">("all");
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
@@ -74,13 +75,14 @@ export default function AdminEventRegistrations({ token }: Props) {
     try {
       const { backend } = await import("../../../actor");
       const [data, stats] = await Promise.all([
-        backend.getRegistrations(token, BigInt(selectedActivityId)),
+        backend.getRegistrationsWithStatus(token, BigInt(selectedActivityId)),
         backend.getSessionStats(token, BigInt(selectedActivityId)),
       ]);
       setSessionStats(stats);
+      setSessionFilter("all");
       setRegistrations(
         data
-          .map((r: RegistrationReturn) => ({
+          .map((r: RegistrationWithStatusReturn) => ({
             id: Number(r.id),
             activityId: Number(r.activityId),
             name: r.name,
@@ -90,6 +92,7 @@ export default function AdminEventRegistrations({ token }: Props) {
             selectedSessions: (r.selectedSessions ?? []).map((ss) => ({
               sessionId: Number(ss.sessionId),
               sessionName: ss.sessionName,
+              status: ss.status,
             })),
             fieldValues: (r.fieldValues || []).map((fv) => ({
               fieldId: Number(fv.fieldId),
@@ -137,7 +140,9 @@ export default function AdminEventRegistrations({ token }: Props) {
     }
   };
 
-  const visibleRegistrations = showArchived ? registrations : registrations.filter((r) => !r.archived);
+  const visibleRegistrations = registrations
+    .filter((r) => showArchived || !r.archived)
+    .filter((r) => sessionFilter === "all" || r.selectedSessions.some((ss) => ss.sessionId === sessionFilter));
 
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
@@ -177,6 +182,20 @@ export default function AdminEventRegistrations({ token }: Props) {
               <Star size={10} className="fill-accent" />
               {t("highlighted")}
             </span>
+          )}
+          {sessionStats.length > 0 && (
+            <select
+              value={sessionFilter === "all" ? "" : sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value === "" ? "all" : Number(e.target.value))}
+              className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+            >
+              <option value="" className="bg-black/70">{t("allSessions")}</option>
+              {[...sessionStats].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder)).map((ss) => (
+                <option key={Number(ss.sessionId)} value={Number(ss.sessionId)} className="bg-black/70">
+                  {lang === "fa" ? ss.name_fa : ss.name_sv}
+                </option>
+              ))}
+            </select>
           )}
           <button
             type="button"
@@ -289,11 +308,26 @@ export default function AdminEventRegistrations({ token }: Props) {
               {/* Session chips */}
               {reg.selectedSessions.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {reg.selectedSessions.map((ss) => (
-                    <span key={ss.sessionId} className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] text-white/60 border border-white/10">
-                      {ss.sessionName}
-                    </span>
-                  ))}
+                  {reg.selectedSessions.map((ss) => {
+                    const isBuffer = ss.status === "buffer";
+                    return (
+                      <span
+                        key={ss.sessionId}
+                        className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
+                          isBuffer
+                            ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                            : "bg-white/[0.06] text-white/60 border-white/10"
+                        }`}
+                      >
+                        {ss.sessionName}
+                        {isBuffer && (
+                          <span className="text-[10px] uppercase tracking-wide font-semibold">
+                            {t("buffer")}
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 

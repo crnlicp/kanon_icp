@@ -32,6 +32,7 @@ import {
   aboutContent,
   socialLinks,
   basicFormTemplate,
+  moharramEventTemplate,
   topics,
   type SeedTopic,
 } from "./seed-data";
@@ -150,6 +151,12 @@ async function wipe(backend: Backend, token: string) {
   }
   log(`Deleted ${templates.length} form templates`);
 
+  const eventTemplates = await backend.getEventRegistrationTemplates();
+  for (const e of eventTemplates) {
+    await backend.deleteEventRegistrationTemplate(token, e.id);
+  }
+  log(`Deleted ${eventTemplates.length} event registration templates`);
+
   const socials = await backend.getSocialLinks();
   for (const s of socials) {
     await backend.deleteSocialLink(token, s.id);
@@ -207,7 +214,8 @@ async function seedTopic(
   token: string,
   topic: SeedTopic,
   topicIndex: number,
-  formTemplateId: bigint
+  formTemplateId: bigint,
+  eventTemplateIds: Map<string, bigint>
 ) {
   section(`Topic: ${topic.title_sv}`);
 
@@ -246,9 +254,12 @@ async function seedTopic(
   // Events
   for (let i = 0; i < topic.events.length; i++) {
     const e = topic.events[i];
-    const hasReg = topic.registration === "form";
-    const regMode = hasReg ? "form" : "none";
-    const templateRef: bigint | null = hasReg ? formTemplateId : null;
+    const eventTemplateRef: bigint | null = e.eventTemplateKey
+      ? eventTemplateIds.get(e.eventTemplateKey) ?? null
+      : null;
+    const hasReg = topic.registration === "form" || eventTemplateRef !== null;
+    const regMode = eventTemplateRef !== null ? "event" : topic.registration === "form" ? "form" : "none";
+    const templateRef: bigint | null = regMode === "form" ? formTemplateId : null;
     const customFields: FormFieldReturn[] = [];
     const sessions: EventSessionReturn[] = [];
 
@@ -267,6 +278,7 @@ async function seedTopic(
       hasReg,
       regMode,
       templateRef,
+      eventTemplateRef, // eventTemplateId
       customFields,
       sessions,
       null, // regMaxCapacity
@@ -278,6 +290,38 @@ async function seedTopic(
     );
   }
   log(`  ${topic.events.length} events created`);
+}
+
+async function seedEventTemplates(
+  backend: Backend,
+  token: string
+): Promise<Map<string, bigint>> {
+  section("Creating event registration templates");
+  const map = new Map<string, bigint>();
+
+  const sessions: EventSessionReturn[] = moharramEventTemplate.sessions.map((s, i) => ({
+    id: BigInt(i + 1),
+    sortOrder: BigInt(i + 1),
+    date: "",
+    name_fa: s.name_fa,
+    name_sv: s.name_sv,
+    capacity: BigInt(s.capacity),
+    bufferCapacity: BigInt(s.bufferCapacity),
+  }));
+  const fields: FormFieldReturn[] = moharramEventTemplate.fields.map((f, i) => field(i, f));
+
+  const tpl = await backend.createEventRegistrationTemplate(
+    token,
+    moharramEventTemplate.name_fa,
+    moharramEventTemplate.name_sv,
+    moharramEventTemplate.description_fa,
+    moharramEventTemplate.description_sv,
+    sessions,
+    fields
+  );
+  log(`Template '${moharramEventTemplate.name_sv}' created (id=${tpl.id})`);
+  map.set(moharramEventTemplate.key, tpl.id);
+  return map;
 }
 
 async function seedSocialLinks(backend: Backend, token: string) {
@@ -324,9 +368,10 @@ async function main() {
   await seedSettings(backend, token);
   await seedAbout(backend, token);
   const formTemplateId = await seedFormTemplate(backend, token);
+  const eventTemplateIds = await seedEventTemplates(backend, token);
 
   for (let i = 0; i < topics.length; i++) {
-    await seedTopic(backend, token, topics[i], i, formTemplateId);
+    await seedTopic(backend, token, topics[i], i, formTemplateId, eventTemplateIds);
   }
 
   await seedSocialLinks(backend, token);

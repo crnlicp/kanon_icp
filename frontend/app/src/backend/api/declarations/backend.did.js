@@ -55,6 +55,7 @@ export const idlFactory = ({ IDL }) => {
     'registrationMode' : IDL.Text,
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
+    'eventTemplateId' : IDL.Opt(IDL.Nat),
     'topicId' : IDL.Nat,
   });
   const EventRegistrationTemplateReturn = IDL.Record({
@@ -173,8 +174,10 @@ export const idlFactory = ({ IDL }) => {
     'activityId' : IDL.Nat,
     'selectedSessions' : IDL.Vec(SessionStatusReturn),
     'email' : IDL.Text,
+    'message' : IDL.Text,
     'personCount' : IDL.Nat,
     'phone' : IDL.Text,
+    'archived' : IDL.Bool,
   });
   const SeoSettings = IDL.Record({
     'defaultLang' : IDL.Text,
@@ -287,6 +290,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Bool,
           IDL.Text,
+          IDL.Opt(IDL.Nat),
           IDL.Opt(IDL.Nat),
           IDL.Vec(FormFieldReturn),
           IDL.Vec(EventSessionReturn),
@@ -435,6 +439,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(RegistrationReturn)],
         ['query'],
       ),
+    'getRegistrationsWithStatus' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [IDL.Vec(RegistrationWithStatusReturn)],
+        ['query'],
+      ),
     'getRobotsTxt' : IDL.Func([], [IDL.Text], ['query']),
     'getSeoSettings' : IDL.Func([], [SeoSettings], ['query']),
     'getSessionAvailability' : IDL.Func(
@@ -523,6 +532,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Bool,
           IDL.Text,
+          IDL.Opt(IDL.Nat),
           IDL.Opt(IDL.Nat),
           IDL.Vec(FormFieldReturn),
           IDL.Vec(EventSessionReturn),

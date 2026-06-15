@@ -102,9 +102,10 @@ type SeoSettings =
    twitterCardType: text;
    twitterHandle: text;
  };
-type RegistrationWithStatusReturn = 
+type RegistrationWithStatusReturn =
  record {
    activityId: nat;
+   archived: bool;
    createdAt: int;
    email: text;
    fieldValues: vec record {
@@ -113,6 +114,7 @@ type RegistrationWithStatusReturn =
                       value: text;
                     };
    id: nat;
+   message: text;
    name: text;
    personCount: nat;
    phone: text;
@@ -257,6 +259,7 @@ type ActivityReturn =
    excerpt_fa: text;
    excerpt_sv: text;
    formTemplateId: opt nat;
+   eventTemplateId: opt nat;
    hasRegistration: bool;
    icon: text;
    id: nat;
@@ -288,10 +291,11 @@ service : {
   createActivity: (token: text, topicId: nat, slug: text, title_fa: text,
    title_sv: text, excerpt_fa: text, excerpt_sv: text, body_fa: text,
    body_sv: text, icon: text, imageUrl: text, hasRegistration: bool,
-   registrationMode: text, formTemplateId: opt nat, customFormFields:
-   vec FormFieldReturn, actSessions: vec EventSessionReturn, regMaxCapacity:
-   opt nat, regAllowedPhones: vec text, regMaxRegistrationsPerPhone: 
-   opt nat, regBlockDuplicateEmail: bool, sortOrder: nat) -> (ActivityReturn);
+   registrationMode: text, formTemplateId: opt nat, eventTemplateId: opt nat,
+   customFormFields: vec FormFieldReturn, actSessions: vec EventSessionReturn,
+   regMaxCapacity: opt nat, regAllowedPhones: vec text,
+   regMaxRegistrationsPerPhone: opt nat, regBlockDuplicateEmail: bool,
+   sortOrder: nat) -> (ActivityReturn);
   createEventRegistrationTemplate: (token: text, name_fa: text, name_sv:
    text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn) ->
@@ -337,6 +341,8 @@ service : {
    (opt RegistrationWithStatusReturn) query;
   getRegistrations: (token: text, activityId: nat) ->
    (vec RegistrationReturn) query;
+  getRegistrationsWithStatus: (token: text, activityId: nat) ->
+   (vec RegistrationWithStatusReturn) query;
   getRobotsTxt: () -> (text) query;
   getSeoSettings: () -> (SeoSettings) query;
   getSessionAvailability: (activityId: nat) ->
@@ -374,11 +380,11 @@ service : {
   updateActivity: (token: text, id: nat, topicId: nat, slug: text, title_fa:
    text, title_sv: text, excerpt_fa: text, excerpt_sv: text, body_fa: 
    text, body_sv: text, icon: text, imageUrl: text, hasRegistration: 
-   bool, registrationMode: text, formTemplateId: opt nat, customFormFields:
-   vec FormFieldReturn, actSessions: vec EventSessionReturn, regMaxCapacity:
-   opt nat, regAllowedPhones: vec text, regMaxRegistrationsPerPhone: 
-   opt nat, regBlockDuplicateEmail: bool, sortOrder: nat) ->
-   (opt ActivityReturn);
+   bool, registrationMode: text, formTemplateId: opt nat, eventTemplateId:
+   opt nat, customFormFields: vec FormFieldReturn, actSessions:
+   vec EventSessionReturn, regMaxCapacity: opt nat, regAllowedPhones:
+   vec text, regMaxRegistrationsPerPhone: opt nat, regBlockDuplicateEmail:
+   bool, sortOrder: nat) -> (opt ActivityReturn);
   updateEventRegistrationTemplate: (token: text, id: nat, name_fa: text,
    name_sv: text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn) ->

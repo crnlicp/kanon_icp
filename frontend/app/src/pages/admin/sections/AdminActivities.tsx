@@ -8,7 +8,7 @@ import AssetImage from "../../../components/AssetImage";
 import FormBuilder from "../../../components/FormBuilder";
 import SessionBuilder from "../../../components/SessionBuilder";
 import { useI18n } from "../../../i18n";
-import type { TopicReturn, ActivityReturn, FormFieldReturn, FormTemplateReturn, EventSessionReturn } from "../../../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn, FormTemplateReturn, EventSessionReturn, EventRegistrationTemplateReturn } from "../../../backend/api/backend";
 
 interface Topic {
   id: number;
@@ -31,6 +31,7 @@ interface ActivityItem {
   hasRegistration: boolean;
   registrationMode: string;
   formTemplateId?: number;
+  eventTemplateId?: number;
   customFormFields: FormFieldReturn[];
   sessions: EventSessionReturn[];
   regMaxCapacity: string;
@@ -42,6 +43,7 @@ interface ActivityItem {
 }
 
 type FormMode = "default" | "template" | "custom";
+type EventMode = "template" | "custom";
 type RegMode = "none" | "form" | "event";
 
 interface Props {
@@ -63,6 +65,8 @@ const emptyForm = {
   registrationMode: "none" as RegMode,
   formMode: "default" as FormMode,
   formTemplateId: 0,
+  eventMode: "custom" as EventMode,
+  eventTemplateId: 0,
   customFormFields: [] as FormFieldReturn[],
   eventCustomFields: [] as FormFieldReturn[],
   sessions: [] as EventSessionReturn[],
@@ -80,6 +84,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
   const [selectedTopicId, setSelectedTopicId] = useState<number>(0);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [templates, setTemplates] = useState<FormTemplateReturn[]>([]);
+  const [eventTemplates, setEventTemplates] = useState<EventRegistrationTemplateReturn[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -94,10 +99,12 @@ export default function AdminActivities({ token, readOnly }: Props) {
       Promise.all([
         backend.getTopics(),
         backend.getFormTemplates(),
-      ]).then(([topicData, templateData]: [TopicReturn[], FormTemplateReturn[]]) => {
+        backend.getEventRegistrationTemplates(),
+      ]).then(([topicData, templateData, eventTemplateData]: [TopicReturn[], FormTemplateReturn[], EventRegistrationTemplateReturn[]]) => {
         const ts = topicData.map((t: TopicReturn) => ({ id: Number(t.id), slug: t.slug, title_sv: t.title_sv }));
         setTopics(ts);
         setTemplates(templateData);
+        setEventTemplates(eventTemplateData);
         if (ts.length > 0) setSelectedTopicId(ts[0].id);
         setLoading(false);
       });
@@ -114,6 +121,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       topicId: Number(a.topicId),
       registrationMode: a.registrationMode ?? (a.hasRegistration ? (a.sessions.length > 0 ? "event" : "form") : "none"),
       formTemplateId: a.formTemplateId != null ? Number(a.formTemplateId) : undefined,
+      eventTemplateId: a.eventTemplateId != null ? Number(a.eventTemplateId) : undefined,
       sessions: a.sessions ?? [],
       regMaxCapacity: a.regMaxCapacity != null ? String(Number(a.regMaxCapacity)) : "",
       regAllowedPhones: (a.regAllowedPhones ?? []).join("\n"),
@@ -137,6 +145,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       const hasRegistration = regMode !== "none";
 
       let templateId: bigint | null = null;
+      let eventTemplateId: bigint | null = null;
       let customFields: FormFieldReturn[] = [];
       let sessions: EventSessionReturn[] = [];
 
@@ -144,8 +153,12 @@ export default function AdminActivities({ token, readOnly }: Props) {
         templateId = form.formMode === "template" && form.formTemplateId ? BigInt(form.formTemplateId) : null;
         customFields = form.formMode === "custom" ? form.customFormFields : [];
       } else if (regMode === "event") {
-        sessions = form.sessions;
-        customFields = form.eventCustomFields;
+        if (form.eventMode === "template" && form.eventTemplateId) {
+          eventTemplateId = BigInt(form.eventTemplateId);
+        } else {
+          sessions = form.sessions;
+          customFields = form.eventCustomFields;
+        }
       }
 
       const regMaxCapacity = form.regMaxCapacity.trim() ? BigInt(parseInt(form.regMaxCapacity)) : null;
@@ -163,7 +176,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
           form.icon, form.imageUrl, hasRegistration, regMode,
-          templateId, customFields,
+          templateId, eventTemplateId, customFields,
           sessions,
           regMaxCapacity, regAllowedPhones,
           regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
@@ -178,7 +191,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.excerpt_fa, form.excerpt_sv,
           form.body_fa, form.body_sv,
           form.icon, form.imageUrl, hasRegistration, regMode,
-          templateId, customFields,
+          templateId, eventTemplateId, customFields,
           sessions,
           regMaxCapacity, regAllowedPhones,
           regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
@@ -217,6 +230,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
       if (act.customFormFields.length > 0) formMode = "custom";
       else if (act.formTemplateId) formMode = "template";
     }
+    const eventMode: EventMode = regMode === "event" && act.eventTemplateId ? "template" : "custom";
     setForm({
       topicId: act.topicId,
       slug: act.slug,
@@ -231,9 +245,11 @@ export default function AdminActivities({ token, readOnly }: Props) {
       registrationMode: regMode,
       formMode,
       formTemplateId: act.formTemplateId ?? 0,
+      eventMode,
+      eventTemplateId: act.eventTemplateId ?? 0,
       customFormFields: regMode === "form" ? act.customFormFields : [],
-      eventCustomFields: regMode === "event" ? act.customFormFields : [],
-      sessions: act.sessions ?? [],
+      eventCustomFields: regMode === "event" && eventMode === "custom" ? act.customFormFields : [],
+      sessions: regMode === "event" && eventMode === "custom" ? (act.sessions ?? []) : [],
       regMaxCapacity: act.regMaxCapacity ?? "",
       regAllowedPhones: act.regAllowedPhones ?? "",
       regMaxRegistrationsPerPhone: act.regMaxRegistrationsPerPhone ?? "",
@@ -456,34 +472,94 @@ export default function AdminActivities({ token, readOnly }: Props) {
           {/* Event mode options */}
           {form.registrationMode === "event" && (
             <div className="space-y-4">
-              {/* Sessions — always shown for event mode */}
-              <div className="rounded-xl border border-white/10 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setSessionsOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/5 transition-colors"
-                >
-                  <span className="text-sm font-medium text-white/70">{t("sessions")} ({form.sessions.length})</span>
-                  {sessionsOpen ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
-                </button>
-                {sessionsOpen && (
-                  <div className="px-4 py-3 border-t border-white/10">
-                    <SessionBuilder
-                      sessions={form.sessions}
-                      onChange={(sessions) => setForm({ ...form, sessions })}
-                    />
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-4">
+                <div>
+                  <label className="block text-sm text-white/50 mb-2">{t("eventMode")}</label>
+                  <div className="flex gap-2">
+                    {(["template", "custom"] as EventMode[]).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setForm({ ...form, eventMode: mode })}
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          form.eventMode === mode
+                            ? "bg-primary/15 text-primary border border-primary/30"
+                            : "bg-white/5 text-white/40 border border-white/10 hover:text-white/70"
+                        }`}
+                      >
+                        {t(mode === "template" ? "useTemplate" : "customEvent")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {form.eventMode === "template" && (
+                  <div>
+                    <label className="block text-sm text-white/50 mb-1.5">{t("selectEventTemplate")}</label>
+                    <select
+                      value={form.eventTemplateId}
+                      onChange={(e) => setForm({ ...form, eventTemplateId: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                    >
+                      <option value={0} className="bg-black/70">-- {t("selectEventTemplate")} --</option>
+                      {eventTemplates.map((tmpl) => (
+                        <option key={Number(tmpl.id)} value={Number(tmpl.id)} className="bg-black/70">
+                          {lang === "fa" ? tmpl.name_fa : tmpl.name_sv} ({tmpl.sessions.length} {t("sessions")}, {tmpl.fields.length} {t("fieldsCount")})
+                        </option>
+                      ))}
+                    </select>
+                    {form.eventTemplateId > 0 && (() => {
+                      const selected = eventTemplates.find((t) => Number(t.id) === form.eventTemplateId);
+                      if (!selected) return null;
+                      return (
+                        <div className="mt-3 space-y-3">
+                          <div>
+                            <p className="text-xs text-white/40 mb-1.5">{t("sessions")}</p>
+                            <SessionBuilder sessions={selected.sessions} onChange={() => {}} readOnly />
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/40 mb-1.5">{t("formPreview")}</p>
+                            <FormBuilder fields={selected.fields} onChange={() => {}} readOnly />
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
 
-              {/* Custom fields for event */}
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
-                <label className="block text-sm text-white/50">{t("formBuilder")}</label>
-                <FormBuilder
-                  fields={form.eventCustomFields}
-                  onChange={(fields) => setForm({ ...form, eventCustomFields: fields })}
-                />
-              </div>
+              {form.eventMode === "custom" && (
+                <>
+                  {/* Sessions */}
+                  <div className="rounded-xl border border-white/10 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setSessionsOpen((v) => !v)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-sm font-medium text-white/70">{t("sessions")} ({form.sessions.length})</span>
+                      {sessionsOpen ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
+                    </button>
+                    {sessionsOpen && (
+                      <div className="px-4 py-3 border-t border-white/10">
+                        <SessionBuilder
+                          sessions={form.sessions}
+                          onChange={(sessions) => setForm({ ...form, sessions })}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Custom fields for event */}
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+                    <label className="block text-sm text-white/50">{t("formBuilder")}</label>
+                    <FormBuilder
+                      fields={form.eventCustomFields}
+                      onChange={(fields) => setForm({ ...form, eventCustomFields: fields })}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 

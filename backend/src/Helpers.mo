@@ -150,6 +150,7 @@ module {
       hasRegistration = a.hasRegistration;
       registrationMode = a.registrationMode;
       formTemplateId = a.formTemplateId;
+      eventTemplateId = a.eventTemplateId;
       customFormFields = Array.map<T.FormField, T.FormFieldReturn>(a.customFormFields, fieldToReturn);
       sessions = Array.map<T.EventSession, T.EventSessionReturn>(a.sessions, sessionToReturn);
       regMaxCapacity;
@@ -196,6 +197,7 @@ module {
       name             = r.name;
       email            = r.email;
       phone            = r.phone;
+      message          = r.message;
       personCount      = r.personCount;
       selectedSessions = sessionStatuses;
       fieldValues      = Array.map<T.RegistrationFieldValue, { fieldId : Nat; fieldLabel : Text; value : Text }>(
@@ -203,6 +205,7 @@ module {
         func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
       );
       createdAt        = r.createdAt;
+      archived         = switch (r.archived) { case (?b) b; case null false };
     }
   };
 

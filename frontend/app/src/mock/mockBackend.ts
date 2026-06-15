@@ -77,6 +77,37 @@ export const mockBackend: backendInterface = {
       .map((r): RegistrationReturn => ({ ...r, archived: false }));
   },
 
+  async getRegistrationsWithStatus(_token, activityId) {
+    const activity = mockActivities.find((a) => a.id === activityId);
+    const sessions = activity?.sessions ?? [];
+    const regs = mockRegistrations.filter((r) => r.activityId === activityId);
+    const sorted = [...regs].sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    return regs.map((reg) => {
+      const selectedSessions = reg.selectedSessions.map((ss) => {
+        const session = sessions.find((s) => s.id === ss.sessionId);
+        let status = "confirmed";
+        if (session) {
+          const cap = Number(session.capacity);
+          let cumulative = 0;
+          for (const r of sorted) {
+            if (!r.selectedSessions.some((s) => s.sessionId === ss.sessionId)) continue;
+            if (r.id === reg.id) { status = cumulative < cap ? "confirmed" : "buffer"; break; }
+            cumulative += Number(r.personCount);
+          }
+        }
+        return { sessionId: ss.sessionId, sessionName: ss.sessionName, status };
+      });
+      return {
+        id: reg.id, activityId: reg.activityId,
+        name: reg.name, email: reg.email, phone: reg.phone, message: reg.message ?? "",
+        personCount: reg.personCount, selectedSessions,
+        fieldValues: reg.fieldValues.map((fv) => ({ fieldId: fv.fieldId, fieldLabel: fv.fieldLabel, value: fv.value })),
+        createdAt: reg.createdAt,
+        archived: false,
+      };
+    });
+  },
+
   async getAllRegistrations() {
     return mockRegistrations.map((r): RegistrationReturn => ({ ...r, archived: false }));
   },
@@ -126,10 +157,13 @@ export const mockBackend: backendInterface = {
 
   async deleteTopic() { return true; },
 
-  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
+  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
     return {
       id: BigInt(Date.now()), topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode,
+      formTemplateId: formTemplateId ?? undefined,
+      eventTemplateId: eventTemplateId ?? undefined,
+      customFormFields,
       sessions,
       regMaxCapacity: regMaxCap ?? undefined,
       regAllowedPhones,
@@ -141,10 +175,13 @@ export const mockBackend: backendInterface = {
     };
   },
 
-  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
+  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
     return {
       id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
-      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId: formTemplateId ?? undefined, customFormFields,
+      body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode,
+      formTemplateId: formTemplateId ?? undefined,
+      eventTemplateId: eventTemplateId ?? undefined,
+      customFormFields,
       sessions,
       regMaxCapacity: regMaxCap ?? undefined,
       regAllowedPhones,
@@ -220,7 +257,7 @@ export const mockBackend: backendInterface = {
   },
 
   async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues) {
-    return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n } };
+    return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n, archived: false } };
   },
 
   async deleteContactMessage() { return true; },
@@ -300,10 +337,11 @@ export const mockBackend: backendInterface = {
     });
     return {
       id: reg.id, activityId: reg.activityId,
-      name: reg.name, email: reg.email, phone: reg.phone,
+      name: reg.name, email: reg.email, phone: reg.phone, message: reg.message ?? "",
       personCount: reg.personCount, selectedSessions,
       fieldValues: reg.fieldValues.map((fv) => ({ fieldId: fv.fieldId, fieldLabel: fv.fieldLabel, value: fv.value })),
       createdAt: reg.createdAt,
+      archived: false,
     };
   },
 
@@ -326,9 +364,10 @@ export const mockBackend: backendInterface = {
       __kind__: "ok" as const,
       ok: {
         id: reg.id, activityId: reg.activityId,
-        name: reg.name, email: reg.email, phone: reg.phone,
+        name: reg.name, email: reg.email, phone: reg.phone, message: reg.message ?? "",
         personCount: newPersonCount, selectedSessions: [],
         fieldValues: [], createdAt: reg.createdAt,
+        archived: false,
       },
     };
   },

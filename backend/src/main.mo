@@ -540,6 +540,7 @@ persistent actor {
     hasRegistration : Bool,
     registrationMode : Text,
     formTemplateId : ?Nat,
+    eventTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
     actSessions : [EventSessionReturn],
     regMaxCapacity : ?Nat,
@@ -552,6 +553,24 @@ persistent actor {
     requireAuth(token);
     let id = nextActivityId;
     nextActivityId += 1;
+    let resolvedSessions : [EventSession] = switch (eventTemplateId) {
+      case (?tid) {
+        switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+          case (?t) { t.sessions };
+          case null { buildSessions(actSessions) };
+        }
+      };
+      case null { buildSessions(actSessions) };
+    };
+    let resolvedFields : [FormField] = switch (eventTemplateId) {
+      case (?tid) {
+        switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+          case (?t) { t.fields };
+          case null { buildFormFields(customFormFields) };
+        }
+      };
+      case null { buildFormFields(customFormFields) };
+    };
     let activity : Activity = {
       id;
       topicId;
@@ -564,8 +583,9 @@ persistent actor {
       hasRegistration;
       registrationMode;
       formTemplateId;
-      customFormFields = buildFormFields(customFormFields);
-      sessions = buildSessions(actSessions);
+      eventTemplateId;
+      customFormFields = resolvedFields;
+      sessions = resolvedSessions;
       registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
       highlighted = ?highlighted;
       sortOrder;
@@ -591,6 +611,7 @@ persistent actor {
     hasRegistration : Bool,
     registrationMode : Text,
     formTemplateId : ?Nat,
+    eventTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
     actSessions : [EventSessionReturn],
     regMaxCapacity : ?Nat,
@@ -603,6 +624,24 @@ persistent actor {
     requireAuth(token);
     switch (Map.get(activities, Nat.compare, id)) {
       case (?existing) {
+        let resolvedSessions : [EventSession] = switch (eventTemplateId) {
+          case (?tid) {
+            switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+              case (?t) { t.sessions };
+              case null { buildSessions(actSessions) };
+            }
+          };
+          case null { buildSessions(actSessions) };
+        };
+        let resolvedFields : [FormField] = switch (eventTemplateId) {
+          case (?tid) {
+            switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+              case (?t) { t.fields };
+              case null { buildFormFields(customFormFields) };
+            }
+          };
+          case null { buildFormFields(customFormFields) };
+        };
         let updated : Activity = {
           id;
           topicId;
@@ -615,8 +654,9 @@ persistent actor {
           hasRegistration;
           registrationMode;
           formTemplateId;
-          customFormFields = buildFormFields(customFormFields);
-          sessions = buildSessions(actSessions);
+          eventTemplateId;
+          customFormFields = resolvedFields;
+          sessions = resolvedSessions;
           registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
           highlighted = ?highlighted;
           sortOrder;
@@ -804,13 +844,25 @@ persistent actor {
           case (?tid) {
             switch (Map.get(formTemplates, Nat.compare, tid)) {
               case (?template) {
-                ?Array.map<FormField, FormFieldReturn>(template.fields, H.fieldToReturn)
+                return ?Array.map<FormField, FormFieldReturn>(template.fields, H.fieldToReturn)
               };
-              case null { null };
+              case null {};
             }
           };
-          case null { null };
+          case null {};
         };
+        switch (activity.eventTemplateId) {
+          case (?tid) {
+            switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+              case (?template) {
+                return ?Array.map<FormField, FormFieldReturn>(template.fields, H.fieldToReturn)
+              };
+              case null {};
+            }
+          };
+          case null {};
+        };
+        null;
       };
       case null { null };
     }
@@ -1084,6 +1136,22 @@ persistent actor {
                 };
                 case null {};
               };
+              switch (activity.eventTemplateId) {
+                case (?tid) {
+                  switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+                    case (?template) {
+                      for (tf in template.fields.vals()) {
+                        if (not found and tf.id == fv.fieldId) {
+                          resolvedLabel := tf.fieldLabel.fa # " / " # tf.fieldLabel.sv;
+                          found := true;
+                        };
+                      };
+                    };
+                    case null {};
+                  };
+                };
+                case null {};
+              };
             };
             { fieldId = fv.fieldId; fieldLabel = resolvedLabel; value = fv.value }
           }
@@ -1123,6 +1191,15 @@ persistent actor {
     switch (activity.formTemplateId) {
       case (?tid) {
         switch (Map.get(formTemplates, Nat.compare, tid)) {
+          case (?t) { return t.fields };
+          case null {};
+        };
+      };
+      case null {};
+    };
+    switch (activity.eventTemplateId) {
+      case (?tid) {
+        switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
           case (?t) { return t.fields };
           case null {};
         };
@@ -1300,6 +1377,35 @@ persistent actor {
         func ((_, r)) { H.regToReturn(r) }
       )
     )
+  };
+
+  public query func getRegistrationsWithStatus(token : Text, activityId : Nat) : async [RegistrationWithStatusReturn] {
+    requireAuth(token);
+    switch (Map.get(activities, Nat.compare, activityId)) {
+      case (?activity) {
+        let actRegs = Iter.toArray(
+          Iter.map<(Nat, T.Registration), T.Registration>(
+            Iter.filter<(Nat, T.Registration)>(
+              Map.entries(registrations),
+              func ((_, r)) { r.activityId == activityId }
+            ),
+            func ((_, r)) { r }
+          )
+        );
+        let nonArchived = Array.filter<T.Registration>(
+          actRegs,
+          func (r) { switch (r.archived) { case (?b) not b; case null true } }
+        );
+        Array.map<T.Registration, RegistrationWithStatusReturn>(
+          actRegs,
+          func (r) {
+            let statuses = H.computeSessionStatuses(nonArchived, r, activity.sessions, null);
+            H.regToReturnWithStatus(r, statuses)
+          }
+        )
+      };
+      case null { [] };
+    }
   };
 
   public query func getAllRegistrations(token : Text) : async [RegistrationReturn] {

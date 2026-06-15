@@ -38,6 +38,7 @@ export interface ActivityReturn {
   'registrationMode' : string,
   'title_fa' : string,
   'title_sv' : string,
+  'eventTemplateId' : [] | [bigint],
   'topicId' : bigint,
 }
 export interface ContactMessageReturn {
@@ -158,8 +159,10 @@ export interface RegistrationWithStatusReturn {
   'activityId' : bigint,
   'selectedSessions' : Array<SessionStatusReturn>,
   'email' : string,
+  'message' : string,
   'personCount' : bigint,
   'phone' : string,
+  'archived' : boolean,
 }
 export interface SeoSettings {
   'defaultLang' : string,
@@ -273,6 +276,7 @@ export interface _SERVICE {
       boolean,
       string,
       [] | [bigint],
+      [] | [bigint],
       Array<FormFieldReturn>,
       Array<EventSessionReturn>,
       [] | [bigint],
@@ -361,6 +365,10 @@ export interface _SERVICE {
     [] | [RegistrationWithStatusReturn]
   >,
   'getRegistrations' : ActorMethod<[string, bigint], Array<RegistrationReturn>>,
+  'getRegistrationsWithStatus' : ActorMethod<
+    [string, bigint],
+    Array<RegistrationWithStatusReturn>
+  >,
   'getRobotsTxt' : ActorMethod<[], string>,
   'getSeoSettings' : ActorMethod<[], SeoSettings>,
   'getSessionAvailability' : ActorMethod<
@@ -428,6 +436,7 @@ export interface _SERVICE {
       string,
       boolean,
       string,
+      [] | [bigint],
       [] | [bigint],
       Array<FormFieldReturn>,
       Array<EventSessionReturn>,

@@ -110,6 +110,7 @@ module {
     hasRegistration : Bool;
     registrationMode : Text;   // "none" | "form" | "event"
     formTemplateId : ?Nat;
+    eventTemplateId : ?Nat;
     customFormFields : [FormField];
     sessions : [EventSession];
     registrationRules : ?RegistrationRules;
@@ -293,10 +294,12 @@ module {
     name             : Text;
     email            : Text;
     phone            : Text;
+    message          : Text;
     personCount      : Nat;
     selectedSessions : [SessionStatusReturn];
     fieldValues      : [{ fieldId : Nat; fieldLabel : Text; value : Text }];
     createdAt        : Int;
+    archived         : Bool;
   };
 
   public type ActivityReturn = {
@@ -314,6 +317,7 @@ module {
     hasRegistration : Bool;
     registrationMode : Text;
     formTemplateId : ?Nat;
+    eventTemplateId : ?Nat;
     customFormFields : [FormFieldReturn];
     sessions : [EventSessionReturn];
     regMaxCapacity : ?Nat;

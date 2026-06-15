@@ -155,6 +155,87 @@ export const basicFormTemplate = {
   ],
 };
 
+// Event registration template for Muharram (11 nights, capacity 50 + 20 buffer per day).
+export const moharramEventTemplate = {
+  key: "moharram",
+  name_fa: "قالب ثبت‌نام محرم",
+  name_sv: "Muharram registreringsmall",
+  description_fa: "ثبت‌نام برای ۱۱ شب مراسم محرم با ظرفیت ۵۰ نفر و ۲۰ نفر بافر برای هر شب.",
+  description_sv: "Registrering för 11 kvällar av Muharram-ceremonier med 50 platser och 20 buffertplatser per kväll.",
+  sessions: Array.from({ length: 11 }, (_, i) => ({
+    name_fa: `روز ${i + 1}`,
+    name_sv: `Dag ${i + 1}`,
+    capacity: 50,
+    bufferCapacity: 20,
+  })),
+  fields: [
+    {
+      fieldType: "text",
+      label_fa: "نام",
+      label_sv: "Förnamn",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [] as { fa: string; sv: string }[],
+    },
+    {
+      fieldType: "text",
+      label_fa: "نام خانوادگی",
+      label_sv: "Efternamn",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [],
+    },
+    {
+      fieldType: "phone",
+      label_fa: "شماره تلفن",
+      label_sv: "Telefonnummer",
+      placeholder_fa: "+46 ...",
+      placeholder_sv: "+46 ...",
+      required: true,
+      isLookupField: true,
+      options: [],
+    },
+    {
+      fieldType: "number",
+      label_fa: "تعداد بزرگسالان",
+      label_sv: "Antal vuxna",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [],
+      minValue: 1,
+      maxValue: 5,
+    },
+    {
+      fieldType: "number",
+      label_fa: "تعداد کودکان (زیر ۸ سال)",
+      label_sv: "Antal barn (under 8 år)",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [],
+      minValue: 0,
+      maxValue: 5,
+    },
+    {
+      fieldType: "textarea",
+      label_fa: "پیام",
+      label_sv: "Meddelande",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: false,
+      isLookupField: false,
+      options: [],
+    },
+  ],
+};
+
 export type SeedSlide = {
   imageUrl: string;
   title_fa: string;
@@ -177,6 +258,7 @@ export type SeedEvent = {
   icon: string;
   imageUrl: string;
   highlighted?: boolean;
+  eventTemplateKey?: string;
 };
 
 export type SeedTopic = {
@@ -240,17 +322,18 @@ export const topics: SeedTopic[] = [
     events: [
       {
         slug: "muharram",
-        title_fa: "ایام محرم (۱۰ شب)",
-        title_sv: "Muharram (10 kvällar)",
-        excerpt_fa: "ده شب مراسم سوگواری، سخنرانی و عزاداری به مناسبت محرم.",
-        excerpt_sv: "Tio kvällar av sorgehögtid, föreläsningar och ceremonier under Muharram.",
+        title_fa: "ایام محرم (۱۱ شب)",
+        title_sv: "Muharram (11 kvällar)",
+        excerpt_fa: "یازده شب مراسم سوگواری، سخنرانی و عزاداری به مناسبت محرم.",
+        excerpt_sv: "Elva kvällar av sorgehögtid, föreläsningar och ceremonier under Muharram.",
         body_fa:
-          "<p>هر شب از روز اول تا دهم محرم با برنامه‌ای ویژه شامل سخنرانی، روضه‌خوانی و پذیرایی در محل کانون برگزار می‌شود. زمان و مکان دقیق هر شب در اطلاعیه‌ها اعلام خواهد شد.</p>",
+          "<p>هر شب از روز اول تا یازدهم محرم با برنامه‌ای ویژه شامل سخنرانی، روضه‌خوانی و پذیرایی در محل کانون برگزار می‌شود. زمان و مکان دقیق هر شب در اطلاعیه‌ها اعلام خواهد شد.</p>",
         body_sv:
-          "<p>Varje kväll från första till tionde Muharram hålls ett program med föreläsning, ceremoni och servering i föreningens lokaler. Exakta tider och platser meddelas inför varje kväll.</p>",
+          "<p>Varje kväll från första till elfte Muharram hålls ett program med föreläsning, ceremoni och servering i föreningens lokaler. Exakta tider och platser meddelas inför varje kväll.</p>",
         icon: "Moon",
         imageUrl: PICSUM("event-muharram"),
         highlighted: true,
+        eventTemplateKey: "moharram",
       },
       {
         slug: "yalda",
