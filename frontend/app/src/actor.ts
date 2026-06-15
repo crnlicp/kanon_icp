@@ -5,8 +5,11 @@ import { mockBackend } from "./mock/mockBackend";
 
 const canisterEnv = safeGetCanisterEnv();
 
+const isProduction = import.meta.env.PROD;
+const agentHost = isProduction ? "https://icp-api.io" : window.location.origin;
+
 const agentOptions = {
-  host: window.location.origin,
+  host: agentHost,
   rootKey: canisterEnv?.IC_ROOT_KEY,
 };
 
