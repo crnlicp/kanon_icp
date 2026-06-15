@@ -9,6 +9,7 @@
 
 # environment variables
 .env
+.seed
 
 # icp-cli local cache (safe to delete, rebuilt on next build/deploy)
 .icp/cache/
