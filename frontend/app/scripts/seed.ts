@@ -12,6 +12,10 @@
  *   ../../.icp/cache/mappings/local.ids.json
  *   ../../.icp/cache/networks/local/descriptor.json
  * unless overridden by env vars.
+ * BACKEND_CANISTER_ID=iooqr-rqaaa-aaaae-qkfia-cai \
+ * BACKEND_HOST=https://icp-api.io \
+ * ADMIN_PASSWORD='[admin_password]' \
+ * npm run seed
  */
 
 import { readFileSync } from "node:fs";
@@ -81,6 +85,40 @@ function resolveBackendConfig() {
   host ??= "http://127.0.0.1:8000";
 
   return { canisterId, host, rootKey };
+}
+
+function isLocalHost(host: string): boolean {
+  return (
+    host.startsWith("http://127.0.0.1") ||
+    host.startsWith("http://localhost") ||
+    host.startsWith("https://127.0.0.1") ||
+    host.startsWith("https://localhost")
+  );
+}
+
+function resolveAgentHost(host: string): string {
+  if (isLocalHost(host)) {
+    return host;
+  }
+
+  if (host.includes("icp0.io") || host.includes("ic0.app")) {
+    return "https://icp-api.io";
+  }
+
+  return host;
+}
+
+function allowRemoteTlsIfNeeded(host: string) {
+  if (isLocalHost(host)) {
+    return;
+  }
+
+  if (!process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    console.warn(
+      "[seed] enabling NODE_TLS_REJECT_UNAUTHORIZED=0 for remote IC gateway access"
+    );
+  }
 }
 
 // ---------------- Helpers ----------------
@@ -337,11 +375,14 @@ async function seedSocialLinks(backend: Backend, token: string) {
 
 async function main() {
   const { canisterId, host, rootKey } = resolveBackendConfig();
+  const agentHost = resolveAgentHost(host);
+  allowRemoteTlsIfNeeded(host);
   console.log(`Backend canister: ${canisterId}`);
   console.log(`Host:             ${host}`);
 
-  const agent = await HttpAgent.create({ host, shouldFetchRootKey: !!rootKey });
-  if (rootKey && !host.includes("ic0.app") && !host.includes("icp0.io")) {
+  const localHost = isLocalHost(host);
+  const agent = await HttpAgent.create({ host: agentHost, shouldFetchRootKey: localHost });
+  if (rootKey && localHost) {
     try {
       await agent.fetchRootKey();
     } catch (e) {
