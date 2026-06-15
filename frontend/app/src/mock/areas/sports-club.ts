@@ -226,7 +226,7 @@ export const mockContactMessages: ContactMessageReturn[] = [
   { id: 79003n, name: "Erik Nilsson", email: "erik.n@example.se", phone: "+46703344556", message: "Jag undrar om ni har personlig träning tillgänglig utanför gruppasserna?", createdAt: ts(8) },
 ];
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 79010n, activityId: 72001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

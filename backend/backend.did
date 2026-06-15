@@ -120,9 +120,10 @@ type RegistrationWithStatusReturn =
    phone: text;
    selectedSessions: vec SessionStatusReturn;
  };
-type RegistrationReturn = 
+type RegistrationReturn =
  record {
    activityId: nat;
+   archived: bool;
    createdAt: int;
    email: text;
    fieldValues: vec RegistrationFieldValueReturn;
@@ -365,6 +366,7 @@ service : {
        }) -> (SubmitRegistrationResult);
   setMockMode: (token: text, enabled: bool) -> (bool);
   setPageSeoOverride: (token: text, override: PageSeoOverride) -> ();
+  setRegistrationArchived: (token: text, id: nat, archived: bool) -> (bool);
   submitContactMessage: (name: text, email: text, phone: text, message:
    text) -> (opt ContactMessageReturn);
   submitRegistration: (activityId: nat, name: text, email: text, phone: 

@@ -181,6 +181,7 @@ module {
         func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
       );
       createdAt = r.createdAt;
+      archived = switch (r.archived) { case (?b) b; case null false };
     }
   };
 

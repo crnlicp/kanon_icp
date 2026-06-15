@@ -200,7 +200,7 @@ export const mockContactMessages: ContactMessageReturn[] = [
   { id: 99003n, name: "Maja Lindqvist", email: "maja.l@example.se", phone: "+46703322114", message: "Jag är intresserad av dokumentärfilmkursen. Kan man delta utan tidigare filmningserfarenhet?", createdAt: ts(7) },
 ];
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 99010n, activityId: 92001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

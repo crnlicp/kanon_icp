@@ -147,6 +147,16 @@ export const translations = {
     allActivities: "همه فعالیت‌ها",
     noRegistrations: "ثبت‌نامی وجود ندارد.",
     failedToLoadRegistrations: "خطا در بارگذاری ثبت‌نام‌ها",
+    archive: "بایگانی",
+    unarchive: "بازگرداندن",
+    archived: "بایگانی شده",
+    showArchived: "نمایش بایگانی",
+    hideArchived: "پنهان کردن بایگانی",
+    confirmArchiveRegistration: "این ثبت‌نام بایگانی شود؟",
+    confirmUnarchiveRegistration: "این ثبت‌نام از بایگانی خارج شود؟",
+    registrationArchived: "ثبت‌نام بایگانی شد",
+    registrationUnarchived: "ثبت‌نام از بایگانی خارج شد",
+    failedToArchiveRegistration: "خطا در بایگانی ثبت‌نام",
 
     // Form Templates & Builder
     formTemplates: "قالب‌های فرم",
@@ -476,6 +486,16 @@ export const translations = {
     allActivities: "Alla aktiviteter",
     noRegistrations: "Inga registreringar ännu.",
     failedToLoadRegistrations: "Det gick inte att ladda registreringar",
+    archive: "Arkivera",
+    unarchive: "Återställ",
+    archived: "Arkiverad",
+    showArchived: "Visa arkiverade",
+    hideArchived: "Dölj arkiverade",
+    confirmArchiveRegistration: "Arkivera denna registrering?",
+    confirmUnarchiveRegistration: "Återställ denna registrering från arkivet?",
+    registrationArchived: "Registreringen arkiverades",
+    registrationUnarchived: "Registreringen återställdes",
+    failedToArchiveRegistration: "Det gick inte att arkivera registreringen",
 
     // Form Templates & Builder
     formTemplates: "Formulärmallar",

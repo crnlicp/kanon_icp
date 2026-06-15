@@ -163,7 +163,7 @@ export default function TopicsPage() {
   );
 
   const TopicsGrid = (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+    <div className={`grid grid-cols-1 sm:grid-cols-2 ${highlighted.length === 0 ? "lg:grid-cols-3" : ""} gap-6 sm:gap-8`}>
       {topics.map((topic, idx) => {
         const Icon = getIcon(topic.icon);
         return (
@@ -223,12 +223,16 @@ export default function TopicsPage() {
           </p>
         </motion.div>
 
-        {/* Mobile order: highlighted first, then topics. Desktop: topics (2 cols) + highlighted (1 col) */}
-        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          <div className="lg:hidden mb-8">{HighlightedColumn}</div>
-          <div className="lg:col-span-2">{TopicsGrid}</div>
-          <div className="hidden lg:block">{HighlightedColumn}</div>
-        </div>
+        {/* Mobile order: highlighted first, then topics. Desktop: topics + highlighted column when present, otherwise topics span full width */}
+        {highlighted.length > 0 ? (
+          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+            <div className="lg:hidden mb-8">{HighlightedColumn}</div>
+            <div className="lg:col-span-2">{TopicsGrid}</div>
+            <div className="hidden lg:block">{HighlightedColumn}</div>
+          </div>
+        ) : (
+          TopicsGrid
+        )}
 
         {topics.length === 0 && (
           <motion.div

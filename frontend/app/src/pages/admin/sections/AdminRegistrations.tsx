@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, MessageSquare, Inbox, Filter, Users } from "lucide-react";
+import { Loader2, Mail, Phone, MessageSquare, Inbox, Filter, Users, Archive, ArchiveRestore } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
 import type { RegistrationReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
@@ -20,6 +20,7 @@ interface RegItem {
   selectedSessions: { sessionId: number; sessionName: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
   createdAt: number;
+  archived: boolean;
 }
 
 interface ActivityOption {
@@ -36,6 +37,7 @@ export default function AdminRegistrations({ token }: Props) {
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
   });
@@ -103,6 +105,7 @@ export default function AdminRegistrations({ token }: Props) {
             value: fv.value,
           })),
           createdAt: Number(r.createdAt),
+          archived: Boolean(r.archived),
         }))
         .sort((a, b) => b.createdAt - a.createdAt);
       setRegistrations(mapped);
@@ -122,6 +125,26 @@ export default function AdminRegistrations({ token }: Props) {
   useEffect(() => {
     fetchRegistrations();
   }, [fetchRegistrations]);
+
+  const handleToggleArchive = async (reg: RegItem) => {
+    const nextArchived = !reg.archived;
+    const confirmKey = nextArchived ? "confirmArchiveRegistration" : "confirmUnarchiveRegistration";
+    if (!confirm(t(confirmKey))) return;
+    try {
+      const { backend } = await import("../../../actor");
+      await backend.setRegistrationArchived(token, BigInt(reg.id), nextArchived);
+      setRegistrations((prev) => prev.map((r) => (r.id === reg.id ? { ...r, archived: nextArchived } : r)));
+      setToast({
+        message: t(nextArchived ? "registrationArchived" : "registrationUnarchived"),
+        type: "success",
+        visible: true,
+      });
+    } catch {
+      setToast({ message: t("failedToArchiveRegistration"), type: "error", visible: true });
+    }
+  };
+
+  const visibleRegistrations = showArchived ? registrations : registrations.filter((r) => !r.archived);
 
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
@@ -166,8 +189,15 @@ export default function AdminRegistrations({ token }: Props) {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => setShowArchived((s) => !s)}
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+          >
+            {showArchived ? t("hideArchived") : t("showArchived")}
+          </button>
           <span className="text-sm text-white/40">
-            {registrations.length} {registrations.length === 1 ? t("registration") : t("registrations")}
+            {visibleRegistrations.length} {visibleRegistrations.length === 1 ? t("registration") : t("registrations")}
           </span>
         </div>
       </div>
@@ -216,7 +246,7 @@ export default function AdminRegistrations({ token }: Props) {
         </div>
       )}
 
-      {registrations.length === 0 ? (
+      {visibleRegistrations.length === 0 ? (
         <motion.div
           className="glass rounded-2xl p-12 text-center"
           initial={{ opacity: 0 }}
@@ -227,10 +257,10 @@ export default function AdminRegistrations({ token }: Props) {
         </motion.div>
       ) : (
         <div className="space-y-4">
-          {registrations.map((reg, idx) => (
+          {visibleRegistrations.map((reg, idx) => (
             <motion.div
               key={reg.id}
-              className="glass rounded-2xl p-5"
+              className={`glass rounded-2xl p-5 ${reg.archived ? "opacity-60" : ""}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
@@ -266,6 +296,20 @@ export default function AdminRegistrations({ token }: Props) {
                   <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary/80 border border-primary/20">
                     {getActivityTitle(reg.activityId)}
                   </span>
+                  {reg.archived && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 border border-white/10">
+                      {t("archived")}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleArchive(reg)}
+                    title={reg.archived ? t("unarchive") : t("archive")}
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+                  >
+                    {reg.archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
+                    {reg.archived ? t("unarchive") : t("archive")}
+                  </button>
                 </div>
               </div>
 

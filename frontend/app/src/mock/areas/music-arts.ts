@@ -402,7 +402,7 @@ export const mockSocialLinks: SocialLinkReturn[] = [
 
 // ─── Registrations ────────────────────────────────────────────────────────────
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 36001n, activityId: 32001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

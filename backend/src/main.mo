@@ -818,13 +818,17 @@ persistent actor {
 
   // ─── Session availability helpers ─────────────────────────────────────────
 
-  // Get all registrations for an activity as an array (for capacity computation)
+  // Get all registrations for an activity as an array (for capacity computation).
+  // Archived registrations are excluded so archiving frees the slot.
   func regsForActivity(activityId : Nat) : [T.Registration] {
     Iter.toArray(
       Iter.map<(Nat, T.Registration), T.Registration>(
         Iter.filter<(Nat, T.Registration)>(
           Map.entries(registrations),
-          func ((_, r)) { r.activityId == activityId }
+          func ((_, r)) {
+            let isArchived = switch (r.archived) { case (?b) b; case null false };
+            r.activityId == activityId and not isArchived
+          }
         ),
         func ((_, r)) { r }
       )
@@ -1096,6 +1100,7 @@ persistent actor {
           selectedSessions = snapshotSessions(selectedSessionIds, activity.sessions);
           fieldValues = resolvedFields;
           createdAt = Time.now();
+          archived = ?false;
         };
         Map.add(registrations, Nat.compare, id, reg);
 
@@ -1267,6 +1272,7 @@ persistent actor {
               selectedSessions = snapshotSessions(newSelectedSessionIds, activity.sessions);
               fieldValues = resolvedFields;
               createdAt   = existing.createdAt;
+              archived    = existing.archived;
             };
             Map.add(registrations, Nat.compare, id, updated);
 
@@ -1304,6 +1310,30 @@ persistent actor {
         func ((_, r)) { H.regToReturn(r) }
       )
     )
+  };
+
+  public func setRegistrationArchived(token : Text, id : Nat, archived : Bool) : async Bool {
+    requireAuth(token);
+    switch (Map.get(registrations, Nat.compare, id)) {
+      case (?existing) {
+        let updated : T.Registration = {
+          id              = existing.id;
+          activityId      = existing.activityId;
+          name            = existing.name;
+          email           = existing.email;
+          phone           = existing.phone;
+          message         = existing.message;
+          personCount     = existing.personCount;
+          selectedSessions = existing.selectedSessions;
+          fieldValues     = existing.fieldValues;
+          createdAt       = existing.createdAt;
+          archived        = ?archived;
+        };
+        Map.add(registrations, Nat.compare, id, updated);
+        true
+      };
+      case null { false };
+    }
   };
 
   // ─── Social Links CRUD ────────────────────────────────────────────────────

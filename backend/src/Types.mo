@@ -142,6 +142,7 @@ module {
     selectedSessions : [RegistrationSessionSnapshot];
     fieldValues : [RegistrationFieldValue];
     createdAt : Int;
+    archived : ?Bool;       // optional for backward-compatible upgrades
   };
 
   public type SiteSettings = {
@@ -342,6 +343,7 @@ module {
     selectedSessions : [{ sessionId : Nat; sessionName : Text }];
     fieldValues : [RegistrationFieldValueReturn];
     createdAt : Int;
+    archived : Bool;
   };
 
   public type SubmitRegistrationResult = {

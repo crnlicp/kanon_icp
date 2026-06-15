@@ -399,7 +399,7 @@ export const mockSocialLinks: SocialLinkReturn[] = [
 
 // ─── Registrations ────────────────────────────────────────────────────────────
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 16001n, activityId: 12001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

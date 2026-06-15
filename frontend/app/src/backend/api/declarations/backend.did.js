@@ -130,6 +130,7 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'personCount' : IDL.Nat,
     'phone' : IDL.Text,
+    'archived' : IDL.Bool,
   });
   const ContactMessageReturn = IDL.Record({
     'id' : IDL.Nat,
@@ -477,6 +478,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'setMockMode' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Bool], []),
     'setPageSeoOverride' : IDL.Func([IDL.Text, PageSeoOverride], [], []),
+    'setRegistrationArchived' : IDL.Func(
+        [IDL.Text, IDL.Nat, IDL.Bool],
+        [IDL.Bool],
+        [],
+      ),
     'submitContactMessage' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Opt(ContactMessageReturn)],

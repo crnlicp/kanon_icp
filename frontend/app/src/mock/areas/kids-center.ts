@@ -216,7 +216,7 @@ export const mockContactMessages: ContactMessageReturn[] = [
   { id: 89003n, name: "Reza Ahmadi", email: "reza.a@example.com", phone: "+46703322114", message: "آیا امکان پرداخت ماهانه به جای پرداخت کامل دوره وجود دارد؟", createdAt: ts(9) },
 ];
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 89010n, activityId: 82001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

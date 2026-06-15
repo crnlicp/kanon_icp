@@ -320,6 +320,7 @@ export interface RegistrationReturn {
     message: string;
     personCount: bigint;
     phone: string;
+    archived: boolean;
 }
 export interface backendInterface {
     adminLogin(passwordHash: string): Promise<string | null>;
@@ -378,6 +379,7 @@ export interface backendInterface {
     }>): Promise<SubmitRegistrationResult>;
     setMockMode(token: string, enabled: boolean): Promise<boolean>;
     setPageSeoOverride(token: string, override: PageSeoOverride): Promise<void>;
+    setRegistrationArchived(token: string, id: bigint, archived: boolean): Promise<boolean>;
     submitContactMessage(name: string, email: string, phone: string, message: string): Promise<ContactMessageReturn | null>;
     submitRegistration(activityId: bigint, name: string, email: string, phone: string, message: string, personCount: bigint, selectedSessionIds: Array<bigint>, fieldValues: Array<{
         value: string;
@@ -610,6 +612,10 @@ export class Backend implements backendInterface {
     }
     async setPageSeoOverride(arg0: string, arg1: PageSeoOverride): Promise<void> {
         const result = await this.actor.setPageSeoOverride(arg0, arg1);
+        return result;
+    }
+    async setRegistrationArchived(arg0: string, arg1: bigint, arg2: boolean): Promise<boolean> {
+        const result = await this.actor.setRegistrationArchived(arg0, arg1, arg2);
         return result;
     }
     async submitContactMessage(arg0: string, arg1: string, arg2: string, arg3: string): Promise<ContactMessageReturn | null> {

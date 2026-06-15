@@ -1,4 +1,4 @@
-import type { backendInterface } from "../backend/api/backend";
+import type { backendInterface, RegistrationReturn } from "../backend/api/backend";
 import {
   mockSettings,
   mockTopics,
@@ -72,11 +72,13 @@ export const mockBackend: backendInterface = {
   },
 
   async getRegistrations(_token, activityId) {
-    return mockRegistrations.filter((r) => r.activityId === activityId);
+    return mockRegistrations
+      .filter((r) => r.activityId === activityId)
+      .map((r): RegistrationReturn => ({ ...r, archived: false }));
   },
 
   async getAllRegistrations() {
-    return mockRegistrations;
+    return mockRegistrations.map((r): RegistrationReturn => ({ ...r, archived: false }));
   },
 
   async getFormTemplates() {
@@ -363,4 +365,5 @@ export const mockBackend: backendInterface = {
   async checkSession() { return false; },
   async changePassword() { return false; },
   async setMockMode() { return false; },
+  async setRegistrationArchived() { return true; },
 };

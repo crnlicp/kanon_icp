@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prerender": "npm run build && vite preview --port 4173 & sleep 3 && npx tsx scripts/prerender.ts"
+    "prerender": "npm run build && vite preview --port 4173 & sleep 3 && npx tsx scripts/prerender.ts",
+    "seed": "npx tsx scripts/seed.ts"
   },
   "dependencies": {
     "@icp-sdk/core": "~5.2.0",
@@ -25,7 +26,7 @@
     "@icp-sdk/bindgen": "~0.3.0",
     "@tailwindcss/vite": "^4.1.0",
     "@types/http-proxy": "^1.17.17",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.3",
     "@types/react": "~19.1.10",
     "@types/react-dom": "~19.1.7",
     "@vitejs/plugin-react": "~5.0.0",

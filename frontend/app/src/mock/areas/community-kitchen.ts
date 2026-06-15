@@ -339,7 +339,7 @@ export const mockSocialLinks: SocialLinkReturn[] = [
   { id: 55005n, platform: "email", url: "mailto:laga@casaverde.se", sortOrder: 5n },
 ];
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   {
     id: 56001n, activityId: 52001n, name: "", email: "", phone: "", message: "",
     fieldValues: [

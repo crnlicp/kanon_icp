@@ -443,7 +443,7 @@ export const mockSocialLinks: SocialLinkReturn[] = [
 
 // ─── Registrations ────────────────────────────────────────────────────────────
 
-export const mockRegistrations: RegistrationReturn[] = [
+export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   // ── Nowruz event registrations (activityId 2001n) ───────────────────────────
   // Morning (101n cap20/buf5), Evening (102n cap25/buf5)
   {

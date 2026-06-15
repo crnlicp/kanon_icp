@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, Users, Inbox, Filter, Star } from "lucide-react";
+import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore } from "lucide-react";
+import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
 import type { RegistrationReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
 
@@ -18,6 +19,7 @@ interface RegItem {
   selectedSessions: { sessionId: number; sessionName: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
   createdAt: number;
+  archived: boolean;
 }
 
 interface ActivityOption {
@@ -35,6 +37,10 @@ export default function AdminEventRegistrations({ token }: Props) {
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
+    message: "", type: "success", visible: false,
+  });
 
   useEffect(() => {
     import("../../../actor").then(({ backend }) => {
@@ -91,6 +97,7 @@ export default function AdminEventRegistrations({ token }: Props) {
               value: fv.value,
             })),
             createdAt: Number(r.createdAt),
+            archived: Boolean(r.archived),
           }))
           .sort((a: RegItem, b: RegItem) => b.createdAt - a.createdAt)
       );
@@ -103,6 +110,34 @@ export default function AdminEventRegistrations({ token }: Props) {
   useEffect(() => {
     fetchRegistrations();
   }, [fetchRegistrations]);
+
+  const handleToggleArchive = async (reg: RegItem) => {
+    const nextArchived = !reg.archived;
+    const confirmKey = nextArchived ? "confirmArchiveRegistration" : "confirmUnarchiveRegistration";
+    if (!confirm(t(confirmKey))) return;
+    try {
+      const { backend } = await import("../../../actor");
+      await backend.setRegistrationArchived(token, BigInt(reg.id), nextArchived);
+      setRegistrations((prev) => prev.map((r) => (r.id === reg.id ? { ...r, archived: nextArchived } : r)));
+      setToast({
+        message: t(nextArchived ? "registrationArchived" : "registrationUnarchived"),
+        type: "success",
+        visible: true,
+      });
+      // Session stats can change when archiving/unarchiving frees a slot
+      try {
+        if (selectedActivityId !== null) {
+          const { backend: b } = await import("../../../actor");
+          const stats = await b.getSessionStats(token, BigInt(selectedActivityId));
+          setSessionStats(stats);
+        }
+      } catch { /* ignore */ }
+    } catch {
+      setToast({ message: t("failedToArchiveRegistration"), type: "error", visible: true });
+    }
+  };
+
+  const visibleRegistrations = showArchived ? registrations : registrations.filter((r) => !r.archived);
 
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
@@ -143,8 +178,15 @@ export default function AdminEventRegistrations({ token }: Props) {
               {t("highlighted")}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => setShowArchived((s) => !s)}
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+          >
+            {showArchived ? t("hideArchived") : t("showArchived")}
+          </button>
           <span className="text-sm text-white/40">
-            {registrations.length} {t("registrations")}
+            {visibleRegistrations.length} {t("registrations")}
           </span>
         </div>
       </div>
@@ -185,17 +227,17 @@ export default function AdminEventRegistrations({ token }: Props) {
         </div>
       )}
 
-      {registrations.length === 0 && !loading ? (
+      {visibleRegistrations.length === 0 && !loading ? (
         <motion.div className="glass rounded-2xl p-12 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Inbox size={48} className="text-white/20 mx-auto mb-4" />
           <p className="text-white/40">{t("noRegistrations")}</p>
         </motion.div>
       ) : (
         <div className="space-y-4">
-          {registrations.map((reg, idx) => (
+          {visibleRegistrations.map((reg, idx) => (
             <motion.div
               key={reg.id}
-              className="glass rounded-2xl p-5"
+              className={`glass rounded-2xl p-5 ${reg.archived ? "opacity-60" : ""}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
@@ -227,6 +269,20 @@ export default function AdminEventRegistrations({ token }: Props) {
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className="text-xs text-white/30">{formatDate(reg.createdAt)}</span>
                   <span className="text-xs font-mono text-primary/60">#{reg.id}</span>
+                  {reg.archived && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 border border-white/10">
+                      {t("archived")}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleArchive(reg)}
+                    title={reg.archived ? t("unarchive") : t("archive")}
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+                  >
+                    {reg.archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
+                    {reg.archived ? t("unarchive") : t("archive")}
+                  </button>
                 </div>
               </div>
 
@@ -255,6 +311,13 @@ export default function AdminEventRegistrations({ token }: Props) {
           ))}
         </div>
       )}
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        visible={toast.visible}
+        onClose={() => setToast({ ...toast, visible: false })}
+      />
     </div>
   );
 }

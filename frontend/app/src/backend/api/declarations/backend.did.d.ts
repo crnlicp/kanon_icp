@@ -146,6 +146,7 @@ export interface RegistrationReturn {
   'message' : string,
   'personCount' : bigint,
   'phone' : string,
+  'archived' : boolean,
 }
 export interface RegistrationWithStatusReturn {
   'id' : bigint,
@@ -389,6 +390,7 @@ export interface _SERVICE {
   >,
   'setMockMode' : ActorMethod<[string, boolean], boolean>,
   'setPageSeoOverride' : ActorMethod<[string, PageSeoOverride], undefined>,
+  'setRegistrationArchived' : ActorMethod<[string, bigint, boolean], boolean>,
   'submitContactMessage' : ActorMethod<
     [string, string, string, string],
     [] | [ContactMessageReturn]
