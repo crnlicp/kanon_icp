@@ -324,11 +324,11 @@ export const mockAbout: AboutContentReturn = {
 };
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 54001n, name: "Clara Svensson", email: "clara.s@example.com", phone: "+46701234567", message: "Hej! Kan man boka hela köket för ett privat evenemang?", createdAt: ts(3) },
-  { id: 54002n, name: "Mehdi Karimi", email: "mehdi.k@example.com", phone: "+46709988776", message: "آیا برای کودکان هم کلاسی دارید؟", createdAt: ts(8) },
-  { id: 54003n, name: "Louise Berg", email: "louise.b@example.com", phone: "+46703344556", message: "Är det möjligt att ha presentkort?", createdAt: ts(14) },
-  { id: 54004n, name: "Nadia Rahimi", email: "nadia.r@example.com", phone: "+46706655443", message: "آیا کلاس‌های آنلاین هم دارید؟", createdAt: ts(20) },
-  { id: 54005n, name: "Tobias Ek", email: "tobias.e@example.com", phone: "+46708877665", message: "Är maten vegetarisk anpassad i alla klasser?", createdAt: ts(26) },
+  { id: 54001n, name: "Clara Svensson", email: "clara.s@example.com", phone: "701234567", message: "Hej! Kan man boka hela köket för ett privat evenemang?", createdAt: ts(3) },
+  { id: 54002n, name: "Mehdi Karimi", email: "mehdi.k@example.com", phone: "709988776", message: "آیا برای کودکان هم کلاسی دارید؟", createdAt: ts(8) },
+  { id: 54003n, name: "Louise Berg", email: "louise.b@example.com", phone: "703344556", message: "Är det möjligt att ha presentkort?", createdAt: ts(14) },
+  { id: 54004n, name: "Nadia Rahimi", email: "nadia.r@example.com", phone: "706655443", message: "آیا کلاس‌های آنلاین هم دارید؟", createdAt: ts(20) },
+  { id: 54005n, name: "Tobias Ek", email: "tobias.e@example.com", phone: "708877665", message: "Är maten vegetarisk anpassad i alla klasser?", createdAt: ts(26) },
 ];
 
 export const mockSocialLinks: SocialLinkReturn[] = [
@@ -363,7 +363,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 1n, selectedSessions: [],
     createdAt: ts(5),
   },
-  { id: 56003n, activityId: 52002n, name: "Oskar Nilsson", email: "oskar.n@example.com", phone: "+46701239876", message: "Älskar pizza, vill lära mig göra äkta napolitansk!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(8) },
+  { id: 56003n, activityId: 52002n, name: "Oskar Nilsson", email: "oskar.n@example.com", phone: "701239876", message: "Älskar pizza, vill lära mig göra äkta napolitansk!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(8) },
   {
     id: 56004n, activityId: 52016n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -375,7 +375,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 1n, selectedSessions: [],
     createdAt: ts(11),
   },
-  { id: 56005n, activityId: 52007n, name: "Isabelle Morin", email: "isabelle.m@example.com", phone: "+46705544332", message: "Jag har drömt om att lära mig göra croissanter hela livet!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(15) },
+  { id: 56005n, activityId: 52007n, name: "Isabelle Morin", email: "isabelle.m@example.com", phone: "705544332", message: "Jag har drömt om att lära mig göra croissanter hela livet!", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(15) },
   {
     id: 1776500001n, activityId: 52010n, name: "", email: "", phone: "", message: "",
     fieldValues: [

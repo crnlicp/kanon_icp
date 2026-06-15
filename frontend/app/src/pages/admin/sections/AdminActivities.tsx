@@ -608,7 +608,7 @@ export default function AdminActivities({ token, readOnly }: Props) {
                       rows={4}
                       value={form.regAllowedPhones}
                       onChange={(e) => setForm({ ...form, regAllowedPhones: e.target.value })}
-                      placeholder={"+46701234567\n+46709876543"}
+                      placeholder={t("phonePlaceholder")}
                       className={`${inputClass} resize-none`}
                     />
                     <p className="text-xs text-white/30 mt-1">{t("allowedPhonesHint")}</p>

@@ -3,9 +3,8 @@ import { motion } from "framer-motion";
 import { CheckCircle, Copy } from "lucide-react";
 import { useI18n } from "../i18n";
 import SessionSelector from "./SessionSelector";
+import PhoneInput from "./PhoneInput";
 import type { FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn, RegistrationWithStatusReturn } from "../backend/api/backend";
-
-const PHONE_PATTERN = "\\+[0-9]{11}";
 
 interface RegistrationFormProps {
   activityId: number;
@@ -229,23 +228,27 @@ export default function RegistrationForm({ activityId, formFields, sessions }: R
                   />
                   <span className="text-sm text-white/70">{placeholder}</span>
                 </label>
+              ) : field.fieldType === "phone" ? (
+                <PhoneInput
+                  required={field.required}
+                  value={value}
+                  onChange={onChange}
+                  placeholder={placeholder || t("phonePlaceholder")}
+                  title={t("phoneFormat")}
+                />
               ) : (
                 <input
                   type={
                     field.fieldType === "email"
                       ? "email"
-                      : field.fieldType === "phone"
-                        ? "tel"
-                        : field.fieldType === "number"
-                          ? "number"
-                          : field.fieldType === "date"
-                            ? "date"
-                            : "text"
+                      : field.fieldType === "number"
+                        ? "number"
+                        : field.fieldType === "date"
+                          ? "date"
+                          : "text"
                   }
-                  dir={field.fieldType === "number" || field.fieldType === "phone" ? "ltr" : undefined}
-                  pattern={field.fieldType === "phone" ? PHONE_PATTERN : undefined}
-                  title={field.fieldType === "phone" ? t("phoneFormat") : undefined}
-                  placeholder={field.fieldType === "phone" && !placeholder ? t("phonePlaceholder") : placeholder}
+                  dir={field.fieldType === "number" ? "ltr" : undefined}
+                  placeholder={placeholder}
                   min={field.fieldType === "number" && field.minValue != null ? Number(field.minValue) : undefined}
                   max={field.fieldType === "number" && field.maxValue != null ? Number(field.maxValue) : undefined}
                   required={field.required}
@@ -282,15 +285,11 @@ export default function RegistrationForm({ activityId, formFields, sessions }: R
             </div>
             <div>
               <label className="block text-sm text-white/50 mb-1.5">{t("phone")}</label>
-              <input
-                type="tel"
-                dir="ltr"
+              <PhoneInput
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, phone: val })}
                 placeholder={t("phonePlaceholder")}
-                pattern={PHONE_PATTERN}
                 title={t("phoneFormat")}
-                className={inputClass}
               />
             </div>
           </div>

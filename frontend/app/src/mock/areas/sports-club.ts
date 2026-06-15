@@ -221,9 +221,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
 ];
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 79001n, name: "Sara Andersson", email: "sara@example.se", phone: "+46701234567", message: "Hej! Finns det lediga platser i tennisklassen för nybörjare i september?", createdAt: ts(1) },
-  { id: 79002n, name: "محمد کریمی", email: "mohammad@example.com", phone: "+46709876543", message: "سلام، آیا برای خانواده‌ها تخفیف گروهی دارید؟", createdAt: ts(4) },
-  { id: 79003n, name: "Erik Nilsson", email: "erik.n@example.se", phone: "+46703344556", message: "Jag undrar om ni har personlig träning tillgänglig utanför gruppasserna?", createdAt: ts(8) },
+  { id: 79001n, name: "Sara Andersson", email: "sara@example.se", phone: "701234567", message: "Hej! Finns det lediga platser i tennisklassen för nybörjare i september?", createdAt: ts(1) },
+  { id: 79002n, name: "محمد کریمی", email: "mohammad@example.com", phone: "709876543", message: "سلام، آیا برای خانواده‌ها تخفیف گروهی دارید؟", createdAt: ts(4) },
+  { id: 79003n, name: "Erik Nilsson", email: "erik.n@example.se", phone: "703344556", message: "Jag undrar om ni har personlig träning tillgänglig utanför gruppasserna?", createdAt: ts(8) },
 ];
 
 export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [

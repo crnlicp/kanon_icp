@@ -317,11 +317,11 @@ export const mockAbout: AboutContentReturn = {
 };
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 64001n, name: "Farida Nouri", email: "farida.n@example.com", phone: "+46701234567", message: "آیا می‌توانم قبل از ثبت‌نام یک جلسه آزمایشی داشته باشم؟", createdAt: ts(3) },
-  { id: 64002n, name: "Henrik Olsson", email: "henrik.o@example.com", phone: "+46709988776", message: "Erbjuder ni onlinekurser i spanska?", createdAt: ts(7) },
-  { id: 64003n, name: "Amina Yilmaz", email: "amina.y@example.com", phone: "+46703344556", message: "Hur lång tid tar det att nå B2 i svenska?", createdAt: ts(13) },
-  { id: 64004n, name: "Gustav Sjöberg", email: "gustav.s@example.com", phone: "+46706655443", message: "Har ni kvällskurser i mandarin?", createdAt: ts(19) },
-  { id: 64005n, name: "Leila Ahmadi", email: "leila.a@example.com", phone: "+46708877665", message: "فرزندم ناشنواست، آیا کلاس اشاره برای او دارید؟", createdAt: ts(25) },
+  { id: 64001n, name: "Farida Nouri", email: "farida.n@example.com", phone: "701234567", message: "آیا می‌توانم قبل از ثبت‌نام یک جلسه آزمایشی داشته باشم؟", createdAt: ts(3) },
+  { id: 64002n, name: "Henrik Olsson", email: "henrik.o@example.com", phone: "709988776", message: "Erbjuder ni onlinekurser i spanska?", createdAt: ts(7) },
+  { id: 64003n, name: "Amina Yilmaz", email: "amina.y@example.com", phone: "703344556", message: "Hur lång tid tar det att nå B2 i svenska?", createdAt: ts(13) },
+  { id: 64004n, name: "Gustav Sjöberg", email: "gustav.s@example.com", phone: "706655443", message: "Har ni kvällskurser i mandarin?", createdAt: ts(19) },
+  { id: 64005n, name: "Leila Ahmadi", email: "leila.a@example.com", phone: "708877665", message: "فرزندم ناشنواست، آیا کلاس اشاره برای او دارید؟", createdAt: ts(25) },
 ];
 
 export const mockSocialLinks: SocialLinkReturn[] = [
@@ -338,7 +338,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Parisa Tehrani" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "parisa.t@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701112233" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701112233" },
       { fieldId: 4n, fieldLabel: "Nivå / سطح", value: "A1 — Nybörjare" },
       { fieldId: 5n, fieldLabel: "Mål / هدف", value: "Vardagslivet" },
       { fieldId: 6n, fieldLabel: "Modersmål / زبان مادری", value: "Persiska" },
@@ -370,14 +370,14 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 1n, selectedSessions: [],
     createdAt: ts(8),
   },
-  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "+46705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
-  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "+46704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(16) },
+  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
+  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(16) },
   {
     id: 1774500001n, activityId: 62007n, name: "", email: "", phone: "", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Sara Mohammadi" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "sara.m@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701234567" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701234567" },
       { fieldId: 4n, fieldLabel: "Mål-IELTS / نمره هدف", value: "7.0" },
       { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B2 — Övre medel" },
     ],
@@ -401,7 +401,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Layla Hassan" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "layla.h@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46709988776" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "709988776" },
       { fieldId: 4n, fieldLabel: "Mål-IELTS / نمره هدف", value: "6.5" },
       { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B1 — Medel" },
     ],

@@ -384,11 +384,11 @@ export const mockAbout: AboutContentReturn = {
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 44001n, name: "Felix Sundström", email: "felix.s@example.com", phone: "+46701234567", message: "Hej! Vilken konditionsnivå krävs för toppturen?", createdAt: ts(3) },
-  { id: 44002n, name: "Astrid Bergman", email: "astrid.b@example.com", phone: "+46709988776", message: "Kan man hyra kajak utrustning från er?", createdAt: ts(7) },
-  { id: 44003n, name: "Gustav Holm", email: "gustav.h@example.com", phone: "+46703344556", message: "Jag är rullstolsburen, finns det anpassade turer?", createdAt: ts(12) },
-  { id: 44004n, name: "Selma Lindqvist", email: "selma.l@example.com", phone: "+46706655443", message: "Hur många deltagare är max per grupp?", createdAt: ts(18) },
-  { id: 44005n, name: "Axel Fransson", email: "axel.f@example.com", phone: "+46708877665", message: "Erbjuder ni corporate events i naturen?", createdAt: ts(24) },
+  { id: 44001n, name: "Felix Sundström", email: "felix.s@example.com", phone: "701234567", message: "Hej! Vilken konditionsnivå krävs för toppturen?", createdAt: ts(3) },
+  { id: 44002n, name: "Astrid Bergman", email: "astrid.b@example.com", phone: "709988776", message: "Kan man hyra kajak utrustning från er?", createdAt: ts(7) },
+  { id: 44003n, name: "Gustav Holm", email: "gustav.h@example.com", phone: "703344556", message: "Jag är rullstolsburen, finns det anpassade turer?", createdAt: ts(12) },
+  { id: 44004n, name: "Selma Lindqvist", email: "selma.l@example.com", phone: "706655443", message: "Hur många deltagare är max per grupp?", createdAt: ts(18) },
+  { id: 44005n, name: "Axel Fransson", email: "axel.f@example.com", phone: "708877665", message: "Erbjuder ni corporate events i naturen?", createdAt: ts(24) },
 ];
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
@@ -419,7 +419,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Marcus Eklund" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "marcus.e@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701112233" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701112233" },
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Medel" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Har vandrat 5 km turer, vill kliva upp en nivå." },
     ],
@@ -431,7 +431,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Sara Nilsson" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "sara.n@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46703334455" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "703334455" },
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Sett det på film och alltid drömt om att klättra." },
     ],
@@ -443,14 +443,14 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Erik Lindblom" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "erik.lb@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46705544332" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "705544332" },
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Kan simma men har aldrig kajakat." },
     ],
     personCount: 1n, selectedSessions: [],
     createdAt: ts(9),
   },
-  { id: 46005n, activityId: 42021n, name: "Petra Magnusson", email: "petra.m@example.com", phone: "+46706543210", message: "Jag har ett par kikare sedan länge, nu vill jag lära mig använda dem ordentligt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
+  { id: 46005n, activityId: 42021n, name: "Petra Magnusson", email: "petra.m@example.com", phone: "706543210", message: "Jag har ett par kikare sedan länge, nu vill jag lära mig använda dem ordentligt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
   {
     id: 1772500001n, activityId: 42002n, name: "", email: "", phone: "", message: "",
     fieldValues: [

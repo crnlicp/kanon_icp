@@ -385,11 +385,11 @@ export const mockAbout: AboutContentReturn = {
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 24001n, name: "Marcus Lindgren", email: "marcus.l@example.com", phone: "+46701234567", message: "Hej! Jag är intresserad av bootcampen i full-stack. Kan jag få mer info?", createdAt: ts(3) },
-  { id: 24002n, name: "Layla Hassan", email: "layla.h@example.com", phone: "+46709988776", message: "آیا این دوره‌ها به‌صورت آنلاین هم ارائه می‌شوند؟", createdAt: ts(8) },
-  { id: 24003n, name: "Björn Svensson", email: "bjorn.s@example.com", phone: "+46703344556", message: "Erbjuder ni rabatt för studenter?", createdAt: ts(14) },
-  { id: 24004n, name: "Aisha Mohammadi", email: "aisha.m@example.com", phone: "+46706655443", message: "چه مدت طول می‌کشد تا پس از این بوت‌کمپ بتوانم کار پیدا کنم؟", createdAt: ts(20) },
-  { id: 24005n, name: "Erik Bergström", email: "erik.b@example.com", phone: "+46708877665", message: "Vill anmäla mitt företag som sponsor till hackathon.", createdAt: ts(28) },
+  { id: 24001n, name: "Marcus Lindgren", email: "marcus.l@example.com", phone: "701234567", message: "Hej! Jag är intresserad av bootcampen i full-stack. Kan jag få mer info?", createdAt: ts(3) },
+  { id: 24002n, name: "Layla Hassan", email: "layla.h@example.com", phone: "709988776", message: "آیا این دوره‌ها به‌صورت آنلاین هم ارائه می‌شوند؟", createdAt: ts(8) },
+  { id: 24003n, name: "Björn Svensson", email: "bjorn.s@example.com", phone: "703344556", message: "Erbjuder ni rabatt för studenter?", createdAt: ts(14) },
+  { id: 24004n, name: "Aisha Mohammadi", email: "aisha.m@example.com", phone: "706655443", message: "چه مدت طول می‌کشد تا پس از این بوت‌کمپ بتوانم کار پیدا کنم؟", createdAt: ts(20) },
+  { id: 24005n, name: "Erik Bergström", email: "erik.b@example.com", phone: "708877665", message: "Vill anmäla mitt företag som sponsor till hackathon.", createdAt: ts(28) },
 ];
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
@@ -410,7 +410,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Johan Pettersson" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "johan.p@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701112223" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701112223" },
       { fieldId: 4n, fieldLabel: "Programmeringsnivå / سطح برنامه‌نویسی", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Vill byta karriär till webbutveckling." },
     ],
@@ -465,8 +465,8 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 3n, selectedSessions: [{ sessionId: 102n, sessionName: "Höstens hackathon (november 2026)" }],
     createdAt: ts(22),
   },
-  { id: 26004n, activityId: 22023n, name: "Sara Lindqvist", email: "sara.lq@example.com", phone: "+46705544332", message: "Vill ha feedback på mitt GitHub-projekt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(10) },
-  { id: 26005n, activityId: 22024n, name: "Khalid Rahimi", email: "khalid.r@example.com", phone: "+46704433221", message: "آماده مصاحبه با شرکت‌های بزرگ می‌شوم.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(14) },
+  { id: 26004n, activityId: 22023n, name: "Sara Lindqvist", email: "sara.lq@example.com", phone: "705544332", message: "Vill ha feedback på mitt GitHub-projekt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(10) },
+  { id: 26005n, activityId: 22024n, name: "Khalid Rahimi", email: "khalid.r@example.com", phone: "704433221", message: "آماده مصاحبه با شرکت‌های بزرگ می‌شوم.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(14) },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────

@@ -278,7 +278,7 @@ export default function AdminEventRegistrations({ token }: Props) {
                       <a href={`mailto:${reg.email}`} className="hover:text-primary transition-colors">{reg.email}</a>
                     </span>
                     {reg.phone && (
-                      <span className="flex items-center gap-1.5 text-sm text-white/40">
+                      <span className="flex items-center gap-1.5 text-sm text-white/40" dir="ltr">
                         <Phone size={13} />
                         {reg.phone}
                       </span>

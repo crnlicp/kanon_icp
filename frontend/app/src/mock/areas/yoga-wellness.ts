@@ -380,11 +380,11 @@ export const mockAbout: AboutContentReturn = {
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 14001n, name: "Emma Lindberg", email: "emma.l@example.com", phone: "+46701112233", message: "Hej! Jag är nybörjare inom yoga och undrar vilken klass som passar mig bäst.", createdAt: ts(3) },
-  { id: 14002n, name: "Sofia Karlsson", email: "sofia.k@example.com", phone: "+46709988776", message: "Finns det möjlighet till privatlektioner i meditation?", createdAt: ts(7) },
-  { id: 14003n, name: "Mia Berg", email: "mia.berg@example.com", phone: "+46703344556", message: "Jag har ryggproblem, är stolsyogan lämplig för mig?", createdAt: ts(12) },
-  { id: 14004n, name: "Lars Persson", email: "lars.p@example.com", phone: "+46706655443", message: "Vad kostar ett månadsmedlemskap?", createdAt: ts(18) },
-  { id: 14005n, name: "Anna Eriksson", email: "anna.e@example.com", phone: "+46708877665", message: "Kan jag boka ett provpass innan jag bestämmer mig?", createdAt: ts(22) },
+  { id: 14001n, name: "Emma Lindberg", email: "emma.l@example.com", phone: "701112233", message: "Hej! Jag är nybörjare inom yoga och undrar vilken klass som passar mig bäst.", createdAt: ts(3) },
+  { id: 14002n, name: "Sofia Karlsson", email: "sofia.k@example.com", phone: "709988776", message: "Finns det möjlighet till privatlektioner i meditation?", createdAt: ts(7) },
+  { id: 14003n, name: "Mia Berg", email: "mia.berg@example.com", phone: "703344556", message: "Jag har ryggproblem, är stolsyogan lämplig för mig?", createdAt: ts(12) },
+  { id: 14004n, name: "Lars Persson", email: "lars.p@example.com", phone: "706655443", message: "Vad kostar ett månadsmedlemskap?", createdAt: ts(18) },
+  { id: 14005n, name: "Anna Eriksson", email: "anna.e@example.com", phone: "708877665", message: "Kan jag boka ett provpass innan jag bestämmer mig?", createdAt: ts(22) },
 ];
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
@@ -425,7 +425,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Maria Gustafsson" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "maria.g@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701234567" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701234567" },
       { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Medel" },
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegetarisk" },
     ],
@@ -437,7 +437,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Leila Moradi" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "leila.m@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46702345678" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "702345678" },
       { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegansk" },
     ],
@@ -449,7 +449,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Astrid Lindgren" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "astrid.l@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46703456789" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "703456789" },
       { fieldId: 4n, fieldLabel: "Yogaerfarenhet / تجربه یوگا", value: "Avancerad" },
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Allätare" },
     ],
@@ -466,7 +466,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 1n, selectedSessions: [],
     createdAt: ts(9),
   },
-  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "+46705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
+  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────

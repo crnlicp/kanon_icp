@@ -284,7 +284,7 @@ export default function AdminRegistrations({ token }: Props) {
                       </a>
                     </span>
                     {reg.phone && (
-                      <span className="flex items-center gap-1.5 text-sm text-white/40">
+                      <span className="flex items-center gap-1.5 text-sm text-white/40" dir="ltr">
                         <Phone size={13} />
                         {reg.phone}
                       </span>

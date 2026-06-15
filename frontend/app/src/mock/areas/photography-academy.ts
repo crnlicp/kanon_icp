@@ -195,9 +195,9 @@ export const mockFormTemplates: FormTemplateReturn[] = [
 ];
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 99001n, name: "Oskar Bergström", email: "oskar@example.se", phone: "+46761234567", message: "Hej! Erbjuder ni privatlektioner i porträttfotografi? Jag vill förbättra mig snabbt inför ett uppdrag.", createdAt: ts(1) },
-  { id: 99002n, name: "نیلوفر رشیدی", email: "niloufar@example.com", phone: "+46709876543", message: "سلام، آیا دوربین برای اجاره دارید؟ می‌خواهم قبل از خرید امتحان کنم.", createdAt: ts(4) },
-  { id: 99003n, name: "Maja Lindqvist", email: "maja.l@example.se", phone: "+46703322114", message: "Jag är intresserad av dokumentärfilmkursen. Kan man delta utan tidigare filmningserfarenhet?", createdAt: ts(7) },
+  { id: 99001n, name: "Oskar Bergström", email: "oskar@example.se", phone: "761234567", message: "Hej! Erbjuder ni privatlektioner i porträttfotografi? Jag vill förbättra mig snabbt inför ett uppdrag.", createdAt: ts(1) },
+  { id: 99002n, name: "نیلوفر رشیدی", email: "niloufar@example.com", phone: "709876543", message: "سلام، آیا دوربین برای اجاره دارید؟ می‌خواهم قبل از خرید امتحان کنم.", createdAt: ts(4) },
+  { id: 99003n, name: "Maja Lindqvist", email: "maja.l@example.se", phone: "703322114", message: "Jag är intresserad av dokumentärfilmkursen. Kan man delta utan tidigare filmningserfarenhet?", createdAt: ts(7) },
 ];
 
 export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [

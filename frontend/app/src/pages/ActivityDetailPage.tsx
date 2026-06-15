@@ -227,6 +227,7 @@ export default function ActivityDetailPage() {
                   formFields?.find((f) => f.isLookupField)
                     ? {
                         fieldId: formFields.find((f) => f.isLookupField)!.id,
+                        fieldType: formFields.find((f) => f.isLookupField)!.fieldType,
                         label_fa: formFields.find((f) => f.isLookupField)!.label_fa,
                         label_sv: formFields.find((f) => f.isLookupField)!.label_sv,
                       }

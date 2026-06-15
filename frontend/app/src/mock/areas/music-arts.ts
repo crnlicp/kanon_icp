@@ -383,11 +383,11 @@ export const mockAbout: AboutContentReturn = {
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 34001n, name: "Isabelle Larsson", email: "isabelle.l@example.com", phone: "+46701234567", message: "Hej! Hur gammal behöver man vara för att börja med balett?", createdAt: ts(3) },
-  { id: 34002n, name: "Oliver Magnusson", email: "oliver.m@example.com", phone: "+46709988776", message: "Finns det möjlighet att hyra övningsrum för pianospelning?", createdAt: ts(8) },
-  { id: 34003n, name: "Frida Holm", email: "frida.h@example.com", phone: "+46703344556", message: "Erbjuder ni privatlektioner i akvarellmålning?", createdAt: ts(14) },
-  { id: 34004n, name: "Daniel Nyström", email: "daniel.n@example.com", phone: "+46706655443", message: "Jag spelar gitarr, kan jag gå med i körens instrumentalsektion?", createdAt: ts(19) },
-  { id: 34005n, name: "Emilia Strand", email: "emilia.s@example.com", phone: "+46708877665", message: "Vill gärna veta mer om koreografilabbet.", createdAt: ts(25) },
+  { id: 34001n, name: "Isabelle Larsson", email: "isabelle.l@example.com", phone: "701234567", message: "Hej! Hur gammal behöver man vara för att börja med balett?", createdAt: ts(3) },
+  { id: 34002n, name: "Oliver Magnusson", email: "oliver.m@example.com", phone: "709988776", message: "Finns det möjlighet att hyra övningsrum för pianospelning?", createdAt: ts(8) },
+  { id: 34003n, name: "Frida Holm", email: "frida.h@example.com", phone: "703344556", message: "Erbjuder ni privatlektioner i akvarellmålning?", createdAt: ts(14) },
+  { id: 34004n, name: "Daniel Nyström", email: "daniel.n@example.com", phone: "706655443", message: "Jag spelar gitarr, kan jag gå med i körens instrumentalsektion?", createdAt: ts(19) },
+  { id: 34005n, name: "Emilia Strand", email: "emilia.s@example.com", phone: "708877665", message: "Vill gärna veta mer om koreografilabbet.", createdAt: ts(25) },
 ];
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
@@ -428,7 +428,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "Namn / نام", value: "Maja Lindgren" },
       { fieldId: 2n, fieldLabel: "E-post / ایمیل", value: "maja.l@example.com" },
-      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "+46701239999" },
+      { fieldId: 3n, fieldLabel: "Telefon / تلفن", value: "701239999" },
       { fieldId: 4n, fieldLabel: "Erfarenhetsnivå / سطح تجربه", value: "Nybörjare" },
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Jag älskar naturmotiv och vill lära mig måla blommar." },
     ],
@@ -446,7 +446,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     personCount: 1n, selectedSessions: [],
     createdAt: ts(10),
   },
-  { id: 36005n, activityId: 32016n, name: "Sara Holmberg", email: "sara.h@example.com", phone: "+46705544332", message: "Min dotter är 8 år och drömmer om balett.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
+  { id: 36005n, activityId: 32016n, name: "Sara Holmberg", email: "sara.h@example.com", phone: "705544332", message: "Min dotter är 8 år och drömmer om balett.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(13) },
   {
     id: 1773500001n, activityId: 32022n, name: "", email: "", phone: "", message: "",
     fieldValues: [

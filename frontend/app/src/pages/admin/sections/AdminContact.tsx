@@ -216,7 +216,7 @@ export default function AdminContact({ token, readOnly }: Props) {
                       </a>
                     </span>
                     {msg.phone && (
-                      <span className="flex items-center gap-1.5 text-sm text-white/40">
+                      <span className="flex items-center gap-1.5 text-sm text-white/40" dir="ltr">
                         <Phone size={13} />
                         {msg.phone}
                       </span>

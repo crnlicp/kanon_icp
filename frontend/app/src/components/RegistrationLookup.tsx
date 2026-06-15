@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Edit2, Trash2, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useI18n } from "../i18n";
 import SessionSelector from "./SessionSelector";
+import PhoneInput from "./PhoneInput";
 import type { RegistrationWithStatusReturn, SessionAvailabilityReturn } from "../backend/api/backend";
-
-const PHONE_PATTERN = "\\+[0-9]{11}";
 
 interface LookupField {
   fieldId: bigint;
+  fieldType: string;
   label_fa: string;
   label_sv: string;
 }
@@ -187,17 +187,23 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                     </div>
                     <div>
                       <label className="block text-xs text-white/40 mb-1">{lookupLabel}</label>
-                      <input
-                        type={lookupField ? "text" : "tel"}
-                        dir={lookupField ? undefined : "ltr"}
-                        pattern={lookupField ? undefined : PHONE_PATTERN}
-                        title={lookupField ? undefined : t("phoneFormat")}
-                        placeholder={lookupField ? undefined : t("phonePlaceholder")}
-                        value={lookupValue}
-                        onChange={(e) => setLookupValue(e.target.value)}
-                        className={inputClass}
-                        required
-                      />
+                      {!lookupField || lookupField.fieldType === "phone" ? (
+                        <PhoneInput
+                          required
+                          value={lookupValue}
+                          onChange={setLookupValue}
+                          placeholder={t("phonePlaceholder")}
+                          title={t("phoneFormat")}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={lookupValue}
+                          onChange={(e) => setLookupValue(e.target.value)}
+                          className={inputClass}
+                          required
+                        />
+                      )}
                     </div>
                   </div>
                   {state === "notFound" && (

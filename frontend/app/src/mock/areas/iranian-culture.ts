@@ -106,7 +106,7 @@ export const mockActivities: ActivityReturn[] = [
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام کامل خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "76...", placeholder_sv: "76...", required: true, options: [], isLookupField: true, sortOrder: 3n },
       { id: 4n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal deltagare", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 10n, sortOrder: 4n },
     ],
     regMaxCapacity: 50n,
@@ -389,7 +389,7 @@ export const mockActivities: ActivityReturn[] = [
     customFormFields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "76...", placeholder_sv: "76...", required: true, options: [], isLookupField: true, sortOrder: 3n },
     ],
     regMaxCapacity: 30n,
     regBlockDuplicateEmail: true,
@@ -424,11 +424,11 @@ export const mockAbout: AboutContentReturn = {
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 
 export const mockContactMessages: ContactMessageReturn[] = [
-  { id: 4001n, name: "Sara Ahmadi", email: "sara.ahmadi@example.com", phone: "+46701234567", message: "سلام، می‌خواهم درباره کلاس‌های زبان فارسی اطلاعات بیشتری داشته باشم.", createdAt: ts(5) },
-  { id: 4002n, name: "Erik Johansson", email: "erik.j@example.com", phone: "+46709876543", message: "Hej, jag vill gärna veta mer om era kulturella evenemang.", createdAt: ts(10) },
-  { id: 4003n, name: "Maryam Hosseini", email: "m.hosseini@example.com", phone: "+46705551234", message: "آیا امکان ثبت‌نام آنلاین برای کلاس‌های ورزشی وجود دارد؟", createdAt: ts(15) },
-  { id: 4004n, name: "Anna Lindström", email: "anna.l@example.com", phone: "+46708765432", message: "Jag är intresserad av att bli volontär. Hur kan jag delta?", createdAt: ts(20) },
-  { id: 4005n, name: "Ali Rezaei", email: "ali.rezaei@example.com", phone: "+46702345678", message: "ممنون از برنامه‌های عالی‌تان. آیا برنامه‌ای برای تابستان دارید؟", createdAt: ts(25) },
+  { id: 4001n, name: "Sara Ahmadi", email: "sara.ahmadi@example.com", phone: "701234567", message: "سلام، می‌خواهم درباره کلاس‌های زبان فارسی اطلاعات بیشتری داشته باشم.", createdAt: ts(5) },
+  { id: 4002n, name: "Erik Johansson", email: "erik.j@example.com", phone: "709876543", message: "Hej, jag vill gärna veta mer om era kulturella evenemang.", createdAt: ts(10) },
+  { id: 4003n, name: "Maryam Hosseini", email: "m.hosseini@example.com", phone: "705551234", message: "آیا امکان ثبت‌نام آنلاین برای کلاس‌های ورزشی وجود دارد؟", createdAt: ts(15) },
+  { id: 4004n, name: "Anna Lindström", email: "anna.l@example.com", phone: "708765432", message: "Jag är intresserad av att bli volontär. Hur kan jag delta?", createdAt: ts(20) },
+  { id: 4005n, name: "Ali Rezaei", email: "ali.rezaei@example.com", phone: "702345678", message: "ممنون از برنامه‌های عالی‌تان. آیا برنامه‌ای برای تابستان دارید؟", createdAt: ts(25) },
 ];
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
@@ -447,44 +447,44 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   // ── Nowruz event registrations (activityId 2001n) ───────────────────────────
   // Morning (101n cap20/buf5), Evening (102n cap25/buf5)
   {
-    id: 1778090001n, activityId: 2001n, name: "", email: "", phone: "+46701111001", message: "",
+    id: 1778090001n, activityId: 2001n, name: "", email: "", phone: "701111001", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Nima Karimi" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "nima@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111001" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "701111001" },
       { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "2" },
     ],
     personCount: 2n, selectedSessions: [{ sessionId: 101n, sessionName: "جلسه صبح" }],
     createdAt: ts(3),
   },
   {
-    id: 1778080002n, activityId: 2001n, name: "", email: "", phone: "+46701111002", message: "",
+    id: 1778080002n, activityId: 2001n, name: "", email: "", phone: "701111002", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Lisa Svensson" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "lisa.s@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111002" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "701111002" },
       { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "3" },
     ],
     personCount: 3n, selectedSessions: [{ sessionId: 102n, sessionName: "جلسه عصر" }],
     createdAt: ts(4),
   },
   {
-    id: 1778070003n, activityId: 2001n, name: "", email: "", phone: "+46701111003", message: "",
+    id: 1778070003n, activityId: 2001n, name: "", email: "", phone: "701111003", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Parisa Tehrani" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "parisa.t@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111003" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "701111003" },
       { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "4" },
     ],
     personCount: 4n, selectedSessions: [{ sessionId: 101n, sessionName: "جلسه صبح" }, { sessionId: 102n, sessionName: "جلسه عصر" }],
     createdAt: ts(5),
   },
   {
-    id: 1778060004n, activityId: 2001n, name: "", email: "", phone: "+46701111004", message: "",
+    id: 1778060004n, activityId: 2001n, name: "", email: "", phone: "701111004", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Henrik Lindgren" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "henrik.l@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "+46701111004" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن / Telefonnummer", value: "701111004" },
       { fieldId: 4n, fieldLabel: "تعداد نفرات / Antal deltagare", value: "1" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "جلسه عصر" }],
@@ -495,7 +495,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Reza Mohammadi" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "reza.m@example.com" },
-      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "+46707778899" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "707778899" },
       { fieldId: 4n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "مبتدی" },
       { fieldId: 5n, fieldLabel: "توضیحات اضافی / Ytterligare information", value: "می‌خواهم فرزندم را برای کلاس فارسی ثبت‌نام کنم." },
     ],
@@ -507,7 +507,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Darius Farhadi" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "darius@example.com" },
-      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "+46703334455" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "703334455" },
       { fieldId: 4n, fieldLabel: "سن / Ålder", value: "28" },
       { fieldId: 5n, fieldLabel: "اندازه تی‌شرت / T-shirtstorlek", value: "L" },
       { fieldId: 6n, fieldLabel: "قوانین را می‌پذیرم / Jag accepterar reglerna", value: "true" },
@@ -520,15 +520,15 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی / Fullständigt namn", value: "Shirin Nazari" },
       { fieldId: 2n, fieldLabel: "ایمیل / E-post", value: "shirin@example.com" },
-      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "+46706667788" },
+      { fieldId: 3n, fieldLabel: "تلفن / Telefon", value: "706667788" },
       { fieldId: 4n, fieldLabel: "سطح تجربه / Erfarenhetsnivå", value: "متوسط" },
       { fieldId: 5n, fieldLabel: "توضیحات اضافی / Ytterligare information", value: "خیلی علاقه‌مند به یادگیری خوشنویسی هستم." },
     ],
     personCount: 1n, selectedSessions: [],
     createdAt: ts(12),
   },
-  { id: 6006n, activityId: 2005n, name: "Amir Tehrani", email: "amir.t@example.com", phone: "+46701239876", message: "آیا بچه‌ها هم می‌توانند در نمایشگاه شرکت کنند؟", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(7) },
-  { id: 6007n, activityId: 2007n, name: "Fatima Nilsson", email: "fatima.n@example.com", phone: "+46708884321", message: "Jag vill anmäla mig och min man till kursen.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(9) },
+  { id: 6006n, activityId: 2005n, name: "Amir Tehrani", email: "amir.t@example.com", phone: "701239876", message: "آیا بچه‌ها هم می‌توانند در نمایشگاه شرکت کنند؟", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(7) },
+  { id: 6007n, activityId: 2007n, name: "Fatima Nilsson", email: "fatima.n@example.com", phone: "708884321", message: "Jag vill anmäla mig och min man till kursen.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(9) },
   {
     id: 6008n, activityId: 2002n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -582,11 +582,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   // Final state: Day1 totally full, Day2 has 1 spot, Day3 totally full
   {
     id: 1778020008n, activityId: 2030n,
-    name: "Sara Ahmadi", email: "sara.a@example.com", phone: "+46701000001", message: "",
+    name: "Sara Ahmadi", email: "sara.a@example.com", phone: "701000001", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Sara Ahmadi" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "sara.a@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000001" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000001" },
     ],
     personCount: 2n,
     selectedSessions: [
@@ -597,11 +597,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1778010009n, activityId: 2030n,
-    name: "Ali Hassan", email: "ali.h@example.com", phone: "+46701000002", message: "",
+    name: "Ali Hassan", email: "ali.h@example.com", phone: "701000002", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Ali Hassan" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "ali.h@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000002" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000002" },
     ],
     personCount: 3n,
     selectedSessions: [
@@ -612,11 +612,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1778000010n, activityId: 2030n,
-    name: "Maryam Johansson", email: "maryam.j@example.com", phone: "+46701000003", message: "بسیار مشتاقم!",
+    name: "Maryam Johansson", email: "maryam.j@example.com", phone: "701000003", message: "بسیار مشتاقم!",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Maryam Johansson" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "maryam.j@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000003" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000003" },
     ],
     personCount: 3n,
     selectedSessions: [
@@ -627,11 +627,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1777990011n, activityId: 2030n,
-    name: "Karim Lindström", email: "karim.l@example.com", phone: "+46701000004", message: "",
+    name: "Karim Lindström", email: "karim.l@example.com", phone: "701000004", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Karim Lindström" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "karim.l@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000004" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000004" },
     ],
     personCount: 2n,
     selectedSessions: [
@@ -642,11 +642,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1777980012n, activityId: 2030n,
-    name: "Nasrin Berg", email: "nasrin.b@example.com", phone: "+46701000005", message: "",
+    name: "Nasrin Berg", email: "nasrin.b@example.com", phone: "701000005", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Nasrin Berg" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "nasrin.b@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000005" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000005" },
     ],
     personCount: 1n,
     selectedSessions: [
@@ -656,11 +656,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1777970013n, activityId: 2030n,
-    name: "Dariush Svensson", email: "dariush.s@example.com", phone: "+46701000006", message: "ممنون از فرصت ثبت‌نام",
+    name: "Dariush Svensson", email: "dariush.s@example.com", phone: "701000006", message: "ممنون از فرصت ثبت‌نام",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Dariush Svensson" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "dariush.s@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000006" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000006" },
     ],
     personCount: 2n,
     selectedSessions: [
@@ -671,11 +671,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1777960014n, activityId: 2030n,
-    name: "Leila Ekström", email: "leila.e@example.com", phone: "+46701000007", message: "",
+    name: "Leila Ekström", email: "leila.e@example.com", phone: "701000007", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Leila Ekström" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "leila.e@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000007" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000007" },
     ],
     personCount: 2n,
     selectedSessions: [
@@ -686,11 +686,11 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
   },
   {
     id: 1777950015n, activityId: 2030n,
-    name: "Reza Tehrani", email: "reza.t@example.com", phone: "+46701000008", message: "",
+    name: "Reza Tehrani", email: "reza.t@example.com", phone: "701000008", message: "",
     fieldValues: [
       { fieldId: 1n, fieldLabel: "نام و نام خانوادگی", value: "Reza Tehrani" },
       { fieldId: 2n, fieldLabel: "ایمیل", value: "reza.t@example.com" },
-      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "+46701000008" },
+      { fieldId: 3n, fieldLabel: "شماره تلفن", value: "701000008" },
     ],
     personCount: 1n,
     selectedSessions: [
@@ -754,7 +754,7 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
     fields: [
       { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "نام کامل خود را وارد کنید", placeholder_sv: "Ange ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
       { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "+46...", placeholder_sv: "+46...", required: true, options: [], isLookupField: true, sortOrder: 3n },
+      { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "76...", placeholder_sv: "76...", required: true, options: [], isLookupField: true, sortOrder: 3n },
       { id: 4n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal deltagare", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, minValue: 1n, maxValue: 10n, sortOrder: 4n },
     ],
     createdAt: ts(30),
