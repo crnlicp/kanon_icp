@@ -5,8 +5,6 @@
     "extends": "../tsconfig.node.json",
     "include": [
         "vite.config.ts",
-        "scripts/seed.ts",
-        "scripts/prerender-routes.ts",
-        "scripts/seo-check.ts"
+        "scripts/*.ts"
     ]
 }

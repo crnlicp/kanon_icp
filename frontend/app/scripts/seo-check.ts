@@ -289,7 +289,11 @@ function printTable(results: CheckResult[]) {
       const status = c.pass ? `${GREEN}PASS${RESET}` : `${RED}FAIL${RESET}`;
       const detail = c.detail ? ` — ${c.pass ? "" : YELLOW}${c.detail}${c.pass ? "" : RESET}` : "";
       console.log(`     ${status}  ${c.check}${detail}`);
-      c.pass ? totalPass++ : totalFail++;
+      if (c.pass) {
+        totalPass++;
+      } else {
+        totalFail++;
+      }
     }
   }
 
