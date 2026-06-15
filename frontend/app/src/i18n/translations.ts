@@ -57,6 +57,21 @@ export const translations = {
     invalidPassword: "رمز عبور اشتباه است",
     loginFailed: "ورود ناموفق بود",
 
+    // Change password
+    changePassword: "تغییر رمز عبور",
+    changePasswordSubtitle: "رمز عبور مدیر برای ورود به پنل مدیریت را تغییر دهید.",
+    currentPassword: "رمز عبور فعلی",
+    newPassword: "رمز عبور جدید",
+    confirmNewPassword: "تأیید رمز عبور جدید",
+    changingPassword: "در حال تغییر...",
+    passwordChanged: "رمز عبور با موفقیت تغییر کرد!",
+    passwordChangeFailed: "خطا در تغییر رمز عبور",
+    passwordsDoNotMatch: "رمزهای عبور یکسان نیستند",
+    currentPasswordIncorrect: "رمز عبور فعلی اشتباه است",
+    newPasswordSameAsCurrent: "رمز عبور جدید نباید با رمز فعلی یکسان باشد",
+    passwordTooShort: "رمز عبور باید حداقل ۶ کاراکتر باشد",
+    passwordMinLengthHint: "حداقل ۶ کاراکتر.",
+
     // Admin dashboard
     dashboard: "داشبورد",
     adminDashboard: "پنل مدیریت",
@@ -399,6 +414,21 @@ export const translations = {
     logIn: "Logga in",
     invalidPassword: "Ogiltigt lösenord",
     loginFailed: "Inloggningen misslyckades",
+
+    // Change password
+    changePassword: "Byt lösenord",
+    changePasswordSubtitle: "Byt administratörslösenordet som används för att logga in i adminpanelen.",
+    currentPassword: "Nuvarande lösenord",
+    newPassword: "Nytt lösenord",
+    confirmNewPassword: "Bekräfta nytt lösenord",
+    changingPassword: "Byter...",
+    passwordChanged: "Lösenordet har ändrats!",
+    passwordChangeFailed: "Det gick inte att byta lösenord",
+    passwordsDoNotMatch: "Lösenorden matchar inte",
+    currentPasswordIncorrect: "Nuvarande lösenord är felaktigt",
+    newPasswordSameAsCurrent: "Det nya lösenordet får inte vara samma som det nuvarande",
+    passwordTooShort: "Lösenordet måste vara minst 6 tecken",
+    passwordMinLengthHint: "Minst 6 tecken.",
 
     // Admin dashboard
     dashboard: "Instrumentpanel",

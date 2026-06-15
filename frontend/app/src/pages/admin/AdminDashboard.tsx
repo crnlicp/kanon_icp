@@ -21,6 +21,7 @@ import {
   CalendarCheck,
   CalendarPlus,
   Search,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useI18n } from "../../i18n";
@@ -40,9 +41,10 @@ import AdminFormTemplates from "./sections/AdminFormTemplates";
 import AdminEventRegistrationTemplates from "./sections/AdminEventRegistrationTemplates";
 import AdminDemoAreas from "./sections/AdminDemoAreas";
 import AdminSeo from "./sections/AdminSeo";
+import AdminPassword from "./sections/AdminPassword";
 import WavingFlag from "../../components/WavingFlag";
 
-type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "eventRegistrations" | "formTemplates" | "eventRegTemplates" | "social" | "about" | "contact" | "demoAreas" | "seo";
+type Section = "dashboard" | "settings" | "topics" | "slides" | "activities" | "registrations" | "eventRegistrations" | "formTemplates" | "eventRegTemplates" | "social" | "about" | "contact" | "demoAreas" | "seo" | "password";
 
 const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] = [
   { id: "dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -59,6 +61,7 @@ const sectionIds: { id: Section; labelKey: string; icon: React.ElementType }[] =
   { id: "social", labelKey: "socialLinks", icon: Link2 },
   { id: "seo", labelKey: "seo", icon: Search },
   { id: "demoAreas", labelKey: "demoAreas", icon: Globe2 },
+  { id: "password", labelKey: "changePassword", icon: KeyRound },
 ];
 
 export default function AdminDashboard() {
@@ -219,6 +222,7 @@ export default function AdminDashboard() {
           {activeSection === "social" && <AdminSocialLinks token={token!} readOnly={mockActive} />}
           {activeSection === "demoAreas" && <AdminDemoAreas />}
           {activeSection === "seo" && <AdminSeo token={token!} />}
+          {activeSection === "password" && <AdminPassword token={token!} />}
         </div>
       </main>
     </div>
