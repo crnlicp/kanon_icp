@@ -34,10 +34,6 @@ interface ActivityItem {
   eventTemplateId?: number;
   customFormFields: FormFieldReturn[];
   sessions: EventSessionReturn[];
-  regMaxCapacity: string;
-  regAllowedPhones: string;
-  regMaxRegistrationsPerPhone: string;
-  regBlockDuplicateEmail: boolean;
   highlighted: boolean;
   sortOrder: number;
 }
@@ -70,10 +66,6 @@ const emptyForm = {
   customFormFields: [] as FormFieldReturn[],
   eventCustomFields: [] as FormFieldReturn[],
   sessions: [] as EventSessionReturn[],
-  regMaxCapacity: "",
-  regAllowedPhones: "",
-  regMaxRegistrationsPerPhone: "",
-  regBlockDuplicateEmail: false,
   highlighted: false,
   sortOrder: 0,
 };
@@ -91,7 +83,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sessionsOpen, setSessionsOpen] = useState(false);
-  const [rulesOpen, setRulesOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({ message: "", type: "success", visible: false });
 
   useEffect(() => {
@@ -123,10 +114,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
       formTemplateId: a.formTemplateId != null ? Number(a.formTemplateId) : undefined,
       eventTemplateId: a.eventTemplateId != null ? Number(a.eventTemplateId) : undefined,
       sessions: a.sessions ?? [],
-      regMaxCapacity: a.regMaxCapacity != null ? String(Number(a.regMaxCapacity)) : "",
-      regAllowedPhones: (a.regAllowedPhones ?? []).join("\n"),
-      regMaxRegistrationsPerPhone: a.regMaxRegistrationsPerPhone != null ? String(Number(a.regMaxRegistrationsPerPhone)) : "",
-      regBlockDuplicateEmail: a.regBlockDuplicateEmail ?? false,
       highlighted: a.highlighted ?? false,
       sortOrder: Number(a.sortOrder),
     })));
@@ -161,14 +148,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
         }
       }
 
-      const regMaxCapacity = form.regMaxCapacity.trim() ? BigInt(parseInt(form.regMaxCapacity)) : null;
-      const regAllowedPhones = form.regAllowedPhones
-        ? form.regAllowedPhones.split("\n").map((s) => s.trim()).filter(Boolean)
-        : [];
-      const regMaxRegistrationsPerPhone = form.regMaxRegistrationsPerPhone.trim()
-        ? BigInt(parseInt(form.regMaxRegistrationsPerPhone))
-        : null;
-
       if (editing !== null) {
         await backend.updateActivity(
           token, BigInt(editing), tid, form.slug,
@@ -178,8 +157,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.icon, form.imageUrl, hasRegistration, regMode,
           templateId, eventTemplateId, customFields,
           sessions,
-          regMaxCapacity, regAllowedPhones,
-          regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
           form.highlighted,
           BigInt(form.sortOrder)
         );
@@ -193,8 +170,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
           form.icon, form.imageUrl, hasRegistration, regMode,
           templateId, eventTemplateId, customFields,
           sessions,
-          regMaxCapacity, regAllowedPhones,
-          regMaxRegistrationsPerPhone, form.regBlockDuplicateEmail,
           form.highlighted,
           BigInt(form.sortOrder)
         );
@@ -250,10 +225,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
       customFormFields: regMode === "form" ? act.customFormFields : [],
       eventCustomFields: regMode === "event" && eventMode === "custom" ? act.customFormFields : [],
       sessions: regMode === "event" && eventMode === "custom" ? (act.sessions ?? []) : [],
-      regMaxCapacity: act.regMaxCapacity ?? "",
-      regAllowedPhones: act.regAllowedPhones ?? "",
-      regMaxRegistrationsPerPhone: act.regMaxRegistrationsPerPhone ?? "",
-      regBlockDuplicateEmail: act.regBlockDuplicateEmail ?? false,
       highlighted: act.highlighted ?? false,
       sortOrder: act.sortOrder,
     });
@@ -264,7 +235,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
     setEditing(null);
     setForm({ ...emptyForm, topicId: selectedTopicId });
     setSessionsOpen(false);
-    setRulesOpen(false);
     setShowForm(false);
   };
 
@@ -559,70 +529,6 @@ export default function AdminActivities({ token, readOnly }: Props) {
                     />
                   </div>
                 </>
-              )}
-            </div>
-          )}
-
-          {/* Registration Rules — shown for both form and event modes */}
-          {form.registrationMode !== "none" && (
-            <div className="rounded-xl border border-white/10 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setRulesOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/5 transition-colors"
-              >
-                <span className="text-sm font-medium text-white/70">{t("registrationRules")}</span>
-                {rulesOpen ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
-              </button>
-              {rulesOpen && (
-                <div className="px-4 py-3 border-t border-white/10 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-white/50 mb-1.5">{t("maxCapacity")}</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.regMaxCapacity}
-                        onChange={(e) => setForm({ ...form, regMaxCapacity: e.target.value })}
-                        placeholder="∞"
-                        className={inputClass}
-                      />
-                      <p className="text-xs text-white/30 mt-1">{t("maxCapacityHint")}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-white/50 mb-1.5">{t("maxRegistrationsPerPhone")}</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.regMaxRegistrationsPerPhone}
-                        onChange={(e) => setForm({ ...form, regMaxRegistrationsPerPhone: e.target.value })}
-                        placeholder="∞"
-                        className={inputClass}
-                      />
-                      <p className="text-xs text-white/30 mt-1">{t("maxRegistrationsHint")}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/50 mb-1.5">{t("allowedPhones")}</label>
-                    <textarea
-                      rows={4}
-                      value={form.regAllowedPhones}
-                      onChange={(e) => setForm({ ...form, regAllowedPhones: e.target.value })}
-                      placeholder={t("phonePlaceholder")}
-                      className={`${inputClass} resize-none`}
-                    />
-                    <p className="text-xs text-white/30 mt-1">{t("allowedPhonesHint")}</p>
-                  </div>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.regBlockDuplicateEmail}
-                      onChange={(e) => setForm({ ...form, regBlockDuplicateEmail: e.target.checked })}
-                      className="w-4 h-4 rounded accent-primary"
-                    />
-                    <span className="text-sm text-white/70">{t("blockDuplicateEmail")}</span>
-                  </label>
-                </div>
               )}
             </div>
           )}

@@ -35,8 +35,6 @@ const body = (fa: string, sv: string) => ({
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
   sessions: [],
-  regAllowedPhones: [],
-  regBlockDuplicateEmail: false,
   highlighted: false,
 });
 
@@ -44,12 +42,12 @@ const body = (fa: string, sv: string) => ({
 const cefrFields = (lang: "sv" | "en" | "es" | "zh" | "tss"): FormTemplateReturn["fields"] => {
   const langLabel = { sv: "سوئدی / Svenska", en: "انگلیسی / Engelska", es: "اسپانیایی / Spanska", zh: "ماندارین / Mandarin", tss: "زبان اشاره / Teckenspråk" }[lang];
   return [
-    { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-    { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-    { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-    { id: 4n, fieldType: "select", label_fa: `سطح فعلی ${langLabel}`, label_sv: `Nuvarande nivå i ${langLabel}`, placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "A0 — کاملاً مبتدی", sv: "A0 — Absolut nybörjare" }, { fa: "A1 — مبتدی", sv: "A1 — Nybörjare" }, { fa: "A2 — پایه", sv: "A2 — Grundläggande" }, { fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, sortOrder: 4n },
-    { id: 5n, fieldType: "radio", label_fa: "هدف اصلی یادگیری", label_sv: "Huvudsakligt inlärningsmål", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "زندگی روزانه", sv: "Vardagslivet" }, { fa: "کار و تجارت", sv: "Arbete och affärer" }, { fa: "آکادمیک و دانشگاه", sv: "Akademiskt och universitetet" }, { fa: "مسافرت", sv: "Resor" }], isLookupField: false, sortOrder: 5n },
-    { id: 6n, fieldType: "select", label_fa: "زبان مادری شما", label_sv: "Ditt modersmål", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }, { fa: "عربی", sv: "Arabiska" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, sortOrder: 6n },
+    { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+    { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+    { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+    { id: 4n, fieldType: "select", label_fa: `سطح فعلی ${langLabel}`, label_sv: `Nuvarande nivå i ${langLabel}`, placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "A0 — کاملاً مبتدی", sv: "A0 — Absolut nybörjare" }, { fa: "A1 — مبتدی", sv: "A1 — Nybörjare" }, { fa: "A2 — پایه", sv: "A2 — Grundläggande" }, { fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+    { id: 5n, fieldType: "radio", label_fa: "هدف اصلی یادگیری", label_sv: "Huvudsakligt inlärningsmål", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "زندگی روزانه", sv: "Vardagslivet" }, { fa: "کار و تجارت", sv: "Arbete och affärer" }, { fa: "آکادمیک و دانشگاه", sv: "Akademiskt och universitetet" }, { fa: "مسافرت", sv: "Resor" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
+    { id: 6n, fieldType: "select", label_fa: "زبان مادری شما", label_sv: "Ditt modersmål", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "فارسی", sv: "Persiska" }, { fa: "سوئدی", sv: "Svenska" }, { fa: "انگلیسی", sv: "Engelska" }, { fa: "عربی", sv: "Arabiska" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 6n },
   ];
 };
 
@@ -117,11 +115,11 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Strategier för IELTS fyra färdigheter för betyg 7+",
     ...body("آماده‌سازی آیلتس", "IELTS-förberedelse"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "نمره هدف IELTS", label_sv: "Mål-IELTS-betyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "سطح فعلی انگلیسی", label_sv: "Nuvarande engelsknivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "نمره هدف IELTS", label_sv: "Mål-IELTS-betyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "سطح فعلی انگلیسی", label_sv: "Nuvarande engelsknivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "B1 — متوسط", sv: "B1 — Medel" }, { fa: "B2 — بالاتر از متوسط", sv: "B2 — Övre medel" }, { fa: "C1 — پیشرفته", sv: "C1 — Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     sessions: [
       { id: 101n, name_fa: "دوره بهاره (فروردین ۱۴۰۵)", name_sv: "Vårtermin (april 2026)", date: "2026-04-06", capacity: 20n, bufferCapacity: 5n, sortOrder: 1n },
@@ -254,10 +252,10 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Första-ord, fingersalfabetet och grundläggande TSS-konversation",
     ...body("مقدمه‌ای بر TSS", "Introduktion till TSS"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "دلیل یادگیری زبان اشاره", label_sv: "Anledning till att lära sig teckenspråk", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "برای ارتباط با فرد ناشنوا در خانواده", sv: "Kommunicera med döv familjemedlem" }, { fa: "برای کار در حوزه ناشنوایان", sv: "Arbeta inom dövaområdet" }, { fa: "علاقه شخصی", sv: "Personligt intresse" }, { fa: "دوره دانشگاهی", sv: "Universitetskurs" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "آیا کسی در اطرافتان ناشنواست؟", label_sv: "Har du en döv person i din omgivning?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: false, options: [{ fa: "بله، در خانواده", sv: "Ja, i familjen" }, { fa: "بله، دوست یا همکار", sv: "Ja, vän eller kollega" }, { fa: "خیر", sv: "Nej" }], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "دلیل یادگیری زبان اشاره", label_sv: "Anledning till att lära sig teckenspråk", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "برای ارتباط با فرد ناشنوا در خانواده", sv: "Kommunicera med döv familjemedlem" }, { fa: "برای کار در حوزه ناشنوایان", sv: "Arbeta inom dövaområdet" }, { fa: "علاقه شخصی", sv: "Personligt intresse" }, { fa: "دوره دانشگاهی", sv: "Universitetskurs" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "آیا کسی در اطرافتان ناشنواست؟", label_sv: "Har du en döv person i din omgivning?", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: false, options: [{ fa: "بله، در خانواده", sv: "Ja, i familjen" }, { fa: "بله، دوست یا همکار", sv: "Ja, vän eller kollega" }, { fa: "خیر", sv: "Nej" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
     icon: "Hand", imageUrl: img("sign-intro", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(54),
   },
@@ -344,8 +342,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 6n, fieldLabel: "Modersmål / زبان مادری", value: "Persiska" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(2),
-  },
+    createdAt: ts(2), members: [] },
   {
     id: 66002n, activityId: 62006n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -357,8 +354,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 6n, fieldLabel: "Modersmål / زبان مادری", value: "Svenska" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(5),
-  },
+    createdAt: ts(5), members: [] },
   {
     id: 66003n, activityId: 62021n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -368,10 +364,9 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 4n, fieldLabel: "Döv i omgivning / ناشنوا در اطراف", value: "Ja, i familjen" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(8),
-  },
-  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
-  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(16) },
+    createdAt: ts(8), members: [] },
+  { id: 66004n, activityId: 62007n, name: "Reza Moradi", email: "reza.m@example.com", phone: "705544332", message: "هدفم گرفتن IELTS 7.5 برای دانشگاه است.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11), members: [] },
+  { id: 66005n, activityId: 62011n, name: "Isabel Costa", email: "isabel.c@example.com", phone: "704433221", message: "Jag är halvt spansk, vill förbättra mitt spanska.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(16), members: [] },
   {
     id: 1774500001n, activityId: 62007n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -382,8 +377,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B2 — Övre medel" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (april 2026)" }],
-    createdAt: ts(2),
-  },
+    createdAt: ts(2), members: [] },
   {
     id: 1774400002n, activityId: 62007n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -394,8 +388,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "C1 — Avancerad" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Hösttermin (september 2026)" }],
-    createdAt: ts(6),
-  },
+    createdAt: ts(6), members: [] },
   {
     id: 1774300003n, activityId: 62007n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -406,8 +399,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Engelsknivå / سطح انگلیسی", value: "B1 — Medel" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårtermin (april 2026)" }],
-    createdAt: ts(9),
-  },
+    createdAt: ts(9), members: [] },
 ];
 
 export const mockFormTemplates: FormTemplateReturn[] = [
@@ -415,36 +407,36 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 67001n, name_fa: "ثبت‌نام مکالمه", name_sv: "Konversationsregistrering",
     description_fa: "فرم برای کلاس‌های مکالمه", description_sv: "Formulär för konversationsklasser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "A1–A2", sv: "A1–A2" }, { fa: "B1–B2", sv: "B1–B2" }, { fa: "C1–C2", sv: "C1–C2" }], isLookupField: false, sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "A1–A2", sv: "A1–A2" }, { fa: "B1–B2", sv: "B1–B2" }, { fa: "C1–C2", sv: "C1–C2" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
     ],
-    createdAt: ts(100),
+    createdAt: ts(100), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 67002n, name_fa: "ثبت‌نام دوره آکادمیک", name_sv: "Akademisk kursregistrering",
     description_fa: "فرم برای دوره‌های آزمون رسمی", description_sv: "Formulär för officiella provkurser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "نمره هدف", label_sv: "Målbetyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "date", label_fa: "تاریخ آزمون برنامه‌ریزی‌شده", label_sv: "Planerat provdatum", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "نمره هدف", label_sv: "Målbetyg", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "6.0", sv: "6.0" }, { fa: "6.5", sv: "6.5" }, { fa: "7.0", sv: "7.0" }, { fa: "7.5+", sv: "7.5+" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "date", label_fa: "تاریخ آزمون برنامه‌ریزی‌شده", label_sv: "Planerat provdatum", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
-    createdAt: ts(95),
+    createdAt: ts(95), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 67003n, name_fa: "ثبت‌نام دوره کودکان", name_sv: "Barnkursregistrering",
     description_fa: "فرم برای ثبت‌نام کودکان در دوره‌های زبان", description_sv: "Formulär för barnens språkkurser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], isLookupField: false, minValue: 5n, maxValue: 17n, sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Föräldrarnas namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Föräldrarnas e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
-      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا نیازهای خاص", label_sv: "Medicinska tillstånd eller särskilda behov", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کودک", label_sv: "Barnets namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "number", label_fa: "سن کودک", label_sv: "Barnets ålder", placeholder_fa: "مثلاً ۸", placeholder_sv: "T.ex. 8", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, minValue: 5n, maxValue: 17n, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام والدین", label_sv: "Föräldrarnas namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "email", label_fa: "ایمیل والدین", label_sv: "Föräldrarnas e-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "phone", label_fa: "تلفن اضطراری", label_sv: "Nödtelefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
+      { id: 6n, fieldType: "textarea", label_fa: "شرایط پزشکی یا نیازهای خاص", label_sv: "Medicinska tillstånd eller särskilda behov", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 6n },
     ],
-    createdAt: ts(90),
+    createdAt: ts(90), minMembers: 1n, maxMembers: 20n,
   },
 ];
 
@@ -460,11 +452,10 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 202n, name_fa: "ترم پاییزه", name_sv: "Hösttermin", date: "2026-09-07", capacity: 20n, bufferCapacity: 5n, sortOrder: 2n },
     ],
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح فعلی", label_sv: "Nuvarande nivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n,
-  },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
 ];

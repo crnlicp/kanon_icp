@@ -13,12 +13,16 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'minValue' : IDL.Opt(IDL.Int),
     'sortOrder' : IDL.Nat,
+    'allowedValues' : IDL.Vec(IDL.Text),
+    'unique' : IDL.Bool,
     'label_fa' : IDL.Text,
     'label_sv' : IDL.Text,
     'isLookupField' : IDL.Bool,
+    'perMember' : IDL.Bool,
     'placeholder_fa' : IDL.Text,
     'placeholder_sv' : IDL.Text,
     'required' : IDL.Bool,
+    'excludeFromCapacityWhenChecked' : IDL.Bool,
     'maxValue' : IDL.Opt(IDL.Int),
     'options' : IDL.Vec(IDL.Record({ 'fa' : IDL.Text, 'sv' : IDL.Text })),
     'fieldType' : IDL.Text,
@@ -34,7 +38,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const ActivityReturn = IDL.Record({
     'id' : IDL.Nat,
-    'regAllowedPhones' : IDL.Vec(IDL.Text),
     'formTemplateId' : IDL.Opt(IDL.Nat),
     'body_fa' : IDL.Text,
     'body_sv' : IDL.Text,
@@ -42,8 +45,6 @@ export const idlFactory = ({ IDL }) => {
     'icon' : IDL.Text,
     'createdAt' : IDL.Int,
     'slug' : IDL.Text,
-    'regMaxRegistrationsPerPhone' : IDL.Opt(IDL.Nat),
-    'regBlockDuplicateEmail' : IDL.Bool,
     'highlighted' : IDL.Bool,
     'customFormFields' : IDL.Vec(FormFieldReturn),
     'imageUrl' : IDL.Text,
@@ -51,7 +52,6 @@ export const idlFactory = ({ IDL }) => {
     'excerpt_fa' : IDL.Text,
     'excerpt_sv' : IDL.Text,
     'hasRegistration' : IDL.Bool,
-    'regMaxCapacity' : IDL.Opt(IDL.Nat),
     'registrationMode' : IDL.Text,
     'title_fa' : IDL.Text,
     'title_sv' : IDL.Text,
@@ -63,10 +63,13 @@ export const idlFactory = ({ IDL }) => {
     'description_fa' : IDL.Text,
     'description_sv' : IDL.Text,
     'createdAt' : IDL.Int,
+    'perMemberMode' : IDL.Bool,
     'fields' : IDL.Vec(FormFieldReturn),
+    'maxMembers' : IDL.Nat,
     'sessions' : IDL.Vec(EventSessionReturn),
     'name_fa' : IDL.Text,
     'name_sv' : IDL.Text,
+    'minMembers' : IDL.Nat,
   });
   const FormTemplateReturn = IDL.Record({
     'id' : IDL.Nat,
@@ -74,8 +77,10 @@ export const idlFactory = ({ IDL }) => {
     'description_sv' : IDL.Text,
     'createdAt' : IDL.Int,
     'fields' : IDL.Vec(FormFieldReturn),
+    'maxMembers' : IDL.Nat,
     'name_fa' : IDL.Text,
     'name_sv' : IDL.Text,
+    'minMembers' : IDL.Nat,
   });
   const HeroSlideReturn = IDL.Record({
     'id' : IDL.Nat,
@@ -113,6 +118,25 @@ export const idlFactory = ({ IDL }) => {
     'body_fa' : IDL.Text,
     'body_sv' : IDL.Text,
   });
+  const ActivityRegistrationConfigReturn = IDL.Record({
+    'perMemberFields' : IDL.Vec(FormFieldReturn),
+    'sharedFields' : IDL.Vec(FormFieldReturn),
+    'activityId' : IDL.Nat,
+    'perMemberMode' : IDL.Bool,
+    'maxMembers' : IDL.Nat,
+    'sessions' : IDL.Vec(EventSessionReturn),
+    'hasRegistration' : IDL.Bool,
+    'minMembers' : IDL.Nat,
+  });
+  const RegistrationMemberValueReturn = IDL.Record({
+    'value' : IDL.Text,
+    'fieldLabel' : IDL.Text,
+    'fieldId' : IDL.Nat,
+  });
+  const RegistrationMemberReturn = IDL.Record({
+    'values' : IDL.Vec(RegistrationMemberValueReturn),
+    'countsTowardCapacity' : IDL.Bool,
+  });
   const RegistrationFieldValueReturn = IDL.Record({
     'value' : IDL.Text,
     'fieldLabel' : IDL.Text,
@@ -120,6 +144,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const RegistrationReturn = IDL.Record({
     'id' : IDL.Nat,
+    'members' : IDL.Vec(RegistrationMemberReturn),
     'name' : IDL.Text,
     'createdAt' : IDL.Int,
     'fieldValues' : IDL.Vec(RegistrationFieldValueReturn),
@@ -162,6 +187,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const RegistrationWithStatusReturn = IDL.Record({
     'id' : IDL.Nat,
+    'members' : IDL.Vec(RegistrationMemberReturn),
     'name' : IDL.Text,
     'createdAt' : IDL.Int,
     'fieldValues' : IDL.Vec(
@@ -260,13 +286,12 @@ export const idlFactory = ({ IDL }) => {
   });
   const SubmitRegistrationResult = IDL.Variant({
     'ok' : RegistrationWithStatusReturn,
+    'duplicateValue' : IDL.Nat,
     'invalidInput' : IDL.Null,
-    'duplicateEmail' : IDL.Null,
     'capacityFull' : IDL.Null,
     'sessionsUnavailable' : IDL.Vec(IDL.Nat),
-    'phoneNotAllowed' : IDL.Null,
     'registrationDisabled' : IDL.Null,
-    'maxRegistrationsReached' : IDL.Null,
+    'valueNotAllowed' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -294,10 +319,6 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Nat),
           IDL.Vec(FormFieldReturn),
           IDL.Vec(EventSessionReturn),
-          IDL.Opt(IDL.Nat),
-          IDL.Vec(IDL.Text),
-          IDL.Opt(IDL.Nat),
-          IDL.Bool,
           IDL.Bool,
           IDL.Nat,
         ],
@@ -313,6 +334,9 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Vec(EventSessionReturn),
           IDL.Vec(FormFieldReturn),
+          IDL.Bool,
+          IDL.Nat,
+          IDL.Nat,
         ],
         [EventRegistrationTemplateReturn],
         [],
@@ -325,6 +349,8 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Text,
           IDL.Vec(FormFieldReturn),
+          IDL.Nat,
+          IDL.Nat,
         ],
         [FormTemplateReturn],
         [],
@@ -385,6 +411,21 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ActivityReturn)],
         ['query'],
       ),
+    'getActivitiesUsingEventTemplate' : IDL.Func(
+        [IDL.Nat],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Nat,
+              'liveRegistrationCount' : IDL.Nat,
+              'slug' : IDL.Text,
+              'title_fa' : IDL.Text,
+              'title_sv' : IDL.Text,
+            })
+          ),
+        ],
+        ['query'],
+      ),
     'getActivity' : IDL.Func([IDL.Nat], [IDL.Opt(ActivityReturn)], ['query']),
     'getActivityBySlug' : IDL.Func(
         [IDL.Nat, IDL.Text],
@@ -394,6 +435,11 @@ export const idlFactory = ({ IDL }) => {
     'getActivityFormFields' : IDL.Func(
         [IDL.Nat],
         [IDL.Opt(IDL.Vec(FormFieldReturn))],
+        ['query'],
+      ),
+    'getActivityRegistrationConfig' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(ActivityRegistrationConfigReturn)],
         ['query'],
       ),
     'getAllActivities' : IDL.Func([], [IDL.Vec(ActivityReturn)], ['query']),
@@ -481,6 +527,9 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Vec(IDL.Nat),
           IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat })),
+          IDL.Vec(
+            IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat }))
+          ),
         ],
         [SubmitRegistrationResult],
         [],
@@ -507,6 +556,9 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Vec(IDL.Nat),
           IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat })),
+          IDL.Vec(
+            IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat }))
+          ),
         ],
         [SubmitRegistrationResult],
         [],
@@ -536,10 +588,6 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Nat),
           IDL.Vec(FormFieldReturn),
           IDL.Vec(EventSessionReturn),
-          IDL.Opt(IDL.Nat),
-          IDL.Vec(IDL.Text),
-          IDL.Opt(IDL.Nat),
-          IDL.Bool,
           IDL.Bool,
           IDL.Nat,
         ],
@@ -556,6 +604,9 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Vec(EventSessionReturn),
           IDL.Vec(FormFieldReturn),
+          IDL.Bool,
+          IDL.Nat,
+          IDL.Nat,
         ],
         [IDL.Opt(EventRegistrationTemplateReturn)],
         [],
@@ -569,6 +620,8 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Text,
           IDL.Vec(FormFieldReturn),
+          IDL.Nat,
+          IDL.Nat,
         ],
         [IDL.Opt(FormTemplateReturn)],
         [],

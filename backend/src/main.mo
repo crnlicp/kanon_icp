@@ -26,7 +26,6 @@ persistent actor {
   type FormTemplate = T.FormTemplate;
   type EventRegistrationTemplate = T.EventRegistrationTemplate;
   type EventSession = T.EventSession;
-  type RegistrationRules = T.RegistrationRules;
   type TopicReturn = T.TopicReturn;
   type HeroSlideReturn = T.HeroSlideReturn;
   type ActivityReturn = T.ActivityReturn;
@@ -458,26 +457,36 @@ persistent actor {
         isLookupField = f.isLookupField;
         minValue = f.minValue;
         maxValue = f.maxValue;
+        perMember = ?f.perMember;
+        excludeFromCapacityWhenChecked = ?f.excludeFromCapacityWhenChecked;
+        unique = ?f.unique;
+        allowedValues = ?f.allowedValues;
       }
     })
   };
 
-  func buildRules(
-    maxCapacity              : ?Nat,
-    allowedPhones            : [Text],
-    maxRegistrationsPerPhone : ?Nat,
-    blockDuplicateEmail      : Bool,
-  ) : ?RegistrationRules {
-    if (maxCapacity == null and allowedPhones.size() == 0 and maxRegistrationsPerPhone == null and not blockDuplicateEmail) {
-      null
-    } else {
-      ?{
-        maxCapacity;
-        allowedPhones;
-        maxRegistrationsPerPhone;
-        blockDuplicateEmail;
-      }
-    }
+  // True if the activity has any non-archived registrations.
+  // Used to decide whether it is safe to re-sync template sessions onto it.
+  func activityHasLiveRegistrations(activityId : Nat) : Bool {
+    for ((_, r) in Map.entries(registrations)) {
+      if (r.activityId == activityId) {
+        let isArchived = switch (r.archived) { case (?b) b; case null false };
+        if (not isArchived) { return true };
+      };
+    };
+    false
+  };
+
+  // Count non-archived registrations for an activity.
+  func liveRegistrationCount(activityId : Nat) : Nat {
+    var n : Nat = 0;
+    for ((_, r) in Map.entries(registrations)) {
+      if (r.activityId == activityId) {
+        let isArchived = switch (r.archived) { case (?b) b; case null false };
+        if (not isArchived) { n += 1 };
+      };
+    };
+    n
   };
 
   // ─── Activities CRUD ──────────────────────────────────────────────────────
@@ -543,16 +552,13 @@ persistent actor {
     eventTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
     actSessions : [EventSessionReturn],
-    regMaxCapacity : ?Nat,
-    regAllowedPhones : [Text],
-    regMaxRegistrationsPerPhone : ?Nat,
-    regBlockDuplicateEmail : Bool,
     highlighted : Bool,
     sortOrder : Nat,
   ) : async ActivityReturn {
     requireAuth(token);
     let id = nextActivityId;
     nextActivityId += 1;
+    // Sessions: snapshot from template (or use custom) — needed for registration integrity.
     let resolvedSessions : [EventSession] = switch (eventTemplateId) {
       case (?tid) {
         switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
@@ -562,13 +568,10 @@ persistent actor {
       };
       case null { buildSessions(actSessions) };
     };
+    // Fields: when using an event template, leave customFormFields empty so
+    // getActivityFormFields resolves them live from the template.
     let resolvedFields : [FormField] = switch (eventTemplateId) {
-      case (?tid) {
-        switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
-          case (?t) { t.fields };
-          case null { buildFormFields(customFormFields) };
-        }
-      };
+      case (?_) { [] };
       case null { buildFormFields(customFormFields) };
     };
     let activity : Activity = {
@@ -586,7 +589,6 @@ persistent actor {
       eventTemplateId;
       customFormFields = resolvedFields;
       sessions = resolvedSessions;
-      registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
       highlighted = ?highlighted;
       sortOrder;
       createdAt = Time.now();
@@ -614,32 +616,31 @@ persistent actor {
     eventTemplateId : ?Nat,
     customFormFields : [FormFieldReturn],
     actSessions : [EventSessionReturn],
-    regMaxCapacity : ?Nat,
-    regAllowedPhones : [Text],
-    regMaxRegistrationsPerPhone : ?Nat,
-    regBlockDuplicateEmail : Bool,
     highlighted : Bool,
     sortOrder : Nat,
   ) : async ?ActivityReturn {
     requireAuth(token);
     switch (Map.get(activities, Nat.compare, id)) {
       case (?existing) {
+        // Sessions: if switching template, only snapshot from it when safe
+        // (no existing non-archived registrations). Otherwise preserve existing
+        // session snapshot to keep registrations consistent.
         let resolvedSessions : [EventSession] = switch (eventTemplateId) {
           case (?tid) {
             switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
-              case (?t) { t.sessions };
+              case (?t) {
+                if (activityHasLiveRegistrations(id)) { existing.sessions }
+                else { t.sessions }
+              };
               case null { buildSessions(actSessions) };
             }
           };
           case null { buildSessions(actSessions) };
         };
+        // Fields: when using an event template, leave customFormFields empty so
+        // getActivityFormFields resolves them live from the template.
         let resolvedFields : [FormField] = switch (eventTemplateId) {
-          case (?tid) {
-            switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
-              case (?t) { t.fields };
-              case null { buildFormFields(customFormFields) };
-            }
-          };
+          case (?_) { [] };
           case null { buildFormFields(customFormFields) };
         };
         let updated : Activity = {
@@ -657,7 +658,6 @@ persistent actor {
           eventTemplateId;
           customFormFields = resolvedFields;
           sessions = resolvedSessions;
-          registrationRules = buildRules(regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail);
           highlighted = ?highlighted;
           sortOrder;
           createdAt = existing.createdAt;
@@ -702,6 +702,8 @@ persistent actor {
     description_fa : Text,
     description_sv : Text,
     fields : [FormFieldReturn],
+    minMembers : Nat,
+    maxMembers : Nat,
   ) : async FormTemplateReturn {
     requireAuth(token);
     let id = nextFormTemplateId;
@@ -712,6 +714,8 @@ persistent actor {
       description = { fa = description_fa; sv = description_sv };
       fields = buildFormFields(fields);
       createdAt = Time.now();
+      minMembers = ?minMembers;
+      maxMembers = ?maxMembers;
     };
     Map.add(formTemplates, Nat.compare, id, template);
     H.templateToReturn(template)
@@ -725,6 +729,8 @@ persistent actor {
     description_fa : Text,
     description_sv : Text,
     fields : [FormFieldReturn],
+    minMembers : Nat,
+    maxMembers : Nat,
   ) : async ?FormTemplateReturn {
     requireAuth(token);
     switch (Map.get(formTemplates, Nat.compare, id)) {
@@ -735,6 +741,8 @@ persistent actor {
           description = { fa = description_fa; sv = description_sv };
           fields = buildFormFields(fields);
           createdAt = existing.createdAt;
+          minMembers = ?minMembers;
+          maxMembers = ?maxMembers;
         };
         Map.add(formTemplates, Nat.compare, id, updated);
         ?H.templateToReturn(updated)
@@ -777,6 +785,9 @@ persistent actor {
     description_sv : Text,
     tmplSessions : [EventSessionReturn],
     fields : [FormFieldReturn],
+    perMemberMode : Bool,
+    minMembers : Nat,
+    maxMembers : Nat,
   ) : async EventRegistrationTemplateReturn {
     requireAuth(token);
     let id = nextEventRegTemplateId;
@@ -788,6 +799,9 @@ persistent actor {
       sessions = buildSessions(tmplSessions);
       fields = buildFormFields(fields);
       createdAt = Time.now();
+      perMemberMode = ?perMemberMode;
+      minMembers = ?minMembers;
+      maxMembers = ?maxMembers;
     };
     Map.add(eventRegTemplates, Nat.compare, id, tmpl);
     H.eventRegTemplateToReturn(tmpl)
@@ -802,6 +816,9 @@ persistent actor {
     description_sv : Text,
     tmplSessions : [EventSessionReturn],
     fields : [FormFieldReturn],
+    perMemberMode : Bool,
+    minMembers : Nat,
+    maxMembers : Nat,
   ) : async ?EventRegistrationTemplateReturn {
     requireAuth(token);
     switch (Map.get(eventRegTemplates, Nat.compare, id)) {
@@ -813,8 +830,44 @@ persistent actor {
           sessions = buildSessions(tmplSessions);
           fields = buildFormFields(fields);
           createdAt = existing.createdAt;
+          perMemberMode = ?perMemberMode;
+          minMembers = ?minMembers;
+          maxMembers = ?maxMembers;
         };
         Map.add(eventRegTemplates, Nat.compare, id, updated);
+
+        // Auto-resync sessions onto every activity bound to this template that
+        // has no live registrations yet. Activities with existing registrations
+        // keep their snapshot to avoid breaking registration data integrity.
+        for ((aid, a) in Map.entries(activities)) {
+          let bound = switch (a.eventTemplateId) {
+            case (?tid) { tid == id };
+            case null { false };
+          };
+          if (bound and not activityHasLiveRegistrations(aid)) {
+            let synced : Activity = {
+              id = a.id;
+              topicId = a.topicId;
+              slug = a.slug;
+              title = a.title;
+              excerpt = a.excerpt;
+              body = a.body;
+              icon = a.icon;
+              imageUrl = a.imageUrl;
+              hasRegistration = a.hasRegistration;
+              registrationMode = a.registrationMode;
+              formTemplateId = a.formTemplateId;
+              eventTemplateId = a.eventTemplateId;
+              customFormFields = a.customFormFields;
+              sessions = updated.sessions;
+              highlighted = a.highlighted;
+              sortOrder = a.sortOrder;
+              createdAt = a.createdAt;
+            };
+            Map.add(activities, Nat.compare, aid, synced);
+          };
+        };
+
         ?H.eventRegTemplateToReturn(updated)
       };
       case null { null };
@@ -827,6 +880,35 @@ persistent actor {
       case (?_) { ignore Map.delete(eventRegTemplates, Nat.compare, id); true };
       case null { false };
     }
+  };
+
+  // Activities currently bound to a given event registration template, with
+  // their live (non-archived) registration count. Used by the admin UI to
+  // explain which events will / won't auto-resync when the template changes.
+  public query func getActivitiesUsingEventTemplate(templateId : Nat) : async [{
+    id : Nat;
+    slug : Text;
+    title_fa : Text;
+    title_sv : Text;
+    liveRegistrationCount : Nat;
+  }] {
+    let buf = List.empty<{ id : Nat; slug : Text; title_fa : Text; title_sv : Text; liveRegistrationCount : Nat }>();
+    for ((aid, a) in Map.entries(activities)) {
+      let bound = switch (a.eventTemplateId) {
+        case (?tid) { tid == templateId };
+        case null { false };
+      };
+      if (bound) {
+        List.add(buf, {
+          id = aid;
+          slug = a.slug;
+          title_fa = a.title.fa;
+          title_sv = a.title.sv;
+          liveRegistrationCount = liveRegistrationCount(aid);
+        });
+      };
+    };
+    List.toArray(buf)
   };
 
   // ─── Activity Form Fields Resolution ──────────────────────────────────
@@ -863,6 +945,29 @@ persistent actor {
           case null {};
         };
         null;
+      };
+      case null { null };
+    }
+  };
+
+  // Returns the resolved registration form configuration for an activity:
+  // split shared / per-member fields, per-member-mode flag, member limits,
+  // and the snapshotted session list. Lets the public form render in one
+  // round-trip without re-implementing scope logic on the client.
+  public query func getActivityRegistrationConfig(activityId : Nat) : async ?T.ActivityRegistrationConfigReturn {
+    switch (Map.get(activities, Nat.compare, activityId)) {
+      case (?activity) {
+        let pm = resolveActivityPerMemberConfig(activity);
+        ?{
+          activityId      = activity.id;
+          hasRegistration = activity.hasRegistration;
+          perMemberMode   = pm.enabled;
+          minMembers      = pm.minMembers;
+          maxMembers      = pm.maxMembers;
+          sharedFields    = Array.map<FormField, FormFieldReturn>(pm.sharedFields, H.fieldToReturn);
+          perMemberFields = Array.map<FormField, FormFieldReturn>(pm.perMemberFields, H.fieldToReturn);
+          sessions        = Array.map<EventSession, EventSessionReturn>(activity.sessions, H.sessionToReturn);
+        }
       };
       case null { null };
     }
@@ -990,6 +1095,157 @@ persistent actor {
     })
   };
 
+  // ─── Per-member mode helpers ──────────────────────────────────────────────
+
+  // Resolve whether an activity uses per-member mode + the field split. Only
+  // event-template-bound activities can enable per-member mode; activity-level
+  // event-custom mode keeps the legacy single-counter behavior.
+  func resolveActivityPerMemberConfig(activity : Activity) : {
+    enabled         : Bool;
+    minMembers      : Nat;
+    maxMembers      : Nat;
+    sharedFields    : [FormField];
+    perMemberFields : [FormField];
+  } {
+    let allFields = resolveActivityFields(activity);
+    var enabled = false;
+    var minM : Nat = 1;
+    var maxM : Nat = maxPersonCount;
+    switch (activity.eventTemplateId) {
+      case (?tid) {
+        switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
+          case (?tmpl) {
+            enabled := switch (tmpl.perMemberMode) { case (?b) b; case null false };
+            minM := switch (tmpl.minMembers) {
+              case (?n) { if (n < 1) 1 else n };
+              case null { 1 };
+            };
+            maxM := switch (tmpl.maxMembers) {
+              case (?n) {
+                if (n < 1) 1
+                else if (n > maxPersonCount) maxPersonCount
+                else n
+              };
+              case null { maxPersonCount };
+            };
+          };
+          case null {};
+        };
+      };
+      case null {
+        // Fall back to the form template's member bounds when present.
+        switch (activity.formTemplateId) {
+          case (?tid) {
+            switch (Map.get(formTemplates, Nat.compare, tid)) {
+              case (?tmpl) {
+                minM := switch (tmpl.minMembers) {
+                  case (?n) { if (n < 1) 1 else n };
+                  case null { 1 };
+                };
+                maxM := switch (tmpl.maxMembers) {
+                  case (?n) {
+                    if (n < 1) 1
+                    else if (n > maxPersonCount) maxPersonCount
+                    else n
+                  };
+                  case null { maxPersonCount };
+                };
+              };
+              case null {};
+            };
+          };
+          case null {};
+        };
+      };
+    };
+    if (minM > maxM) { minM := maxM };
+
+    let perBuf = List.empty<FormField>();
+    let sharedBuf = List.empty<FormField>();
+    for (f in allFields.vals()) {
+      let isPerMember = switch (f.perMember) { case (?b) b; case null false };
+      // Lookup fields are forced shared even if mistakenly flagged per-member.
+      if (isPerMember and not f.isLookupField) {
+        perBuf.add(f);
+      } else {
+        sharedBuf.add(f);
+      };
+    };
+    {
+      enabled = enabled and perBuf.size() > 0;
+      minMembers = minM;
+      maxMembers = maxM;
+      sharedFields = List.toArray(sharedBuf);
+      perMemberFields = List.toArray(perBuf);
+    }
+  };
+
+  // Resolve a single member submission into a stored RegistrationMember.
+  // countsTowardCapacity is false when any per-member field flagged
+  // excludeFromCapacityWhenChecked has value == "true".
+  func resolveMember(
+    memberValues    : [{ fieldId : Nat; value : Text }],
+    perMemberFields : [FormField],
+  ) : T.RegistrationMember {
+    let values = Array.map<{ fieldId : Nat; value : Text }, T.RegistrationFieldValue>(
+      memberValues,
+      func (fv) {
+        var resolvedLabel = "Field " # Nat.toText(fv.fieldId);
+        for (pf in perMemberFields.vals()) {
+          if (pf.id == fv.fieldId) {
+            resolvedLabel := pf.fieldLabel.fa # " / " # pf.fieldLabel.sv;
+          };
+        };
+        { fieldId = fv.fieldId; fieldLabel = resolvedLabel; value = fv.value }
+      }
+    );
+    var counts = true;
+    for (pf in perMemberFields.vals()) {
+      let exclude = switch (pf.excludeFromCapacityWhenChecked) { case (?b) b; case null false };
+      if (exclude) {
+        for (mv in memberValues.vals()) {
+          if (mv.fieldId == pf.id and mv.value == "true") { counts := false };
+        };
+      };
+    };
+    { values; countsTowardCapacity = counts }
+  };
+
+  func effectiveMemberCount(members : [T.RegistrationMember]) : Nat {
+    var n : Nat = 0;
+    for (m in members.vals()) {
+      if (m.countsTowardCapacity) { n += 1 };
+    };
+    n
+  };
+
+  // Validate per-member submission shape (sizes + required fields).
+  func validateMembers(
+    membersInput    : [[{ fieldId : Nat; value : Text }]],
+    perMemberFields : [FormField],
+    minMembers      : Nat,
+    maxMembers      : Nat,
+  ) : Bool {
+    let n = membersInput.size();
+    if (n < minMembers or n > maxMembers or n > maxPersonCount) { return false };
+    for (m in membersInput.vals()) {
+      if (m.size() > maxFieldValues) { return false };
+      for (fv in m.vals()) {
+        if (fv.value.size() > maxFieldValueLen) { return false };
+      };
+      for (pf in perMemberFields.vals()) {
+        if (pf.required) {
+          var ok = false;
+          for (fv in m.vals()) {
+            if (fv.fieldId == pf.id and fv.value.size() > 0) { ok := true };
+          };
+          if (not ok) { return false };
+        };
+      };
+    };
+    true
+  };
+
   public func submitRegistration(
     activityId         : Nat,
     name               : Text,
@@ -999,6 +1255,7 @@ persistent actor {
     personCount        : Nat,
     selectedSessionIds : [Nat],
     fieldValues        : [{ fieldId : Nat; value : Text }],
+    members            : [[{ fieldId : Nat; value : Text }]],
   ) : async SubmitRegistrationResult {
     // 1. Input size validation
     if (
@@ -1008,7 +1265,8 @@ persistent actor {
       message.size() > maxMessageLen or
       fieldValues.size() > maxFieldValues or
       personCount < 1 or personCount > maxPersonCount or
-      selectedSessionIds.size() > maxSessions
+      selectedSessionIds.size() > maxSessions or
+      members.size() > maxPersonCount
     ) {
       return #invalidInput;
     };
@@ -1021,63 +1279,86 @@ persistent actor {
       case (?activity) {
         if (not activity.hasRegistration) { return #registrationDisabled };
 
-        let rules = activity.registrationRules;
+        // Per-member mode handling: derive effective person count and
+        // resolved member snapshots when the bound template enables it.
+        let pmConfig = resolveActivityPerMemberConfig(activity);
+        var effectivePersonCount : Nat = personCount;
+        var resolvedMembers : ?[T.RegistrationMember] = null;
+        if (pmConfig.enabled) {
+          if (not validateMembers(members, pmConfig.perMemberFields, pmConfig.minMembers, pmConfig.maxMembers)) {
+            return #invalidInput;
+          };
+          let rms = Array.map<[{ fieldId : Nat; value : Text }], T.RegistrationMember>(
+            members,
+            func (m) { resolveMember(m, pmConfig.perMemberFields) }
+          );
+          let eff = effectiveMemberCount(rms);
+          if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
+          effectivePersonCount := eff;
+          resolvedMembers := ?rms;
+        };
 
-        // 3. Phone whitelist
-        switch (rules) {
-          case (?r) {
-            if (r.allowedPhones.size() > 0 and not arrayContainsText(r.allowedPhones, phone)) {
-              return #phoneNotAllowed;
+        // 3. Per-field allowed-values whitelist: if a field declares a
+        //    non-empty `allowedValues` list, the submitted value (when
+        //    present) must be in the list. Empty submissions are skipped
+        //    (required-field enforcement happens client-side).
+        let activityFields = resolveActivityFields(activity);
+        for (f in activityFields.vals()) {
+          let allowed = switch (f.allowedValues) { case (?a) a; case null [] };
+          if (allowed.size() > 0) {
+            var submittedValue : ?Text = null;
+            for (fv in fieldValues.vals()) {
+              if (fv.fieldId == f.id) { submittedValue := ?fv.value };
+            };
+            switch (submittedValue) {
+              case (?v) {
+                if (v.size() > 0 and not arrayContainsText(allowed, v)) {
+                  return #valueNotAllowed(f.id);
+                };
+              };
+              case null {};
             };
           };
-          case null {};
         };
 
         let actRegs = regsForActivity(activityId);
 
-        // 4. Max registrations per phone
-        switch (rules) {
-          case (?r) {
-            switch (r.maxRegistrationsPerPhone) {
-              case (?maxPerPhone) {
-                var phoneCount : Nat = 0;
-                for (reg in actRegs.vals()) {
-                  if (reg.phone == phone) { phoneCount += 1 };
+        // 4. Field-level uniqueness: reject if any `unique` field already has
+        //    the submitted value in another (non-archived) registration of
+        //    this activity. Replaces the legacy per-phone / per-email rules.
+        for (f in activityFields.vals()) {
+          let isUnique = switch (f.unique) { case (?b) b; case null false };
+          if (isUnique) {
+            var submittedValue : ?Text = null;
+            for (fv in fieldValues.vals()) {
+              if (fv.fieldId == f.id) { submittedValue := ?fv.value };
+            };
+            switch (submittedValue) {
+              case (?v) {
+                if (v.size() > 0) {
+                  label dupLoop for (reg in actRegs.vals()) {
+                    for (rfv in reg.fieldValues.vals()) {
+                      if (rfv.fieldId == f.id and rfv.value == v) {
+                        return #duplicateValue(f.id);
+                      };
+                    };
+                  };
                 };
-                if (phoneCount >= maxPerPhone) { return #maxRegistrationsReached };
               };
               case null {};
             };
           };
-          case null {};
         };
 
-        // 5. Duplicate email
-        switch (rules) {
-          case (?r) {
-            if (r.blockDuplicateEmail) {
-              for (reg in actRegs.vals()) {
-                if (reg.email == email) { return #duplicateEmail };
-              };
-            };
+        // 5. Member-count bounds in shared mode (per-member mode is enforced by
+        //    validateMembers above using the same template min/max).
+        if (not pmConfig.enabled) {
+          if (personCount < pmConfig.minMembers or personCount > pmConfig.maxMembers) {
+            return #invalidInput;
           };
-          case null {};
         };
 
-        // 6. Overall capacity
-        switch (rules) {
-          case (?r) {
-            switch (r.maxCapacity) {
-              case (?cap) {
-                if (actRegs.size() >= cap) { return #capacityFull };
-              };
-              case null {};
-            };
-          };
-          case null {};
-        };
-
-        // 7. Per-session capacity check (only when sessions are selected)
+        // 6. Per-session capacity check (only when sessions are selected)
         if (selectedSessionIds.size() > 0) {
           let failedSessionsBuf = List.empty<Nat>();
           for (sid in selectedSessionIds.vals()) {
@@ -1093,7 +1374,7 @@ persistent actor {
             };
             if (sessionFound) {
               let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, null);
-              if (confirmed + buffer + personCount > sessionCap + sessionBuf) {
+              if (confirmed + buffer + effectivePersonCount > sessionCap + sessionBuf) {
                 failedSessionsBuf.add(sid);
               };
             };
@@ -1103,7 +1384,7 @@ persistent actor {
           };
         };
 
-        // 8. Store registration — use timestamp-based ID for uniqueness
+        // 7. Store registration — use timestamp-based ID for uniqueness
         let tsId = Int.abs(Time.now()) / 1_000_000_000;
         let id = if (tsId > nextRegistrationId) tsId else nextRegistrationId + 1;
         nextRegistrationId := id;
@@ -1164,15 +1445,16 @@ persistent actor {
           email;
           phone;
           message;
-          personCount;
+          personCount = effectivePersonCount;
           selectedSessions = snapshotSessions(selectedSessionIds, activity.sessions);
           fieldValues = resolvedFields;
           createdAt = Time.now();
           archived = ?false;
+          members = resolvedMembers;
         };
         Map.add(registrations, Nat.compare, id, reg);
 
-        // 9. Compute statuses (reg is now in the map)
+        // 8. Compute statuses (reg is now in the map)
         let allRegsNow = regsForActivity(activityId);
         let statuses = H.computeSessionStatuses(allRegsNow, reg, activity.sessions, null);
         #ok(H.regToReturnWithStatus(reg, statuses))
@@ -1271,12 +1553,14 @@ persistent actor {
     newPersonCount        : Nat,
     newSelectedSessionIds : [Nat],
     newFieldValues        : [{ fieldId : Nat; value : Text }],
+    newMembers            : [[{ fieldId : Nat; value : Text }]],
   ) : async SubmitRegistrationResult {
     // Validate input sizes
     if (
       newPersonCount < 1 or newPersonCount > maxPersonCount or
       newSelectedSessionIds.size() > maxSessions or
-      newFieldValues.size() > maxFieldValues
+      newFieldValues.size() > maxFieldValues or
+      newMembers.size() > maxPersonCount
     ) {
       return #invalidInput;
     };
@@ -1293,7 +1577,45 @@ persistent actor {
           case (?activity) {
             if (not activity.hasRegistration) { return #registrationDisabled };
 
+            // Per-member mode: validate + derive effective count and members.
+            let pmConfig = resolveActivityPerMemberConfig(activity);
+            var effectivePersonCount : Nat = newPersonCount;
+            var resolvedMembers : ?[T.RegistrationMember] = existing.members;
+            if (pmConfig.enabled) {
+              if (not validateMembers(newMembers, pmConfig.perMemberFields, pmConfig.minMembers, pmConfig.maxMembers)) {
+                return #invalidInput;
+              };
+              let rms = Array.map<[{ fieldId : Nat; value : Text }], T.RegistrationMember>(
+                newMembers,
+                func (m) { resolveMember(m, pmConfig.perMemberFields) }
+              );
+              let eff = effectiveMemberCount(rms);
+              if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
+              effectivePersonCount := eff;
+              resolvedMembers := ?rms;
+            };
+
             let actRegs = regsForActivity(existing.activityId);
+
+            // Per-field allowed-values whitelist (mirror of submitRegistration)
+            let activityFields = resolveActivityFields(activity);
+            for (f in activityFields.vals()) {
+              let allowed = switch (f.allowedValues) { case (?a) a; case null [] };
+              if (allowed.size() > 0) {
+                var submittedValue : ?Text = null;
+                for (fv in newFieldValues.vals()) {
+                  if (fv.fieldId == f.id) { submittedValue := ?fv.value };
+                };
+                switch (submittedValue) {
+                  case (?v) {
+                    if (v.size() > 0 and not arrayContainsText(allowed, v)) {
+                      return #valueNotAllowed(f.id);
+                    };
+                  };
+                  case null {};
+                };
+              };
+            };
 
             // Per-session capacity check excluding the current registration
             if (newSelectedSessionIds.size() > 0) {
@@ -1311,7 +1633,7 @@ persistent actor {
                 };
                 if (sessionFound) {
                   let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, ?id);
-                  if (confirmed + buffer + newPersonCount > sessionCap + sessionBuf) {
+                  if (confirmed + buffer + effectivePersonCount > sessionCap + sessionBuf) {
                     failedSessionsBuf.add(sid);
                   };
                 };
@@ -1345,11 +1667,12 @@ persistent actor {
               email      = existing.email;
               phone      = existing.phone;
               message    = existing.message;
-              personCount = newPersonCount;
+              personCount = effectivePersonCount;
               selectedSessions = snapshotSessions(newSelectedSessionIds, activity.sessions);
               fieldValues = resolvedFields;
               createdAt   = existing.createdAt;
               archived    = existing.archived;
+              members     = resolvedMembers;
             };
             Map.add(registrations, Nat.compare, id, updated);
 
@@ -1434,6 +1757,7 @@ persistent actor {
           fieldValues     = existing.fieldValues;
           createdAt       = existing.createdAt;
           archived        = ?archived;
+          members         = existing.members;
         };
         Map.add(registrations, Nat.compare, id, updated);
         true

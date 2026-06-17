@@ -85,8 +85,6 @@ const body = (fa: string, sv: string) => ({
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
   sessions: [],
-  regAllowedPhones: [],
-  regBlockDuplicateEmail: false,
   highlighted: false,
 });
 
@@ -120,11 +118,11 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Från idé till driftsättning: Node.js + React + databas",
     ...body("بوت‌کمپ فول‌استک", "Full-stack bootcamp"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "سطح برنامه‌نویسی", label_sv: "Programmeringsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "زبان برنامه‌نویسی اصلی", label_sv: "Primärt programmeringsspråk", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "JavaScript", sv: "JavaScript" }, { fa: "Python", sv: "Python" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "چرا این بوت‌کمپ را انتخاب کردید؟", label_sv: "Varför valde du denna bootcamp?", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "سطح برنامه‌نویسی", label_sv: "Programmeringsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "زبان برنامه‌نویسی اصلی", label_sv: "Primärt programmeringsspråk", placeholder_fa: "", placeholder_sv: "", required: false, options: [{ fa: "JavaScript", sv: "JavaScript" }, { fa: "Python", sv: "Python" }, { fa: "سایر", sv: "Annat" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "چرا این بوت‌کمپ را انتخاب کردید؟", label_sv: "Varför valde du denna bootcamp?", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     icon: "Server", imageUrl: img("fullstack-bootcamp", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 3n, createdAt: ts(50),
@@ -306,11 +304,11 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "Tvådagars kodtävling med värdefulla priser och teamsamarbete",
     ...body("هکاتون ۴۸ ساعته", "48-timmars hackathon"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "شرکت می‌کنید به‌عنوان", label_sv: "Du deltar som", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "تیم (تا ۴ نفر)", sv: "Team (upp till 4 pers)" }, { fa: "فردی", sv: "Individ" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "نام تیم (اختیاری)", label_sv: "Teamnamn (valfritt)", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "شرکت می‌کنید به‌عنوان", label_sv: "Du deltar som", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "تیم (تا ۴ نفر)", sv: "Team (upp till 4 pers)" }, { fa: "فردی", sv: "Individ" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "نام تیم (اختیاری)", label_sv: "Teamnamn (valfritt)", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     sessions: [
       { id: 101n, name_fa: "هکاتون بهاره (اردیبهشت ۱۴۰۵)", name_sv: "Vårens hackathon (maj 2026)", date: "2026-05-08", capacity: 50n, bufferCapacity: 10n, sortOrder: 1n },
@@ -415,8 +413,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Information / توضیحات", value: "Vill byta karriär till webbutveckling." },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(2),
-  },
+    createdAt: ts(2), members: [] },
   {
     id: 26002n, activityId: 22003n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -427,8 +424,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Varför bootcamp?", value: "Vill lära mig hela stacken." },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(5),
-  },
+    createdAt: ts(5), members: [] },
   {
     id: 26003n, activityId: 22021n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -439,8 +435,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Erfarenhetsnivå", value: "Avancerad" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårens hackathon (maj 2026)" }],
-    createdAt: ts(7),
-  },
+    createdAt: ts(7), members: [] },
   {
     id: 1769500001n, activityId: 22021n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -451,8 +446,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Erfarenhetsnivå", value: "Medel" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårens hackathon (maj 2026)" }, { sessionId: 102n, sessionName: "Höstens hackathon (november 2026)" }],
-    createdAt: ts(15),
-  },
+    createdAt: ts(15), members: [] },
   {
     id: 1769400002n, activityId: 22021n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -463,10 +457,9 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Erfarenhetsnivå", value: "Avancerad" },
     ],
     personCount: 3n, selectedSessions: [{ sessionId: 102n, sessionName: "Höstens hackathon (november 2026)" }],
-    createdAt: ts(22),
-  },
-  { id: 26004n, activityId: 22023n, name: "Sara Lindqvist", email: "sara.lq@example.com", phone: "705544332", message: "Vill ha feedback på mitt GitHub-projekt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(10) },
-  { id: 26005n, activityId: 22024n, name: "Khalid Rahimi", email: "khalid.r@example.com", phone: "704433221", message: "آماده مصاحبه با شرکت‌های بزرگ می‌شوم.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(14) },
+    createdAt: ts(22), members: [] },
+  { id: 26004n, activityId: 22023n, name: "Sara Lindqvist", email: "sara.lq@example.com", phone: "705544332", message: "Vill ha feedback på mitt GitHub-projekt.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(10), members: [] },
+  { id: 26005n, activityId: 22024n, name: "Khalid Rahimi", email: "khalid.r@example.com", phone: "704433221", message: "آماده مصاحبه با شرکت‌های بزرگ می‌شوم.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(14), members: [] },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────
@@ -476,35 +469,35 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 27001n, name_fa: "ثبت‌نام پایه", name_sv: "Grundregistrering",
     description_fa: "فرم ساده با نام، ایمیل و پیام", description_sv: "Enkelt formulär med namn, e-post och meddelande",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
     ],
-    createdAt: ts(100),
+    createdAt: ts(100), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 27002n, name_fa: "ثبت‌نام دوره", name_sv: "Kursregistrering",
     description_fa: "فرم برای ثبت‌نام در دوره‌های فنی", description_sv: "Formulär för tekniska kursregistreringar",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح برنامه‌نویسی", label_sv: "Programmeringsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "توضیحات", label_sv: "Information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح برنامه‌نویسی", label_sv: "Programmeringsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "توضیحات", label_sv: "Information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
-    createdAt: ts(95),
+    createdAt: ts(95), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 27003n, name_fa: "ثبت‌نام هکاتون", name_sv: "Hackathonregistrering",
     description_fa: "فرم ثبت‌نام تیم یا فردی در هکاتون", description_sv: "Team- eller individuell hackathonregistrering",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "نام تیم", label_sv: "Teamnamn", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح", label_sv: "Nivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "checkbox", label_fa: "قوانین هکاتون را می‌پذیرم", label_sv: "Jag accepterar hackathonreglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "نام تیم", label_sv: "Teamnamn", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح", label_sv: "Nivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "checkbox", label_fa: "قوانین هکاتون را می‌پذیرم", label_sv: "Jag accepterar hackathonreglerna", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
-    createdAt: ts(90),
+    createdAt: ts(90), minMembers: 1n, maxMembers: 20n,
   },
 ];
 
@@ -520,11 +513,10 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 202n, name_fa: "هکاتون پاییزه", name_sv: "Höstens hackathon", date: "2026-11-14", capacity: 50n, bufferCapacity: 10n, sortOrder: 2n },
     ],
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "شرکت می‌کنید به‌عنوان", label_sv: "Du deltar som", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "تیم", sv: "Team" }, { fa: "فردی", sv: "Individ" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "شرکت می‌کنید به‌عنوان", label_sv: "Du deltar som", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "تیم", sv: "Team" }, { fa: "فردی", sv: "Individ" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n,
-  },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
 ];

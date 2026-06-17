@@ -14,6 +14,8 @@ interface TemplateItem {
   description_fa: string;
   description_sv: string;
   fields: FormFieldReturn[];
+  minMembers: number;
+  maxMembers: number;
 }
 
 interface Props {
@@ -27,6 +29,8 @@ const emptyForm = {
   description_fa: "",
   description_sv: "",
   fields: [] as FormFieldReturn[],
+  minMembers: 1,
+  maxMembers: 20,
 };
 
 export default function AdminFormTemplates({ token, readOnly }: Props) {
@@ -45,6 +49,8 @@ export default function AdminFormTemplates({ token, readOnly }: Props) {
     setTemplates(data.map((t: FormTemplateReturn) => ({
       ...t,
       id: Number(t.id),
+      minMembers: Number(t.minMembers),
+      maxMembers: Number(t.maxMembers),
     })));
     setLoading(false);
   }, []);
@@ -63,6 +69,8 @@ export default function AdminFormTemplates({ token, readOnly }: Props) {
           form.name_fa, form.name_sv,
           form.description_fa, form.description_sv,
           form.fields,
+          BigInt(Math.max(1, Math.min(20, form.minMembers || 1))),
+          BigInt(Math.max(1, Math.min(20, form.maxMembers || 20))),
         );
         setToast({ message: t("templateUpdated"), type: "success", visible: true });
       } else {
@@ -71,6 +79,8 @@ export default function AdminFormTemplates({ token, readOnly }: Props) {
           form.name_fa, form.name_sv,
           form.description_fa, form.description_sv,
           form.fields,
+          BigInt(Math.max(1, Math.min(20, form.minMembers || 1))),
+          BigInt(Math.max(1, Math.min(20, form.maxMembers || 20))),
         );
         setToast({ message: t("templateCreated"), type: "success", visible: true });
       }
@@ -102,6 +112,8 @@ export default function AdminFormTemplates({ token, readOnly }: Props) {
       description_fa: tmpl.description_fa,
       description_sv: tmpl.description_sv,
       fields: tmpl.fields,
+      minMembers: tmpl.minMembers,
+      maxMembers: tmpl.maxMembers,
     });
     setShowForm(true);
   };
@@ -159,6 +171,32 @@ export default function AdminFormTemplates({ token, readOnly }: Props) {
           <div>
             <label className="block text-sm text-white/50 mb-2">{t("formBuilder")}</label>
             <FormBuilder fields={form.fields} onChange={(fields) => setForm({ ...form, fields })} />
+          </div>
+
+          {/* Min/Max members */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">{t("minMembers")}</label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={form.minMembers}
+                onChange={(e) => setForm({ ...form, minMembers: parseInt(e.target.value) || 1 })}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-1.5">{t("maxMembers")}</label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={form.maxMembers}
+                onChange={(e) => setForm({ ...form, maxMembers: parseInt(e.target.value) || 20 })}
+                className={inputClass}
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-3">

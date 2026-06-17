@@ -50,6 +50,13 @@ module {
       isLookupField = f.isLookupField;
       minValue = f.minValue;
       maxValue = f.maxValue;
+      perMember = switch (f.perMember) { case (?b) b; case null false };
+      excludeFromCapacityWhenChecked = switch (f.excludeFromCapacityWhenChecked) {
+        case (?b) b;
+        case null false;
+      };
+      unique = switch (f.unique) { case (?b) b; case null false };
+      allowedValues = switch (f.allowedValues) { case (?a) a; case null [] };
     }
   };
 
@@ -62,6 +69,8 @@ module {
       description_sv = t.description.sv;
       fields = Array.map<T.FormField, T.FormFieldReturn>(t.fields, fieldToReturn);
       createdAt = t.createdAt;
+      minMembers = switch (t.minMembers) { case (?n) n; case null 1 };
+      maxMembers = switch (t.maxMembers) { case (?n) n; case null 20 };
     }
   };
 
@@ -75,6 +84,26 @@ module {
       sessions       = Array.map<T.EventSession, T.EventSessionReturn>(t.sessions, sessionToReturn);
       fields         = Array.map<T.FormField, T.FormFieldReturn>(t.fields, fieldToReturn);
       createdAt      = t.createdAt;
+      perMemberMode  = switch (t.perMemberMode) { case (?b) b; case null false };
+      minMembers     = switch (t.minMembers) { case (?n) n; case null 1 };
+      maxMembers     = switch (t.maxMembers) { case (?n) n; case null 20 };
+    }
+  };
+
+  public func memberToReturn(m : T.RegistrationMember) : T.RegistrationMemberReturn {
+    {
+      countsTowardCapacity = m.countsTowardCapacity;
+      values = Array.map<T.RegistrationFieldValue, T.RegistrationMemberValueReturn>(
+        m.values,
+        func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
+      );
+    }
+  };
+
+  public func membersToReturn(m : ?[T.RegistrationMember]) : [T.RegistrationMemberReturn] {
+    switch (m) {
+      case (?arr) { Array.map<T.RegistrationMember, T.RegistrationMemberReturn>(arr, memberToReturn) };
+      case null { [] };
     }
   };
 
@@ -121,16 +150,7 @@ module {
     }
   };
 
-  func rulesDefaults() : (capacity : ?Nat, phones : [Text], maxPerPhone : ?Nat, blockEmail : Bool) {
-    (null, [], null, false)
-  };
-
   public func activityToReturn(a : T.Activity) : T.ActivityReturn {
-    let (regMaxCapacity, regAllowedPhones, regMaxRegistrationsPerPhone, regBlockDuplicateEmail) =
-      switch (a.registrationRules) {
-        case (?r) { (r.maxCapacity, r.allowedPhones, r.maxRegistrationsPerPhone, r.blockDuplicateEmail) };
-        case null  { rulesDefaults() };
-      };
     let highlighted = switch (a.highlighted) {
       case (?b) { b };
       case null  { false };
@@ -153,10 +173,6 @@ module {
       eventTemplateId = a.eventTemplateId;
       customFormFields = Array.map<T.FormField, T.FormFieldReturn>(a.customFormFields, fieldToReturn);
       sessions = Array.map<T.EventSession, T.EventSessionReturn>(a.sessions, sessionToReturn);
-      regMaxCapacity;
-      regAllowedPhones;
-      regMaxRegistrationsPerPhone;
-      regBlockDuplicateEmail;
       highlighted;
       sortOrder = a.sortOrder;
       createdAt = a.createdAt;
@@ -183,6 +199,7 @@ module {
       );
       createdAt = r.createdAt;
       archived = switch (r.archived) { case (?b) b; case null false };
+      members = membersToReturn(r.members);
     }
   };
 
@@ -206,6 +223,7 @@ module {
       );
       createdAt        = r.createdAt;
       archived         = switch (r.archived) { case (?b) b; case null false };
+      members          = membersToReturn(r.members);
     }
   };
 

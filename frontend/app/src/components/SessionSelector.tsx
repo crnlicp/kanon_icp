@@ -8,6 +8,16 @@ interface Props {
   onSelectionChange: (ids: number[]) => void;
   onPersonCountChange: (n: number) => void;
   unavailableIds?: number[];
+  /**
+   * When true, the +/− person counter is hidden and `personCount` is shown
+   * as a read-only "spots needed" label. Used by per-member registration mode
+   * where the spot count is derived from the member list.
+   */
+  disablePersonCounter?: boolean;
+  /** Minimum allowed person count (default 1). */
+  minPersonCount?: number;
+  /** Maximum allowed person count (default 20). */
+  maxPersonCount?: number;
 }
 
 export default function SessionSelector({
@@ -17,6 +27,9 @@ export default function SessionSelector({
   onSelectionChange,
   onPersonCountChange,
   unavailableIds = [],
+  disablePersonCounter = false,
+  minPersonCount = 1,
+  maxPersonCount = 20,
 }: Props) {
   const { t, localized } = useI18n();
 
@@ -102,27 +115,35 @@ export default function SessionSelector({
       </div>
 
       {/* Person count */}
-      <div className="flex items-center gap-3">
-        <label className="text-sm text-white/70 shrink-0">{t("howManyPeople")}</label>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onPersonCountChange(Math.max(1, personCount - 1))}
-            className="w-8 h-8 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/30 flex items-center justify-center text-lg transition-colors"
-          >
-            −
-          </button>
-          <span className="w-10 text-center text-white font-semibold">{personCount}</span>
-          <button
-            type="button"
-            onClick={() => onPersonCountChange(Math.min(20, personCount + 1))}
-            className="w-8 h-8 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/30 flex items-center justify-center text-lg transition-colors"
-          >
-            +
-          </button>
+      {disablePersonCounter ? (
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-white/70 shrink-0">{t("spotsNeeded")}</label>
+          <span className="text-white font-semibold">{personCount}</span>
           <span className="text-sm text-white/40">{t("person")}</span>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-white/70 shrink-0">{t("howManyPeople")}</label>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onPersonCountChange(Math.max(minPersonCount, personCount - 1))}
+              className="w-8 h-8 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/30 flex items-center justify-center text-lg transition-colors"
+            >
+              −
+            </button>
+            <span className="w-10 text-center text-white font-semibold">{personCount}</span>
+            <button
+              type="button"
+              onClick={() => onPersonCountChange(Math.min(maxPersonCount, personCount + 1))}
+              className="w-8 h-8 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/30 flex items-center justify-center text-lg transition-colors"
+            >
+              +
+            </button>
+            <span className="text-sm text-white/40">{t("person")}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

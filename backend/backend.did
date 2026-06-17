@@ -14,13 +14,12 @@ type TopicReturn =
 type SubmitRegistrationResult = 
  variant {
    capacityFull;
-   duplicateEmail;
+   duplicateValue: nat;
    invalidInput;
-   maxRegistrationsReached;
    ok: RegistrationWithStatusReturn;
-   phoneNotAllowed;
    registrationDisabled;
    sessionsUnavailable: vec nat;
+   valueNotAllowed: nat;
  };
 type StreamingStrategy = variant {
                            Callback:
@@ -104,7 +103,7 @@ type SeoSettings =
    twitterCardType: text;
    twitterHandle: text;
  };
-type RegistrationWithStatusReturn =
+type RegistrationWithStatusReturn = 
  record {
    activityId: nat;
    archived: bool;
@@ -116,13 +115,14 @@ type RegistrationWithStatusReturn =
                       value: text;
                     };
    id: nat;
+   members: vec RegistrationMemberReturn;
    message: text;
    name: text;
    personCount: nat;
    phone: text;
    selectedSessions: vec SessionStatusReturn;
  };
-type RegistrationReturn =
+type RegistrationReturn = 
  record {
    activityId: nat;
    archived: bool;
@@ -130,6 +130,7 @@ type RegistrationReturn =
    email: text;
    fieldValues: vec RegistrationFieldValueReturn;
    id: nat;
+   members: vec RegistrationMemberReturn;
    message: text;
    name: text;
    personCount: nat;
@@ -138,6 +139,17 @@ type RegistrationReturn =
                            sessionId: nat;
                            sessionName: text;
                          };
+ };
+type RegistrationMemberValueReturn = 
+ record {
+   fieldId: nat;
+   fieldLabel: text;
+   value: text;
+ };
+type RegistrationMemberReturn = 
+ record {
+   countsTowardCapacity: bool;
+   values: vec RegistrationMemberValueReturn;
  };
 type RegistrationFieldValueReturn = 
  record {
@@ -202,11 +214,15 @@ type FormTemplateReturn =
    description_sv: text;
    fields: vec FormFieldReturn;
    id: nat;
+   maxMembers: nat;
+   minMembers: nat;
    name_fa: text;
    name_sv: text;
  };
 type FormFieldReturn = 
  record {
+   allowedValues: vec text;
+   excludeFromCapacityWhenChecked: bool;
    fieldType: text;
    id: nat;
    isLookupField: bool;
@@ -218,10 +234,12 @@ type FormFieldReturn =
                   fa: text;
                   sv: text;
                 };
+   perMember: bool;
    placeholder_fa: text;
    placeholder_sv: text;
    required: bool;
    sortOrder: nat;
+   unique: bool;
  };
 type EventSessionReturn = 
  record {
@@ -240,8 +258,11 @@ type EventRegistrationTemplateReturn =
    description_sv: text;
    fields: vec FormFieldReturn;
    id: nat;
+   maxMembers: nat;
+   minMembers: nat;
    name_fa: text;
    name_sv: text;
+   perMemberMode: bool;
    sessions: vec EventSessionReturn;
  };
 type ContactMessageReturn = 
@@ -259,19 +280,15 @@ type ActivityReturn =
    body_sv: text;
    createdAt: int;
    customFormFields: vec FormFieldReturn;
+   eventTemplateId: opt nat;
    excerpt_fa: text;
    excerpt_sv: text;
    formTemplateId: opt nat;
-   eventTemplateId: opt nat;
    hasRegistration: bool;
    highlighted: bool;
    icon: text;
    id: nat;
    imageUrl: text;
-   regAllowedPhones: vec text;
-   regBlockDuplicateEmail: bool;
-   regMaxCapacity: opt nat;
-   regMaxRegistrationsPerPhone: opt nat;
    registrationMode: text;
    sessions: vec EventSessionReturn;
    slug: text;
@@ -279,6 +296,17 @@ type ActivityReturn =
    title_fa: text;
    title_sv: text;
    topicId: nat;
+ };
+type ActivityRegistrationConfigReturn = 
+ record {
+   activityId: nat;
+   hasRegistration: bool;
+   maxMembers: nat;
+   minMembers: nat;
+   perMemberFields: vec FormFieldReturn;
+   perMemberMode: bool;
+   sessions: vec EventSessionReturn;
+   sharedFields: vec FormFieldReturn;
  };
 type AboutContentReturn = 
  record {
@@ -295,18 +323,18 @@ service : {
   createActivity: (token: text, topicId: nat, slug: text, title_fa: text,
    title_sv: text, excerpt_fa: text, excerpt_sv: text, body_fa: text,
    body_sv: text, icon: text, imageUrl: text, hasRegistration: bool,
-   registrationMode: text, formTemplateId: opt nat, eventTemplateId: opt nat,
-   customFormFields: vec FormFieldReturn, actSessions: vec EventSessionReturn,
-   regMaxCapacity: opt nat, regAllowedPhones: vec text,
-   regMaxRegistrationsPerPhone: opt nat, regBlockDuplicateEmail: bool,
-   highlighted: bool, sortOrder: nat) -> (ActivityReturn);
+   registrationMode: text, formTemplateId: opt nat, eventTemplateId: 
+   opt nat, customFormFields: vec FormFieldReturn, actSessions:
+   vec EventSessionReturn, highlighted: bool, sortOrder: nat) ->
+   (ActivityReturn);
   createEventRegistrationTemplate: (token: text, name_fa: text, name_sv:
    text, description_fa: text, description_sv: text, tmplSessions:
-   vec EventSessionReturn, fields: vec FormFieldReturn) ->
+   vec EventSessionReturn, fields: vec FormFieldReturn, perMemberMode: 
+   bool, minMembers: nat, maxMembers: nat) ->
    (EventRegistrationTemplateReturn);
   createFormTemplate: (token: text, name_fa: text, name_sv: text,
-   description_fa: text, description_sv: text, fields:
-   vec FormFieldReturn) -> (FormTemplateReturn);
+   description_fa: text, description_sv: text, fields: vec FormFieldReturn,
+   minMembers: nat, maxMembers: nat) -> (FormTemplateReturn);
   createSlide: (token: text, topicId: nat, imageUrl: text, title_fa: 
    text, title_sv: text, subtitle_fa: text, subtitle_sv: text, ctaText_fa:
    text, ctaText_sv: text, ctaLink: text, sortOrder: nat) ->
@@ -327,9 +355,20 @@ service : {
   deleteTopic: (token: text, id: nat) -> (bool);
   getAboutContent: () -> (AboutContentReturn) query;
   getActivitiesByTopic: (topicId: nat) -> (vec ActivityReturn) query;
+  getActivitiesUsingEventTemplate: (templateId: nat) ->
+   (vec
+     record {
+       id: nat;
+       liveRegistrationCount: nat;
+       slug: text;
+       title_fa: text;
+       title_sv: text;
+     }) query;
   getActivity: (id: nat) -> (opt ActivityReturn) query;
   getActivityBySlug: (topicId: nat, slug: text) -> (opt ActivityReturn) query;
   getActivityFormFields: (activityId: nat) -> (opt vec FormFieldReturn) query;
+  getActivityRegistrationConfig: (activityId: nat) ->
+   (opt ActivityRegistrationConfigReturn) query;
   getAllActivities: () -> (vec ActivityReturn) query;
   getAllRegistrations: (token: text) -> (vec RegistrationReturn) query;
   getAsset: (key: text) -> (opt blob) query;
@@ -368,7 +407,10 @@ service : {
    vec record {
          fieldId: nat;
          value: text;
-       }) -> (SubmitRegistrationResult);
+       }, newMembers: vec vec record {
+                                fieldId: nat;
+                                value: text;
+                              }) -> (SubmitRegistrationResult);
   setMockMode: (token: text, enabled: bool) -> (bool);
   setPageSeoOverride: (token: text, override: PageSeoOverride) -> ();
   setRegistrationArchived: (token: text, id: nat, archived: bool) -> (bool);
@@ -379,7 +421,11 @@ service : {
    fieldValues: vec record {
                       fieldId: nat;
                       value: text;
-                    }) -> (SubmitRegistrationResult);
+                    }, members:
+   vec vec record {
+             fieldId: nat;
+             value: text;
+           }) -> (SubmitRegistrationResult);
   updateAboutContent: (token: text, headerImageUrl: text, body_fa: text,
    body_sv: text) -> (AboutContentReturn);
   updateActivity: (token: text, id: nat, topicId: nat, slug: text, title_fa:
@@ -387,16 +433,17 @@ service : {
    text, body_sv: text, icon: text, imageUrl: text, hasRegistration: 
    bool, registrationMode: text, formTemplateId: opt nat, eventTemplateId:
    opt nat, customFormFields: vec FormFieldReturn, actSessions:
-   vec EventSessionReturn, regMaxCapacity: opt nat, regAllowedPhones:
-   vec text, regMaxRegistrationsPerPhone: opt nat, regBlockDuplicateEmail:
-   bool, highlighted: bool, sortOrder: nat) -> (opt ActivityReturn);
+   vec EventSessionReturn, highlighted: bool, sortOrder: nat) ->
+   (opt ActivityReturn);
   updateEventRegistrationTemplate: (token: text, id: nat, name_fa: text,
    name_sv: text, description_fa: text, description_sv: text, tmplSessions:
-   vec EventSessionReturn, fields: vec FormFieldReturn) ->
+   vec EventSessionReturn, fields: vec FormFieldReturn, perMemberMode: 
+   bool, minMembers: nat, maxMembers: nat) ->
    (opt EventRegistrationTemplateReturn);
   updateFormTemplate: (token: text, id: nat, name_fa: text, name_sv: 
    text, description_fa: text, description_sv: text, fields:
-   vec FormFieldReturn) -> (opt FormTemplateReturn);
+   vec FormFieldReturn, minMembers: nat, maxMembers: nat) ->
+   (opt FormTemplateReturn);
   updateSeoSettings: (token: text, settings: SeoSettings) -> ();
   updateSettings: (token: text, logoUrl: text, title_fa: text, title_sv:
    text, subtitle_fa: text, subtitle_sv: text, landingBackgroundUrl: 

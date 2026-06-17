@@ -306,20 +306,13 @@ export const translations = {
 
     // Registration error messages
     sessionsUnavailableError: "ظرفیت تعدادی از جلسات انتخابی تکمیل شده است. لطفاً جلسات مشخص شده را از انتخاب خارج کنید.",
-    phoneNotAllowedError: "شماره تلفن شما مجاز به ثبت‌نام در این رویداد نیست.",
-    maxRegistrationsError: "حداکثر تعداد ثبت‌نام با این شماره تلفن به پایان رسیده است.",
-    duplicateEmailError: "این آدرس ایمیل قبلاً برای این رویداد ثبت‌نام کرده است.",
+    valueNotAllowedError: "مقدار وارد‌شده برای یکی از فیلدها مجاز نیست.",
+    duplicateValueError: "این مقدار قبلاً برای این رویداد ثبت شده است.",
     capacityFullError: "ظرفیت کلی رویداد تکمیل شده است.",
 
-    // Registration rules (admin)
-    registrationRules: "قوانین ثبت‌نام",
-    maxCapacity: "حداکثر ظرفیت کلی",
-    maxCapacityHint: "خالی = بدون محدودیت",
-    allowedPhones: "شماره تلفن‌های مجاز",
-    allowedPhonesHint: "هر شماره در یک خط — خالی = همه مجاز",
-    maxRegistrationsPerPhone: "حداکثر ثبت‌نام برای هر شماره",
-    maxRegistrationsHint: "۱ = یک بار؛ ۲ = دو جلسه؛ خالی = بدون محدودیت",
-    blockDuplicateEmail: "جلوگیری از ثبت‌نام تکراری با ایمیل یکسان",
+    // Allowed values (per-field whitelist editor)
+    allowedValues: "مقادیر مجاز",
+    allowedValuesHint: "یک مقدار در هر خط — خالی = بدون محدودیت",
 
     // Admin session stats table
     sessionStats: "آمار جلسات",
@@ -343,10 +336,29 @@ export const translations = {
     // Lookup field (form builder)
     useLookupField: "استفاده از این فیلد برای تأیید هویت در جستجوی ثبت‌نام",
     lookupFieldHint: "فقط یک فیلد می‌تواند به عنوان فیلد تأیید انتخاب شود.",
+    uniqueField: "مقدار یکتا",
+    uniqueFieldHint: "ثبت‌نام با مقدار تکراری در این فیلد رد می‌شود.",
     fieldMinValue: "حداقل",
     fieldMaxValue: "حداکثر",
     phonePlaceholder: "7612345678",
     phoneFormat: "فرمت: 7612345678 — بدون فاصله، ۱۲ کاراکتر",
+
+    // Per-member mode
+    perMemberMode: "جمع‌آوری اطلاعات تک‌تک اعضا",
+    perMemberModeHint: "به جای شمارش ساده، برای هر عضو فیلدهای جداگانه پر می‌شود.",
+    sharedFields: "فیلدهای مشترک (یک‌بار)",
+    perMemberFields: "اطلاعات اعضا (برای هر عضو)",
+    addMember: "افزودن عضو",
+    removeMember: "حذف عضو",
+    member: "عضو",
+    minMembers: "حداقل تعداد عضو",
+    maxMembers: "حداکثر تعداد عضو",
+    memberLimitExceeded: "تعداد اعضا از حداکثر مجاز بیشتر است.",
+    memberLimitMin: "تعداد اعضا کمتر از حداقل لازم است.",
+    notCountedTowardCapacity: "در ظرفیت شمرده نمی‌شود",
+    spotsNeeded: "ظرفیت موردنیاز",
+    excludeFromCapacityWhenChecked: "در صورت تیک‌خوردن، در ظرفیت شمرده نشود",
+    excludeFromCapacityHint: "اعضایی که این گزینه را تیک می‌زنند، یک جای جلسه را اشغال نمی‌کنند (مثلاً کودکان زیر ۸ سال).",
 
     // Event registration templates
     eventRegistrations: "ثبت‌نام‌های رویداد",
@@ -356,6 +368,10 @@ export const translations = {
     noEventRegTemplates: "قالب رویدادی تعریف نشده است.",
     eventFormTemplate: "قالب رویداد",
     eventFormMode: "منبع رویداد",
+    eventTemplateUsage: "این قالب در این رویدادها استفاده می‌شود",
+    eventTemplateAutoSyncNote: "تغییرات فیلدها بلافاصله برای تمام رویدادها اعمال می‌شود. تغییرات جلسات فقط برای رویدادهایی که هنوز ثبت‌نامی ندارند اعمال می‌شود.",
+    eventTemplateSkippedNote: "رویدادهایی که ثبت‌نام دارند جلسات فعلی خود را حفظ می‌کنند",
+    liveRegistrations: "ثبت‌نام فعال",
   },
   sv: {
     // Landing
@@ -664,20 +680,13 @@ export const translations = {
 
     // Registration error messages
     sessionsUnavailableError: "Kapaciteten för vissa valda pass är full. Vänligen avmarkera de markerade passen.",
-    phoneNotAllowedError: "Ditt telefonnummer är inte behörigt att registrera sig för detta evenemang.",
-    maxRegistrationsError: "Maximalt antal registreringar för detta telefonnummer har nåtts.",
-    duplicateEmailError: "Denna e-postadress har redan registrerats för detta evenemang.",
+    valueNotAllowedError: "Värdet du angav för ett av fälten är inte tillåtet.",
+    duplicateValueError: "Detta värde har redan registrerats för detta evenemang.",
     capacityFullError: "Evenemangets totala kapacitet är full.",
 
-    // Registration rules (admin)
-    registrationRules: "Registreringsregler",
-    maxCapacity: "Maximal totalkapacitet",
-    maxCapacityHint: "Tom = ingen begränsning",
-    allowedPhones: "Tillåtna telefonnummer",
-    allowedPhonesHint: "Ett nummer per rad — tom = alla tillåtna",
-    maxRegistrationsPerPhone: "Max registreringar per telefonnummer",
-    maxRegistrationsHint: "1 = en gång; 2 = två pass; tom = ingen begränsning",
-    blockDuplicateEmail: "Förhindra dubbelregistrering med samma e-post",
+    // Allowed values (per-field whitelist editor)
+    allowedValues: "Tillåtna värden",
+    allowedValuesHint: "Ett värde per rad — tomt = ingen begränsning",
 
     // Admin session stats table
     sessionStats: "Passstatistik",
@@ -701,10 +710,29 @@ export const translations = {
     // Lookup field (form builder)
     useLookupField: "Använd detta fält för att verifiera identitet vid registreringssökning",
     lookupFieldHint: "Endast ett fält kan väljas som verifieringsfält.",
+    uniqueField: "Unikt värde",
+    uniqueFieldHint: "Registreringar med dubblettvärde i detta fält avvisas.",
     fieldMinValue: "Min",
     fieldMaxValue: "Max",
     phonePlaceholder: "7612345678",
     phoneFormat: "Format: 7612345678 — inga mellanslag, 12 tecken",
+
+    // Per-member mode
+    perMemberMode: "Samla info per deltagare",
+    perMemberModeHint: "I stället för en räknare fyller man i fält för varje deltagare.",
+    sharedFields: "Gemensamma fält (en gång)",
+    perMemberFields: "Deltagarinfo (för varje deltagare)",
+    addMember: "Lägg till deltagare",
+    removeMember: "Ta bort deltagare",
+    member: "Deltagare",
+    minMembers: "Minst antal deltagare",
+    maxMembers: "Högsta antal deltagare",
+    memberLimitExceeded: "Antalet deltagare överstiger tillåten gräns.",
+    memberLimitMin: "Antalet deltagare är under tillåten gräns.",
+    notCountedTowardCapacity: "Räknas inte mot kapacitet",
+    spotsNeeded: "Platser som behövs",
+    excludeFromCapacityWhenChecked: "Räkna inte mot kapacitet om denna är ikryssad",
+    excludeFromCapacityHint: "Deltagare som kryssar i denna ruta tar inte en plats (t.ex. barn under 8 år).",
 
     // Event registration templates
     eventRegistrations: "Evenemangsregistreringar",
@@ -714,6 +742,10 @@ export const translations = {
     noEventRegTemplates: "Inga evenemangsmallar definierade.",
     eventFormTemplate: "Evenemangsmall",
     eventFormMode: "Evenemangskälla",
+    eventTemplateUsage: "Den här mallen används av följande evenemang",
+    eventTemplateAutoSyncNote: "Fältändringar tillämpas omedelbart på alla evenemang. Sessionsförändringar tillämpas endast på evenemang utan registreringar.",
+    eventTemplateSkippedNote: "Evenemang med registreringar behåller sina nuvarande sessioner",
+    liveRegistrations: "aktiva registreringar",
   },
 } as const;
 

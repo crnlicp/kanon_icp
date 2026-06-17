@@ -13,7 +13,7 @@ import SeoHead from "../components/SeoHead";
 import { useSeoSettings } from "../hooks/useSeoSettings";
 import { activityBreadcrumb, articleSchema, eventSchema } from "../lib/jsonld";
 import { useSeoSettingsContext } from "../contexts/SeoSettingsContext";
-import type { TopicReturn, ActivityReturn, FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn } from "../backend/api/backend";
+import type { TopicReturn, ActivityReturn, FormFieldReturn, EventSessionReturn, SessionAvailabilityReturn, ActivityRegistrationConfigReturn } from "../backend/api/backend";
 
 interface Activity {
   id: number;
@@ -44,6 +44,7 @@ export default function ActivityDetailPage() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [loading, setLoading] = useState(true);
   const [formFields, setFormFields] = useState<FormFieldReturn[] | null>(null);
+  const [registrationConfig, setRegistrationConfig] = useState<ActivityRegistrationConfigReturn | null>(null);
   const [availability, setAvailability] = useState<SessionAvailabilityReturn[]>([]);
   const activityImage = useAssetUrl(activity?.imageUrl);
   const { seoSettings } = useSeoSettingsContext();
@@ -103,8 +104,14 @@ export default function ActivityDetailPage() {
           setActivity(act);
 
           if (actData.hasRegistration) {
-            backend.getActivityFormFields(BigInt(actId)).then((fields: FormFieldReturn[] | null) => {
-              setFormFields(fields);
+            backend.getActivityRegistrationConfig(BigInt(actId)).then((cfg) => {
+              setRegistrationConfig(cfg);
+              if (cfg) {
+                // Build a single combined field list for legacy code paths (lookup etc.)
+                setFormFields([...cfg.sharedFields, ...cfg.perMemberFields]);
+              } else {
+                setFormFields(null);
+              }
             });
 
             if ((actData.sessions ?? []).length > 0) {
@@ -214,6 +221,7 @@ export default function ActivityDetailPage() {
                 activityId={activity.id}
                 formFields={formFields}
                 sessions={activity.sessions}
+                registrationConfig={registrationConfig}
               />
             </GlassCard>
 
@@ -223,6 +231,7 @@ export default function ActivityDetailPage() {
                 <RegistrationLookup
                 activityId={activity.id}
                 availability={availability}
+                registrationConfig={registrationConfig}
                 lookupField={
                   formFields?.find((f) => f.isLookupField)
                     ? {

@@ -5,6 +5,7 @@ interface PhoneInputProps {
   placeholder?: string;
   title?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const PREFIX = "+46";
@@ -24,6 +25,7 @@ export default function PhoneInput({
   placeholder,
   title,
   className,
+  disabled,
 }: PhoneInputProps) {
   const local = extractLocal(value);
 
@@ -35,7 +37,7 @@ export default function PhoneInput({
   return (
     <div
       dir="ltr"
-      className={`flex items-stretch rounded-xl bg-white/5 border border-white/10 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30 transition-colors overflow-hidden ${className ?? ""}`}
+      className={`flex items-stretch rounded-xl bg-white/5 border border-white/10 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30 transition-colors overflow-hidden ${disabled ? "opacity-60" : ""} ${className ?? ""}`}
     >
       <span className="flex items-center px-3 text-white/60 bg-white/[0.04] border-r border-white/10 select-none">
         {PREFIX}
@@ -48,6 +50,7 @@ export default function PhoneInput({
         pattern="[1-9][0-9]{8}"
         maxLength={9}
         required={required}
+        disabled={disabled}
         placeholder={placeholder}
         title={title}
         value={local}

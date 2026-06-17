@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import type { SiteSettingsReturn } from "../backend/api/backend";
 
 export default function LandingPage() {
-  const { setLang, localized, t } = useI18n();
+  const { lang, setLang, localized, t } = useI18n();
   const navigate = useNavigate();
   const { seoSettings } = useSeoSettingsContext();
   const [settings, setSettings] = useState<{
@@ -56,7 +56,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 relative">
       <SeoHead
-        lang="sv"
+        lang={lang}
         title={undefined}
         ogType="website"
         jsonLd={{ "@graph": [websiteSchema(seoSettings), organizationSchema(seoSettings)] }}

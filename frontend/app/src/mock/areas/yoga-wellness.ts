@@ -85,8 +85,6 @@ const body = (fa: string, sv: string) => ({
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
   sessions: [],
-  regAllowedPhones: [],
-  regBlockDuplicateEmail: false,
   highlighted: false,
 });
 
@@ -138,10 +136,10 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_sv: "En fullständig introduktion till yoga för dem som just börjar",
     ...body("یوگا برای مبتدیان", "Yoga för nybörjare"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "radio", label_fa: "آیا سابقه آسیب جسمی دارید؟", label_sv: "Har du haft fysiska skador?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله، توضیح می‌دهم", sv: "Ja, jag förklarar" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "textarea", label_fa: "توضیحات پزشکی", label_sv: "Medicinsk information", placeholder_fa: "اگر آسیب یا بیماری دارید توضیح دهید", placeholder_sv: "Beskriv eventuella skador eller sjukdomar", required: false, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "radio", label_fa: "آیا سابقه آسیب جسمی دارید؟", label_sv: "Har du haft fysiska skador?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "خیر", sv: "Nej" }, { fa: "بله، توضیح می‌دهم", sv: "Ja, jag förklarar" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "textarea", label_fa: "توضیحات پزشکی", label_sv: "Medicinsk information", placeholder_fa: "اگر آسیب یا بیماری دارید توضیح دهید", placeholder_sv: "Beskriv eventuella skador eller sjukdomar", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
     icon: "Flower2", imageUrl: img("beginner-yoga", 800, 600),
     hasRegistration: true, registrationMode: "form", sortOrder: 5n, createdAt: ts(40),
@@ -253,11 +251,11 @@ export const mockActivities: ActivityReturn[] = [
     ...body("اردوی رفاهی آخر هفته", "Välmåenderetreat på helgen"),
     highlighted: true,
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     sessions: [
       { id: 101n, name_fa: "اردو بهاره (اسفند ۱۴۰۴)", name_sv: "Vårretreat (mars 2026)", date: "2026-03-14", capacity: 15n, bufferCapacity: 5n, sortOrder: 1n },
@@ -408,8 +406,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Ser fram emot soluppgångsflödet!" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(2),
-  },
+    createdAt: ts(2), members: [] },
   {
     id: 16002n, activityId: 12006n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -418,8 +415,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Mediterar sedan 2 år, vill fördjupa min praktik." },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(4),
-  },
+    createdAt: ts(4), members: [] },
   {
     id: 16003n, activityId: 12016n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -430,8 +426,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegetarisk" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårretreat (mars 2026)" }],
-    createdAt: ts(6),
-  },
+    createdAt: ts(6), members: [] },
   {
     id: 1768500001n, activityId: 12016n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -442,8 +437,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Vegansk" },
     ],
     personCount: 2n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårretreat (mars 2026)" }, { sessionId: 102n, sessionName: "Höstretreat (september 2026)" }],
-    createdAt: ts(18),
-  },
+    createdAt: ts(18), members: [] },
   {
     id: 1768400002n, activityId: 12016n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -454,8 +448,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "Kostpreferens / ترجیح غذایی", value: "Allätare" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Höstretreat (september 2026)" }],
-    createdAt: ts(25),
-  },
+    createdAt: ts(25), members: [] },
   {
     id: 16004n, activityId: 12021n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -464,9 +457,8 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 3n, fieldLabel: "Meddelande / پیام", value: "Jag är väldigt nyfiken på ljudbad, aldrig provat!" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(9),
-  },
-  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11) },
+    createdAt: ts(9), members: [] },
+  { id: 16005n, activityId: 12011n, name: "Peter Olsson", email: "peter.o@example.com", phone: "705544332", message: "Vill lära mig mer om måltidsplanering för atleter.", fieldValues: [], personCount: 1n, selectedSessions: [], createdAt: ts(11), members: [] },
 ];
 
 // ─── Form Templates ───────────────────────────────────────────────────────────
@@ -476,36 +468,36 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 17001n, name_fa: "ثبت‌نام کلاس", name_sv: "Klassregistrering",
     description_fa: "فرم پایه برای ثبت‌نام در کلاس‌ها", description_sv: "Grundformulär för registrering i klasser",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "Ditt fullständiga namn", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "Din e-postadress", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något du vill att instruktören vet?", required: false, options: [], isLookupField: false, sortOrder: 3n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "Ditt fullständiga namn", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "Din e-postadress", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "textarea", label_fa: "پیام", label_sv: "Meddelande", placeholder_fa: "", placeholder_sv: "Något du vill att instruktören vet?", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
     ],
-    createdAt: ts(100),
+    createdAt: ts(100), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 17002n, name_fa: "ثبت‌نام کارگاه", name_sv: "Workshopregistrering",
     description_fa: "فرم برای کارگاه‌های عملی", description_sv: "Formulär för praktiska workshops",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "Välj din nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "اطلاعات بیشتر", label_sv: "Övrig information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "Välj din nivå", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "اطلاعات بیشتر", label_sv: "Övrig information", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
-    createdAt: ts(95),
+    createdAt: ts(95), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 17003n, name_fa: "ثبت‌نام اردو", name_sv: "Retreatregistrering",
     description_fa: "فرم کامل برای اردوهای چند روزه", description_sv: "Fullständigt formulär för flerdagarsretreat",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 5n },
-      { id: 6n, fieldType: "checkbox", label_fa: "شرایط را می‌پذیرم", label_sv: "Jag accepterar villkoren", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "تجربه یوگا", label_sv: "Yogaerfarenhet", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
+      { id: 6n, fieldType: "checkbox", label_fa: "شرایط را می‌پذیرم", label_sv: "Jag accepterar villkoren", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 6n },
     ],
-    createdAt: ts(90),
+    createdAt: ts(90), minMembers: 1n, maxMembers: 20n,
   },
 ];
 
@@ -521,11 +513,10 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 202n, name_fa: "اردو پاییزه", name_sv: "Höstretreat", date: "2026-10-10", capacity: 15n, bufferCapacity: 5n, sortOrder: 2n },
     ],
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام کامل", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "ترجیح غذایی", label_sv: "Kostpreferens", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "همه‌چیزخور", sv: "Allätare" }, { fa: "گیاهی", sv: "Vegetarisk" }, { fa: "وگان", sv: "Vegansk" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n,
-  },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
 ];

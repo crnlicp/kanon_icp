@@ -102,6 +102,7 @@ export const mockBackend: backendInterface = {
         name: reg.name, email: reg.email, phone: reg.phone, message: reg.message ?? "",
         personCount: reg.personCount, selectedSessions,
         fieldValues: reg.fieldValues.map((fv) => ({ fieldId: fv.fieldId, fieldLabel: fv.fieldLabel, value: fv.value })),
+        members: [],
         createdAt: reg.createdAt,
         archived: false,
       };
@@ -131,6 +132,24 @@ export const mockBackend: backendInterface = {
     return null;
   },
 
+  async getActivityRegistrationConfig(activityId: bigint) {
+    const activity = mockActivities.find((a) => a.id === activityId);
+    if (!activity) return null;
+    const allFields = activity.customFormFields ?? [];
+    const sharedFields = allFields.filter((f) => !f.perMember || f.isLookupField);
+    const perMemberFields = allFields.filter((f) => f.perMember && !f.isLookupField);
+    return {
+      activityId,
+      hasRegistration: activity.hasRegistration,
+      perMemberMode: perMemberFields.length > 0,
+      minMembers: 1n,
+      maxMembers: 20n,
+      sharedFields,
+      perMemberFields,
+      sessions: activity.sessions ?? [],
+    };
+  },
+
   async getAsset() {
     return null;
   },
@@ -157,7 +176,7 @@ export const mockBackend: backendInterface = {
 
   async deleteTopic() { return true; },
 
-  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
+  async createActivity(_token, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, highlighted, sortOrder) {
     return {
       id: BigInt(Date.now()), topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
       body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode,
@@ -165,17 +184,13 @@ export const mockBackend: backendInterface = {
       eventTemplateId: eventTemplateId ?? undefined,
       customFormFields,
       sessions,
-      regMaxCapacity: regMaxCap ?? undefined,
-      regAllowedPhones,
-      regMaxRegistrationsPerPhone: regMaxPerPhone ?? undefined,
-      regBlockDuplicateEmail,
       highlighted,
       sortOrder,
       createdAt: BigInt(Date.now()) * 1_000_000n,
     };
   },
 
-  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, regMaxCap, regAllowedPhones, regMaxPerPhone, regBlockDuplicateEmail, highlighted, sortOrder) {
+  async updateActivity(_token, id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv, body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode, formTemplateId, eventTemplateId, customFormFields, sessions, highlighted, sortOrder) {
     return {
       id, topicId, slug, title_fa, title_sv, excerpt_fa, excerpt_sv,
       body_fa, body_sv, icon, imageUrl, hasRegistration, registrationMode,
@@ -183,10 +198,6 @@ export const mockBackend: backendInterface = {
       eventTemplateId: eventTemplateId ?? undefined,
       customFormFields,
       sessions,
-      regMaxCapacity: regMaxCap ?? undefined,
-      regAllowedPhones,
-      regMaxRegistrationsPerPhone: regMaxPerPhone ?? undefined,
-      regBlockDuplicateEmail,
       highlighted,
       sortOrder,
       createdAt: 0n,
@@ -195,28 +206,30 @@ export const mockBackend: backendInterface = {
 
   async deleteActivity() { return true; },
 
-  async createFormTemplate(_token, name_fa, name_sv, description_fa, description_sv, fields) {
+  async createFormTemplate(_token, name_fa, name_sv, description_fa, description_sv, fields, minMembers, maxMembers) {
     return {
       id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, fields,
       createdAt: BigInt(Date.now()) * 1_000_000n,
+      minMembers, maxMembers,
     };
   },
 
-  async updateFormTemplate(_token, id, name_fa, name_sv, description_fa, description_sv, fields) {
-    return { id, name_fa, name_sv, description_fa, description_sv, fields, createdAt: 0n };
+  async updateFormTemplate(_token, id, name_fa, name_sv, description_fa, description_sv, fields, minMembers, maxMembers) {
+    return { id, name_fa, name_sv, description_fa, description_sv, fields, createdAt: 0n, minMembers, maxMembers };
   },
 
   async deleteFormTemplate() { return true; },
 
   async getEventRegistrationTemplates() { return mockEventRegistrationTemplates; },
   async getEventRegistrationTemplate(id: bigint) { return mockEventRegistrationTemplates.find((t) => t.id === id) ?? null; },
-  async createEventRegistrationTemplate(_token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[]) {
-    return { id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: BigInt(Date.now()) * 1_000_000n };
+  async createEventRegistrationTemplate(_token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, minMembers: bigint, maxMembers: bigint) {
+    return { id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: BigInt(Date.now()) * 1_000_000n, perMemberMode, minMembers, maxMembers };
   },
-  async updateEventRegistrationTemplate(_token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[]) {
-    return { id, name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: 0n };
+  async updateEventRegistrationTemplate(_token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, minMembers: bigint, maxMembers: bigint) {
+    return { id, name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: 0n, perMemberMode, minMembers, maxMembers };
   },
   async deleteEventRegistrationTemplate() { return true; },
+  async getActivitiesUsingEventTemplate(_id: bigint) { return [] as { id: bigint; slug: string; title_fa: string; title_sv: string; liveRegistrationCount: bigint }[]; },
 
   async createSlide(_token, topicId, imageUrl, title_fa, title_sv, subtitle_fa, subtitle_sv, ctaText_fa, ctaText_sv, ctaLink, sortOrder) {
     return {
@@ -256,8 +269,8 @@ export const mockBackend: backendInterface = {
     return { id: BigInt(Date.now()), name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
-  async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues) {
-    return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n, archived: false } };
+  async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues, _members) {
+    return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n, archived: false, members: [] } };
   },
 
   async deleteContactMessage() { return true; },
@@ -342,6 +355,7 @@ export const mockBackend: backendInterface = {
       fieldValues: reg.fieldValues.map((fv) => ({ fieldId: fv.fieldId, fieldLabel: fv.fieldLabel, value: fv.value })),
       createdAt: reg.createdAt,
       archived: false,
+      members: [],
     };
   },
 
@@ -353,7 +367,7 @@ export const mockBackend: backendInterface = {
     });
   },
 
-  async modifyRegistration(id, lookupValue, newPersonCount, _newSessionIds, _fieldValues) {
+  async modifyRegistration(id, lookupValue, newPersonCount, _newSessionIds, _fieldValues, _newMembers) {
     const reg = mockRegistrations.find((r) => {
       if (r.id !== id) return false;
       if (r.phone === lookupValue) return true;
@@ -368,6 +382,7 @@ export const mockBackend: backendInterface = {
         personCount: newPersonCount, selectedSessions: [],
         fieldValues: [], createdAt: reg.createdAt,
         archived: false,
+        members: [],
       },
     };
   },

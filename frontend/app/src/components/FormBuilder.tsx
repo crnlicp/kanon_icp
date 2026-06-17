@@ -16,14 +16,22 @@ interface Props {
   fields: FormFieldReturn[];
   onChange: (fields: FormFieldReturn[]) => void;
   readOnly?: boolean;
+  /**
+   * Optional scope context. When set to "perMember", new fields are stamped with
+   * `perMember: true`, the lookup-field toggle is hidden, and per-member-only
+   * controls (e.g. `excludeFromCapacityWhenChecked`) become available.
+   * When unset (default), behaves as the original shared/global form builder.
+   */
+  scopeContext?: "shared" | "perMember";
 }
 
 const inputClass = "w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors text-sm";
 
 
-export default function FormBuilder({ fields, onChange, readOnly }: Props) {
+export default function FormBuilder({ fields, onChange, readOnly, scopeContext }: Props) {
   const { t } = useI18n();
   const [expandedField, setExpandedField] = useState<number | null>(null);
+  const isPerMember = scopeContext === "perMember";
 
   const fieldTypeLabel = (type: string) => {
     const key = `fieldType${type.charAt(0).toUpperCase() + type.slice(1)}` as Parameters<typeof t>[0];
@@ -46,6 +54,10 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
       placeholder_sv: "",
       required: false,
       isLookupField: false,
+      perMember: isPerMember,
+      excludeFromCapacityWhenChecked: false,
+      unique: false,
+      allowedValues: [],
       options: [],
       sortOrder: BigInt(fields.length + 1),
     };
@@ -179,8 +191,8 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
                   <span className="text-sm text-white/60">{t("fieldRequired")}</span>
                 </label>
 
-                {/* Lookup field toggle — only for field types that carry a verifiable value */}
-                {TYPES_SUPPORTING_LOOKUP.has(field.fieldType) && (
+                {/* Lookup field toggle — only for shared fields and types that carry a verifiable value */}
+                {!isPerMember && TYPES_SUPPORTING_LOOKUP.has(field.fieldType) && (
                   <label className="flex items-start gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -194,6 +206,58 @@ export default function FormBuilder({ fields, onChange, readOnly }: Props) {
                     <span className="text-sm text-white/60">
                       {t("useLookupField")}
                       <span className="block text-xs text-white/30 mt-0.5">{t("lookupFieldHint")}</span>
+                    </span>
+                  </label>
+                )}
+
+                {/* Unique value toggle — prevents duplicate submissions for the same value */}
+                {TYPES_SUPPORTING_LOOKUP.has(field.fieldType) && (
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={field.unique}
+                      onChange={(e) => updateField(idx, { unique: e.target.checked })}
+                      className="w-4 h-4 mt-0.5 rounded accent-primary"
+                    />
+                    <span className="text-sm text-white/60">
+                      {t("uniqueField")}
+                      <span className="block text-xs text-white/30 mt-0.5">{t("uniqueFieldHint")}</span>
+                    </span>
+                  </label>
+                )}
+
+                {/* Allowed values whitelist (text-like + select/radio fields) */}
+                {(TYPES_SUPPORTING_LOOKUP.has(field.fieldType) || TYPES_WITH_OPTIONS.has(field.fieldType)) && (
+                  <div>
+                    <label className="block text-xs text-white/40 mb-1">{t("allowedValues")}</label>
+                    <textarea
+                      rows={3}
+                      value={(field.allowedValues ?? []).join("\n")}
+                      onChange={(e) => updateField(idx, {
+                        allowedValues: e.target.value
+                          .split("\n")
+                          .map((s) => s.trim())
+                          .filter(Boolean),
+                      })}
+                      className={`${inputClass} resize-none`}
+                      dir="ltr"
+                    />
+                    <p className="text-xs text-white/30 mt-1">{t("allowedValuesHint")}</p>
+                  </div>
+                )}
+
+                {/* Per-member: exclude-from-capacity toggle (checkbox fields only) */}
+                {isPerMember && field.fieldType === "checkbox" && (
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={field.excludeFromCapacityWhenChecked}
+                      onChange={(e) => updateField(idx, { excludeFromCapacityWhenChecked: e.target.checked })}
+                      className="w-4 h-4 mt-0.5 rounded accent-primary"
+                    />
+                    <span className="text-sm text-white/60">
+                      {t("excludeFromCapacityWhenChecked")}
+                      <span className="block text-xs text-white/30 mt-0.5">{t("excludeFromCapacityHint")}</span>
                     </span>
                   </label>
                 )}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore } from "lucide-react";
+import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore, Check, ChevronDown, ChevronUp } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
 import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
@@ -18,6 +18,10 @@ interface RegItem {
   personCount: number;
   selectedSessions: { sessionId: number; sessionName: string; status: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
+  members: {
+    countsTowardCapacity: boolean;
+    values: { fieldId: number; fieldLabel: string; value: string }[];
+  }[];
   createdAt: number;
   archived: boolean;
 }
@@ -39,6 +43,7 @@ export default function AdminEventRegistrations({ token }: Props) {
   const [sessionFilter, setSessionFilter] = useState<number | "all">("all");
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
+  const [expandedMembers, setExpandedMembers] = useState<Record<number, boolean>>({});
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
   });
@@ -98,6 +103,14 @@ export default function AdminEventRegistrations({ token }: Props) {
               fieldId: Number(fv.fieldId),
               fieldLabel: fv.fieldLabel,
               value: fv.value,
+            })),
+            members: (r.members || []).map((m) => ({
+              countsTowardCapacity: m.countsTowardCapacity,
+              values: m.values.map((v) => ({
+                fieldId: Number(v.fieldId),
+                fieldLabel: v.fieldLabel,
+                value: v.value,
+              })),
             })),
             createdAt: Number(r.createdAt),
             archived: Boolean(r.archived),
@@ -333,12 +346,70 @@ export default function AdminEventRegistrations({ token }: Props) {
 
               {reg.fieldValues.length > 0 && (
                 <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                  {reg.fieldValues.map((fv, fvIdx) => (
-                    <div key={fvIdx} className="flex items-start gap-2 text-sm">
-                      <span className="text-white/40 shrink-0 min-w-[100px]">{fv.fieldLabel}:</span>
-                      <span className="text-white/70 break-words">{fv.value || "—"}</span>
-                    </div>
-                  ))}
+                  {reg.fieldValues.map((fv, fvIdx) => {
+                    // Hide boolean-false values (checkbox unchecked stores "" or "false").
+                    if (fv.value === "" || fv.value === "false") return null;
+                    const isTrue = fv.value === "true";
+                    return (
+                      <div key={fvIdx} className="flex items-start gap-2 text-sm">
+                        <span className="text-white/40 shrink-0 min-w-[100px]">{fv.fieldLabel}:</span>
+                        {isTrue ? (
+                          <Check size={14} className="text-green-400 mt-0.5" />
+                        ) : (
+                          <span className="text-white/70 break-words" dir="ltr">{fv.value}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {reg.members.length > 0 && (
+                <div className="rounded-xl bg-white/[0.03] border border-white/5 my-1 min-h-[32px]">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedMembers((prev) => ({ ...prev, [reg.id]: !prev[reg.id] }))}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 hover:bg-white/[0.02] transition-colors rounded-xl"
+                  >
+                    <span className="text-xs text-white/40 uppercase tracking-wide">
+                      {t("perMemberFields")} <span className="text-white/30">({reg.members.length})</span>
+                    </span>
+                    {expandedMembers[reg.id]
+                      ? <ChevronUp size={14} className="text-white/40" />
+                      : <ChevronDown size={14} className="text-white/40" />}
+                  </button>
+                  {expandedMembers[reg.id] && (
+                    <ul className="space-y-2 px-3 pb-3">
+                      {reg.members.map((m, mIdx) => (
+                        <li key={mIdx} className="text-sm text-white/70 border-l border-white/10 pl-3">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-white/40">#{mIdx + 1}</span>
+                            {!m.countsTowardCapacity && (
+                              <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
+                                {t("notCountedTowardCapacity")}
+                              </span>
+                            )}
+                          </div>
+                          <div className="space-y-0.5">
+                            {m.values.map((v, vIdx) => {
+                              if (v.value === "" || v.value === "false") return null;
+                              const isTrue = v.value === "true";
+                              return (
+                                <div key={vIdx} className="flex items-start gap-2">
+                                  <span className="text-white/40 shrink-0 min-w-[100px]">{v.fieldLabel}:</span>
+                                  {isTrue ? (
+                                    <Check size={14} className="text-green-400 mt-0.5" />
+                                  ) : (
+                                    <span className="text-white/70 break-words" dir="ltr">{v.value}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
             </motion.div>

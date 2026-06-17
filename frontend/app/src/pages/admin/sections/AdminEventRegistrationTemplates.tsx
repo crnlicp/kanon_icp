@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, Trash2, Loader2, Save, CalendarCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Save, CalendarCheck, AlertTriangle } from "lucide-react";
 import Toast from "../../../components/Toast";
 import Modal from "../../../components/Modal";
 import EventRegistrationTemplateBuilder from "../../../components/EventRegistrationTemplateBuilder";
@@ -15,6 +15,17 @@ interface TemplateItem {
   description_sv: string;
   sessions: EventSessionReturn[];
   fields: FormFieldReturn[];
+  perMemberMode: boolean;
+  minMembers: bigint;
+  maxMembers: bigint;
+}
+
+interface UsageItem {
+  id: number;
+  slug: string;
+  title_fa: string;
+  title_sv: string;
+  liveRegistrationCount: number;
 }
 
 interface Props {
@@ -29,6 +40,9 @@ const emptyForm = {
   description_sv: "",
   sessions: [] as EventSessionReturn[],
   fields: [] as FormFieldReturn[],
+  perMemberMode: false,
+  minMembers: 1n,
+  maxMembers: 20n,
 };
 
 export default function AdminEventRegistrationTemplates({ token, readOnly }: Props) {
@@ -39,6 +53,7 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [usage, setUsage] = useState<UsageItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({ message: "", type: "success", visible: false });
 
   const loadTemplates = useCallback(async () => {
@@ -66,6 +81,9 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
           form.description_fa, form.description_sv,
           form.sessions,
           form.fields,
+          form.perMemberMode,
+          form.minMembers,
+          form.maxMembers,
         );
         setToast({ message: t("templateUpdated"), type: "success", visible: true });
       } else {
@@ -75,6 +93,9 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
           form.description_fa, form.description_sv,
           form.sessions,
           form.fields,
+          form.perMemberMode,
+          form.minMembers,
+          form.maxMembers,
         );
         setToast({ message: t("templateCreated"), type: "success", visible: true });
       }
@@ -107,14 +128,31 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
       description_sv: tmpl.description_sv,
       sessions: tmpl.sessions,
       fields: tmpl.fields,
+      perMemberMode: tmpl.perMemberMode,
+      minMembers: tmpl.minMembers,
+      maxMembers: tmpl.maxMembers,
     });
     setShowForm(true);
+    // Fetch which activities currently bind to this template so the admin can
+    // see whether session edits will be auto-propagated or skipped.
+    import("../../../actor").then(({ backend }) => {
+      backend.getActivitiesUsingEventTemplate(BigInt(tmpl.id)).then((rows) => {
+        setUsage(rows.map((r) => ({
+          id: Number(r.id),
+          slug: r.slug,
+          title_fa: r.title_fa,
+          title_sv: r.title_sv,
+          liveRegistrationCount: Number(r.liveRegistrationCount),
+        })));
+      }).catch(() => setUsage([]));
+    });
   };
 
   const resetForm = () => {
     setEditing(null);
     setForm(emptyForm);
     setShowForm(false);
+    setUsage([]);
   };
 
   if (loading) {
@@ -141,6 +179,38 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
         onClose={resetForm}
         title={editing !== null ? t("editEventRegTemplate") : t("addEventRegTemplate")}
       >
+        {editing !== null && usage.length > 0 && (
+          <div className="mb-5 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-xs">
+            <div className="flex items-start gap-2 text-yellow-300/90">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <p className="font-medium">
+                  {t("eventTemplateUsage")} ({usage.length})
+                </p>
+                <p className="text-white/50">{t("eventTemplateAutoSyncNote")}</p>
+                <ul className="space-y-0.5 mt-1">
+                  {usage.map((u) => (
+                    <li key={u.id} className="flex items-center justify-between gap-2">
+                      <span className="text-white/70 truncate">
+                        {lang === "fa" ? u.title_fa : u.title_sv}
+                      </span>
+                      {u.liveRegistrationCount > 0 ? (
+                        <span className="text-yellow-400/80 shrink-0">
+                          {u.liveRegistrationCount} {t("liveRegistrations")}
+                        </span>
+                      ) : (
+                        <span className="text-green-400/70 shrink-0">—</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {usage.some((u) => u.liveRegistrationCount > 0) && (
+                  <p className="text-white/40 italic mt-1">{t("eventTemplateSkippedNote")}.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         <EventRegistrationTemplateBuilder
           template={form}
           onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}

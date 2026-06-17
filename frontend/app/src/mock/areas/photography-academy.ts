@@ -14,8 +14,6 @@ const body = (fa: string, sv: string) => ({
   formTemplateId: undefined as bigint | undefined,
   customFormFields: [] as FormTemplateReturn["fields"],
   sessions: [],
-  regAllowedPhones: [],
-  regBlockDuplicateEmail: false,
   highlighted: false,
 });
 
@@ -62,10 +60,10 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "عکاسی از غریبه‌ها، داستان‌گویی و احساسات واقعی در خیابان", excerpt_sv: "Fotografera obekanta, berättande och äkta känslor på gatan",
     ...body("پرتره خیابانی", "Gatuporträtt"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "لینک اینستاگرام یا پرتفولیو (اختیاری)", label_sv: "Instagram- eller portföljlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "لینک اینستاگرام یا پرتفولیو (اختیاری)", label_sv: "Instagram- eller portföljlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
     icon: "User", imageUrl: img("street-portrait", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 2n, createdAt: ts(55),
   },
@@ -75,10 +73,10 @@ export const mockActivities: ActivityReturn[] = [
     excerpt_fa: "عکاسی پرتره در نور طبیعت غروب — فقط ۸ نفر", excerpt_sv: "Porträttfotografi i naturligt solnedgångsljus — bara 8 personer",
     ...body("کارگاه ساعت طلایی", "Golden Hour Workshop"),
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "لینک اینستاگرام یا پرتفولیو (اختیاری)", label_sv: "Instagram- eller portföljlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "لینک اینستاگرام یا پرتفولیو (اختیاری)", label_sv: "Instagram- eller portföljlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
     sessions: [
       { id: 101n, name_fa: "دوره بهاره — اردیبهشت ۱۴۰۵", name_sv: "Vårworkshop — maj 2026", date: "2026-05-16", capacity: 8n, bufferCapacity: 2n, sortOrder: 1n },
@@ -111,11 +109,11 @@ export const mockActivities: ActivityReturn[] = [
     ...body("مقدمه‌ای بر مستندسازی", "Introduktion till dokumentärfilm"),
     highlighted: true,
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نرم‌افزار تدوین", label_sv: "Redigeringsprogram", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "Adobe Premiere Pro", sv: "Adobe Premiere Pro" }, { fa: "Final Cut Pro", sv: "Final Cut Pro" }, { fa: "DaVinci Resolve", sv: "DaVinci Resolve" }, { fa: "آشنایی ندارم", sv: "Har ingen erfarenhet" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "آیا لپ‌تاپ شخصی دارید؟", label_sv: "Har du en personlig laptop?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بله — مک", sv: "Ja — Mac" }, { fa: "بله — ویندوز", sv: "Ja — Windows" }, { fa: "نه، از کامپیوتر آکادمی استفاده می‌کنم", sv: "Nej, använder akademins dator" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "ایده اولیه برای مستند (اختیاری)", label_sv: "Preliminär dokumentäridé (valfritt)", placeholder_fa: "چند جمله درباره چیزی که می‌خواهید مستند کنید", placeholder_sv: "Några meningar om vad du vill dokumentera", required: false, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نرم‌افزار تدوین", label_sv: "Redigeringsprogram", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "Adobe Premiere Pro", sv: "Adobe Premiere Pro" }, { fa: "Final Cut Pro", sv: "Final Cut Pro" }, { fa: "DaVinci Resolve", sv: "DaVinci Resolve" }, { fa: "آشنایی ندارم", sv: "Har ingen erfarenhet" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "آیا لپ‌تاپ شخصی دارید؟", label_sv: "Har du en personlig laptop?", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بله — مک", sv: "Ja — Mac" }, { fa: "بله — ویندوز", sv: "Ja — Windows" }, { fa: "نه، از کامپیوتر آکادمی استفاده می‌کنم", sv: "Nej, använder akademins dator" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "ایده اولیه برای مستند (اختیاری)", label_sv: "Preliminär dokumentäridé (valfritt)", placeholder_fa: "چند جمله درباره چیزی که می‌خواهید مستند کنید", placeholder_sv: "Några meningar om vad du vill dokumentera", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     icon: "Film", imageUrl: img("documentary-film", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(42),
   },
@@ -145,11 +143,11 @@ export const mockActivities: ActivityReturn[] = [
     ...body("نقد و بررسی پرتفولیو", "Portföljgranskning"),
     highlighted: true,
     customFormFields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "text", label_fa: "لینک پرتفولیو یا گالری آنلاین", label_sv: "Länk till portfölj eller onlinegalleri", placeholder_fa: "https://...", placeholder_sv: "https://...", required: true, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "سبک عکاسی اصلی شما", label_sv: "Din primära fotograferingsstil", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "پرتره", sv: "Porträtt" }, { fa: "منظره / طبیعت", sv: "Landskap / natur" }, { fa: "خیابانی / مستند", sv: "Gata / dokumentär" }, { fa: "محصول / تبلیغاتی", sv: "Produkt / kommersiell" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "textarea", label_fa: "روی چه جنبه‌ای می‌خواهی بازخورد بگیری؟", label_sv: "Vilken aspekt vill du ha feedback på?", placeholder_fa: "مثلاً: ترکیب‌بندی، نورپردازی، ویرایش", placeholder_sv: "T.ex. komposition, ljussättning, redigering", required: true, options: [], isLookupField: false, sortOrder: 5n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "text", label_fa: "لینک پرتفولیو یا گالری آنلاین", label_sv: "Länk till portfölj eller onlinegalleri", placeholder_fa: "https://...", placeholder_sv: "https://...", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "سبک عکاسی اصلی شما", label_sv: "Din primära fotograferingsstil", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "پرتره", sv: "Porträtt" }, { fa: "منظره / طبیعت", sv: "Landskap / natur" }, { fa: "خیابانی / مستند", sv: "Gata / dokumentär" }, { fa: "محصول / تبلیغاتی", sv: "Produkt / kommersiell" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "textarea", label_fa: "روی چه جنبه‌ای می‌خواهی بازخورد بگیری؟", label_sv: "Vilken aspekt vill du ha feedback på?", placeholder_fa: "مثلاً: ترکیب‌بندی، نورپردازی، ویرایش", placeholder_sv: "T.ex. komposition, ljussättning, redigering", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
     ],
     icon: "Image", imageUrl: img("portfolio-review", 800, 600), hasRegistration: true, registrationMode: "form", sortOrder: 1n, createdAt: ts(30),
   },
@@ -172,25 +170,25 @@ export const mockFormTemplates: FormTemplateReturn[] = [
     id: 97020n, name_fa: "ثبت‌نام دوره عکاسی", name_sv: "Fotograferingskursregistrering",
     description_fa: "فرم استاندارد با نوع دوربین و سطح تجربه", description_sv: "Standardformulär med kameratyp och erfarenhetsnivå",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }, { fa: "ندارم — از تجهیزات آکادمی استفاده می‌کنم", sv: "Har ingen — använder akademins utrustning" }], isLookupField: false, sortOrder: 4n },
-      { id: 5n, fieldType: "radio", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی — تازه شروع کرده‌ام", sv: "Nybörjare — precis börjat" }, { fa: "هاببی — چند سال تجربه غیررسمی", sv: "Hobbyist — några år informell erfarenhet" }, { fa: "نیمه‌حرفه‌ای — پروژه‌های پولی داشته‌ام", sv: "Halvprofessionell — har haft betalda uppdrag" }], isLookupField: false, sortOrder: 5n },
-      { id: 6n, fieldType: "text", label_fa: "لینک پرتفولیو یا اینستاگرام (اختیاری)", label_sv: "Portfölj- eller Instagramlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, sortOrder: 6n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "phone", label_fa: "تلفن", label_sv: "Telefon", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR دیجیتال", sv: "DSLR" }, { fa: "بدون آینه (Mirrorless)", sv: "Spegellös" }, { fa: "آنالوگ / فیلم", sv: "Analog / film" }, { fa: "موبایل", sv: "Smartphone" }, { fa: "ندارم — از تجهیزات آکادمی استفاده می‌کنم", sv: "Har ingen — använder akademins utrustning" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
+      { id: 5n, fieldType: "radio", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی — تازه شروع کرده‌ام", sv: "Nybörjare — precis börjat" }, { fa: "هاببی — چند سال تجربه غیررسمی", sv: "Hobbyist — några år informell erfarenhet" }, { fa: "نیمه‌حرفه‌ای — پروژه‌های پولی داشته‌ام", sv: "Halvprofessionell — har haft betalda uppdrag" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 5n },
+      { id: 6n, fieldType: "text", label_fa: "لینک پرتفولیو یا اینستاگرام (اختیاری)", label_sv: "Portfölj- eller Instagramlänk (valfritt)", placeholder_fa: "https://instagram.com/...", placeholder_sv: "https://instagram.com/...", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 6n },
     ],
-    createdAt: ts(100),
+    createdAt: ts(100), minMembers: 1n, maxMembers: 20n,
   },
   {
     id: 97021n, name_fa: "ثبت‌نام ویرایش و پست‌پروداکشن", name_sv: "Registrering för redigering och efterbehandling",
     description_fa: "فرم با اطلاعات نرم‌افزار ادیت و در دسترس بودن لپ‌تاپ", description_sv: "Formulär med redigeringsprogram och tillgång till laptop",
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نرم‌افزار ادیت مورد استفاده", label_sv: "Redigeringsprogram du använder", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "Adobe Lightroom", sv: "Adobe Lightroom" }, { fa: "Adobe Photoshop", sv: "Adobe Photoshop" }, { fa: "Capture One", sv: "Capture One" }, { fa: "هیچ‌کدام — تازه شروع می‌کنم", sv: "Inget — börjar från grunden" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "radio", label_fa: "لپ‌تاپ شخصی", label_sv: "Personlig laptop", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بله — مک", sv: "Ja — Mac" }, { fa: "بله — ویندوز", sv: "Ja — Windows" }, { fa: "نه — از کامپیوتر آکادمی", sv: "Nej — använder akademins dator" }], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام و نام خانوادگی", label_sv: "Fullständigt namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نرم‌افزار ادیت مورد استفاده", label_sv: "Redigeringsprogram du använder", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "Adobe Lightroom", sv: "Adobe Lightroom" }, { fa: "Adobe Photoshop", sv: "Adobe Photoshop" }, { fa: "Capture One", sv: "Capture One" }, { fa: "هیچ‌کدام — تازه شروع می‌کنم", sv: "Inget — börjar från grunden" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "radio", label_fa: "لپ‌تاپ شخصی", label_sv: "Personlig laptop", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "بله — مک", sv: "Ja — Mac" }, { fa: "بله — ویندوز", sv: "Ja — Windows" }, { fa: "نه — از کامپیوتر آکادمی", sv: "Nej — använder akademins dator" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: ts(95),
+    createdAt: ts(95), minMembers: 1n, maxMembers: 20n,
   },
 ];
 
@@ -212,8 +210,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 6n, fieldLabel: "پرتفولیو / Portfölj", value: "https://instagram.com/maja.photos" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(4),
-  },
+    createdAt: ts(4), members: [] },
   {
     id: 99011n, activityId: 94001n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -224,8 +221,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 5n, fieldLabel: "ایده مستند / Dokumentäridé", value: "می‌خواهم درباره بازار محلی شهرمان مستند بسازم" },
     ],
     personCount: 1n, selectedSessions: [],
-    createdAt: ts(9),
-  },
+    createdAt: ts(9), members: [] },
   {
     id: 1771500001n, activityId: 92003n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -235,8 +231,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 4n, fieldLabel: "پرتفولیو / Portfölj", value: "https://instagram.com/sofia.foto" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 101n, sessionName: "Vårworkshop — maj 2026" }],
-    createdAt: ts(3),
-  },
+    createdAt: ts(3), members: [] },
   {
     id: 1771400002n, activityId: 92003n, name: "", email: "", phone: "", message: "",
     fieldValues: [
@@ -246,8 +241,7 @@ export const mockRegistrations: Omit<RegistrationReturn, "archived">[] = [
       { fieldId: 4n, fieldLabel: "پرتفولیو / Portfölj", value: "" },
     ],
     personCount: 1n, selectedSessions: [{ sessionId: 102n, sessionName: "Sommarworkshop — juli 2026" }],
-    createdAt: ts(6),
-  },
+    createdAt: ts(6), members: [] },
 ];
 
 // ─── Event Registration Templates ─────────────────────────────────────────────
@@ -262,11 +256,10 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 202n, name_fa: "کارگاه تابستانه", name_sv: "Sommarworkshop", date: "2026-07-25", capacity: 8n, bufferCapacity: 2n, sortOrder: 2n },
     ],
     fields: [
-      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, sortOrder: 1n },
-      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, sortOrder: 2n },
-      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR", sv: "DSLR" }, { fa: "بدون آینه", sv: "Spegellös" }, { fa: "اسمارتفون", sv: "Smartphone" }], isLookupField: false, sortOrder: 3n },
-      { id: 4n, fieldType: "text", label_fa: "لینک پرتفولیو", label_sv: "Portföljlänk", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, sortOrder: 4n },
+      { id: 1n, fieldType: "text", label_fa: "نام", label_sv: "Namn", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 1n },
+      { id: 2n, fieldType: "email", label_fa: "ایمیل", label_sv: "E-post", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 2n },
+      { id: 3n, fieldType: "select", label_fa: "نوع دوربین", label_sv: "Kameratyp", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "DSLR", sv: "DSLR" }, { fa: "بدون آینه", sv: "Spegellös" }, { fa: "اسمارتفون", sv: "Smartphone" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
+      { id: 4n, fieldType: "text", label_fa: "لینک پرتفولیو", label_sv: "Portföljlänk", placeholder_fa: "", placeholder_sv: "", required: false, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n,
-  },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
 ];

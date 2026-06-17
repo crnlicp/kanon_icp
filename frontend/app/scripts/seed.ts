@@ -140,6 +140,10 @@ function field(
     options?: { fa: string; sv: string }[];
     minValue?: number;
     maxValue?: number;
+    scope?: "shared" | "perMember";
+    excludeFromCapacityWhenChecked?: boolean;
+    unique?: boolean;
+    allowedValues?: string[];
   }
 ): FormFieldReturn {
   return {
@@ -152,6 +156,10 @@ function field(
     placeholder_sv: f.placeholder_sv ?? "",
     required: f.required,
     isLookupField: f.isLookupField,
+    perMember: f.scope === "perMember",
+    excludeFromCapacityWhenChecked: f.excludeFromCapacityWhenChecked ?? false,
+    unique: f.unique ?? false,
+    allowedValues: f.allowedValues ?? [],
     options: f.options ?? [],
     ...(f.minValue !== undefined ? { minValue: BigInt(f.minValue) } : {}),
     ...(f.maxValue !== undefined ? { maxValue: BigInt(f.maxValue) } : {}),
@@ -241,7 +249,9 @@ async function seedFormTemplate(backend: Backend, token: string): Promise<bigint
     basicFormTemplate.name_sv,
     basicFormTemplate.description_fa,
     basicFormTemplate.description_sv,
-    fields
+    fields,
+    1n,
+    20n,
   );
   log(`Template '${basicFormTemplate.name_sv}' created (id=${tpl.id})`);
   return tpl.id;
@@ -319,10 +329,6 @@ async function seedTopic(
       eventTemplateRef, // eventTemplateId
       customFields,
       sessions,
-      null, // regMaxCapacity
-      [], // regAllowedPhones
-      null, // regMaxRegistrationsPerPhone
-      false, // regBlockDuplicateEmail
       e.highlighted ?? false,
       BigInt(i + 1)
     );
@@ -340,7 +346,7 @@ async function seedEventTemplates(
   const sessions: EventSessionReturn[] = moharramEventTemplate.sessions.map((s, i) => ({
     id: BigInt(i + 1),
     sortOrder: BigInt(i + 1),
-    date: "",
+    date: s.date ?? "",
     name_fa: s.name_fa,
     name_sv: s.name_sv,
     capacity: BigInt(s.capacity),
@@ -355,7 +361,10 @@ async function seedEventTemplates(
     moharramEventTemplate.description_fa,
     moharramEventTemplate.description_sv,
     sessions,
-    fields
+    fields,
+    moharramEventTemplate.perMemberMode,
+    BigInt(moharramEventTemplate.minMembers),
+    BigInt(moharramEventTemplate.maxMembers)
   );
   log(`Template '${moharramEventTemplate.name_sv}' created (id=${tpl.id})`);
   map.set(moharramEventTemplate.key, tpl.id);

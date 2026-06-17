@@ -5,8 +5,20 @@ import { mockBackend } from "./mock/mockBackend";
 
 const canisterEnv = safeGetCanisterEnv();
 
-const isProduction = import.meta.env.PROD;
-const agentHost = isProduction ? "https://icp-api.io" : window.location.origin;
+function isLocalHost(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".localhost")
+  );
+}
+
+function resolveAgentHost(): string {
+  const { hostname, origin } = window.location;
+  return isLocalHost(hostname) ? origin : "https://icp-api.io";
+}
+
+const agentHost = resolveAgentHost();
 
 const agentOptions = {
   host: agentHost,

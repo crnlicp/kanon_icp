@@ -19,6 +19,10 @@ interface RegItem {
   personCount: number;
   selectedSessions: { sessionId: number; sessionName: string }[];
   fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
+  members: {
+    countsTowardCapacity: boolean;
+    values: { fieldId: number; fieldLabel: string; value: string }[];
+  }[];
   createdAt: number;
   archived: boolean;
 }
@@ -103,6 +107,14 @@ export default function AdminRegistrations({ token }: Props) {
             fieldId: Number(fv.fieldId),
             fieldLabel: fv.fieldLabel,
             value: fv.value,
+          })),
+          members: (r.members || []).map((m) => ({
+            countsTowardCapacity: m.countsTowardCapacity,
+            values: m.values.map((v) => ({
+              fieldId: Number(v.fieldId),
+              fieldLabel: v.fieldLabel,
+              value: v.value,
+            })),
           })),
           createdAt: Number(r.createdAt),
           archived: Boolean(r.archived),

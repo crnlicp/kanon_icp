@@ -55,6 +55,20 @@ module {
     isLookupField : Bool;      // One field per form used to verify registration lookup
     minValue : ?Int;           // For number fields: optional minimum
     maxValue : ?Int;           // For number fields: optional maximum
+    // Per-member field on an Event Registration Template. Optional for
+    // stable-upgrade compatibility. null/false = collected once (shared).
+    perMember : ?Bool;
+    // Checkbox-only flag. When the per-member checkbox is ticked the member
+    // does not consume a session capacity slot (e.g. children under 8).
+    excludeFromCapacityWhenChecked : ?Bool;
+    // When true, the value of this field must be unique across all
+    // registrations of the same activity (e.g. one phone or one email per
+    // activity). Optional for stable-upgrade compatibility.
+    unique : ?Bool;
+    // Optional whitelist of accepted values for this field. When non-empty,
+    // submitted values that are not in the list are rejected with
+    // `#valueNotAllowed`. Empty/null = open. Optional for stable-upgrade.
+    allowedValues : ?[Text];
   };
 
   public type FormTemplate = {
@@ -63,6 +77,10 @@ module {
     description : LocalizedText;
     fields : [FormField];
     createdAt : Int;
+    // Optional bounds on personCount per registration. Optional for
+    // stable-upgrade compatibility (defaults: 1, 20).
+    minMembers : ?Nat;
+    maxMembers : ?Nat;
   };
 
   // ─── Event Registration Template ─────────────────────────────────────────
@@ -74,6 +92,10 @@ module {
     sessions    : [EventSession];
     fields      : [FormField];
     createdAt   : Int;
+    // Optional for stable-upgrade compatibility. null = legacy single-counter mode.
+    perMemberMode : ?Bool;
+    minMembers    : ?Nat;
+    maxMembers    : ?Nat;
   };
 
   // ─── Event Session Types ──────────────────────────────────────────────────
@@ -85,15 +107,6 @@ module {
     capacity       : Nat;            // regular public capacity
     bufferCapacity : Nat;            // admin buffer (0 = none)
     sortOrder      : Nat;
-  };
-
-  // ─── Registration Rules ───────────────────────────────────────────────────
-
-  public type RegistrationRules = {
-    maxCapacity              : ?Nat;   // null = unlimited total registrations
-    allowedPhones            : [Text]; // empty = open to all
-    maxRegistrationsPerPhone : ?Nat;   // null = unlimited; 1 = one per phone
-    blockDuplicateEmail      : Bool;
   };
 
   // ─── Activity ─────────────────────────────────────────────────────────────
@@ -113,7 +126,6 @@ module {
     eventTemplateId : ?Nat;
     customFormFields : [FormField];
     sessions : [EventSession];
-    registrationRules : ?RegistrationRules;
     highlighted : ?Bool;       // optional for backward-compatible upgrades
     sortOrder : Nat;
     createdAt : Int;
@@ -132,6 +144,14 @@ module {
     sessionName : Text;  // snapshot of name at submission time
   };
 
+  // Per-member snapshot stored with a registration when the bound template
+  // had perMemberMode enabled. countsTowardCapacity reflects the resolved
+  // exclusion-flag check at submission time.
+  public type RegistrationMember = {
+    values : [RegistrationFieldValue];
+    countsTowardCapacity : Bool;
+  };
+
   public type Registration = {
     id : Nat;
     activityId : Nat;
@@ -144,6 +164,10 @@ module {
     fieldValues : [RegistrationFieldValue];
     createdAt : Int;
     archived : ?Bool;       // optional for backward-compatible upgrades
+    // Optional for stable-upgrade compatibility. null = legacy registration
+    // (no per-member data); [] would mean per-member-mode with zero members,
+    // which is rejected at submission time.
+    members : ?[RegistrationMember];
   };
 
   public type SiteSettings = {
@@ -218,6 +242,10 @@ module {
     isLookupField : Bool;
     minValue : ?Int;
     maxValue : ?Int;
+    perMember : Bool;
+    excludeFromCapacityWhenChecked : Bool;
+    unique : Bool;
+    allowedValues : [Text];
   };
 
   public type FormTemplateReturn = {
@@ -228,6 +256,8 @@ module {
     description_sv : Text;
     fields : [FormFieldReturn];
     createdAt : Int;
+    minMembers : Nat;
+    maxMembers : Nat;
   };
 
   public type EventRegistrationTemplateReturn = {
@@ -239,6 +269,34 @@ module {
     sessions       : [EventSessionReturn];
     fields         : [FormFieldReturn];
     createdAt      : Int;
+    perMemberMode  : Bool;
+    minMembers     : Nat;
+    maxMembers     : Nat;
+  };
+
+  // Flat snapshot used by the public registration form. Splits the resolved
+  // template fields into shared vs per-member groups so the UI can render
+  // them without re-running scope logic on the client.
+  public type RegistrationMemberValueReturn = {
+    fieldId : Nat;
+    fieldLabel : Text;
+    value : Text;
+  };
+
+  public type RegistrationMemberReturn = {
+    values : [RegistrationMemberValueReturn];
+    countsTowardCapacity : Bool;
+  };
+
+  public type ActivityRegistrationConfigReturn = {
+    activityId      : Nat;
+    hasRegistration : Bool;
+    perMemberMode   : Bool;
+    minMembers      : Nat;
+    maxMembers      : Nat;
+    sharedFields    : [FormFieldReturn];
+    perMemberFields : [FormFieldReturn];
+    sessions        : [EventSessionReturn];
   };
 
   public type EventSessionReturn = {
@@ -300,6 +358,7 @@ module {
     fieldValues      : [{ fieldId : Nat; fieldLabel : Text; value : Text }];
     createdAt        : Int;
     archived         : Bool;
+    members          : [RegistrationMemberReturn];
   };
 
   public type ActivityReturn = {
@@ -320,10 +379,6 @@ module {
     eventTemplateId : ?Nat;
     customFormFields : [FormFieldReturn];
     sessions : [EventSessionReturn];
-    regMaxCapacity : ?Nat;
-    regAllowedPhones : [Text];
-    regMaxRegistrationsPerPhone : ?Nat;
-    regBlockDuplicateEmail : Bool;
     highlighted : Bool;
     sortOrder : Nat;
     createdAt : Int;
@@ -348,14 +403,14 @@ module {
     fieldValues : [RegistrationFieldValueReturn];
     createdAt : Int;
     archived : Bool;
+    members : [RegistrationMemberReturn];
   };
 
   public type SubmitRegistrationResult = {
     #ok                   : RegistrationWithStatusReturn;
     #capacityFull;
-    #phoneNotAllowed;
-    #maxRegistrationsReached;
-    #duplicateEmail;
+    #valueNotAllowed      : Nat;     // fieldId of the field whose value is not in allowedValues
+    #duplicateValue       : Nat;     // fieldId of the unique field that conflicted
     #registrationDisabled;
     #invalidInput;
     #sessionsUnavailable  : [Nat];  // session IDs that are totally full

@@ -1,25 +1,23 @@
 // Seed data for "Jasmin Blomman Kultur & Idrott förening" / کانون فرهنگی گل یاس
 // All bilingual content (SV/FA). Edit values here, then run `npm run seed`.
 
-export const PICSUM = (seed: string, w = 1600, h = 900) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 export const settings = {
-  logoUrl: PICSUM("kanon-logo", 256, 256),
+  logoUrl: 'https://i.ibb.co/5x2V6fmw/photo-2025-06-09-07-23-32.jpg',
   title_fa: "کانون فرهنگی گل یاس",
   title_sv: "Jasmine Blomman Kultur & Idrott förening",
   subtitle_fa: "خانه‌ای برای فرهنگ، آموزش، ورزش و فعالیت‌های اجتماعی خانواده‌های ایرانی-سوئدی",
   subtitle_sv:
     "Ett hem för kultur, utbildning, idrott och sociala aktiviteter för iransk-svenska familjer",
-  landingBackgroundUrl: PICSUM("kanon-landing", 1920, 1080),
-  topicsBackgroundUrl: PICSUM("kanon-topics", 1920, 1080),
+  landingBackgroundUrl: 'https://i.ibb.co/JFmy7JNk/Generated-Image-June-16-2026-1-23-AM.png',
+  topicsBackgroundUrl: 'https://i.ibb.co/fd8z8hzD/Generated-Image-June-16-2026-12-24-AM-1.png',
   contactIntro_fa: `
 <p>برای ارتباط با کانون فرهنگی گل یاس از راه‌های زیر استفاده کنید:</p>
 <ul>
-  <li><strong>تلفن:</strong> <a href="tel:+46765654005">+46 76 565 40 05</a></li>
-  <li><strong>ایمیل:</strong> <a href="mailto:jasmin.blomman14@gmail.com">jasmin.blomman14@gmail.com</a></li>
-  <li><strong>ادمین تلگرام:</strong> <a href="https://t.me/Jasmin_adm" target="_blank" rel="noopener">@Jasmin_adm</a></li>
-  <li><strong>امور مالی و کارت:</strong> <a href="https://t.me/kvitton" target="_blank" rel="noopener">@kvitton</a></li>
+  <li><strong>تلفن:</strong> <a href="tel:+46765654005" dir="ltr"><bdi dir="ltr">+46 76 565 40 05</bdi></a></li>
+  <li><strong>ایمیل:</strong> <a href="mailto:jasmin.blomman14@gmail.com" dir="ltr"><bdi dir="ltr">jasmin.blomman14@gmail.com</bdi></a></li>
+  <li><strong>ادمین تلگرام:</strong> <a href="https://t.me/Jasmin_adm" target="_blank" rel="noopener" dir="ltr"><bdi dir="ltr">@Jasmin_adm</bdi></a></li>
+  <li><strong>امور مالی و کارت:</strong> <a href="https://t.me/kvitton" target="_blank" rel="noopener" dir="ltr"><bdi dir="ltr">@kvitton</bdi></a></li>
 </ul>
 <p>پیشنهادات، انتقادات و درخواست همکاری شما همیشه مورد استقبال است.</p>
 `.trim(),
@@ -36,7 +34,7 @@ export const settings = {
 };
 
 export const aboutContent = {
-  headerImageUrl: PICSUM("about-header", 1920, 720),
+  headerImageUrl: 'https://i.ibb.co/Q70k4HnC/Generated-Image-June-17-2026-1-57-AM-1.png',
   body_fa: `
 <h1>بسمه تعالی</h1>
 <p>کانون فرهنگی گل یاس (Jasmin Blomman kultur & idrott förening) در تاریخ ۷ نوامبر ۲۰۱۹ (۱۶ آبان ۱۳۹۸) در شهر گوتنبرگ سوئد تأسیس شده است. این کانون از افراد علاقه‌مند برای عضویت و حضور در برنامه‌ها و مراسم دعوت به عمل آورده است. در حال حاضر این کانون با تکیه بر کمک مالی ماهانه‌ی اعضا در حال توسعه و فعالیت می‌باشد.</p>
@@ -155,21 +153,30 @@ export const basicFormTemplate = {
   ],
 };
 
-// Event registration template for Muharram (11 nights, capacity 50 + 20 buffer per day).
+// Event registration template for Muharram nights 8–11 (2026-06-22 through 2026-06-25).
+// Per-member mode: each registration collects per-attendee name/last-name plus a
+// "under 8 years" flag that excludes the person from the capacity count.
 export const moharramEventTemplate = {
   key: "moharram",
   name_fa: "قالب ثبت‌نام محرم",
   name_sv: "Muharram registreringsmall",
-  description_fa: "ثبت‌نام برای ۱۱ شب مراسم محرم با ظرفیت ۵۰ نفر و ۲۰ نفر بافر برای هر شب.",
-  description_sv: "Registrering för 11 kvällar av Muharram-ceremonier med 50 platser och 20 buffertplatser per kväll.",
-  sessions: Array.from({ length: 11 }, (_, i) => ({
-    name_fa: `روز ${i + 1}`,
-    name_sv: `Dag ${i + 1}`,
-    capacity: 50,
-    bufferCapacity: 20,
-  })),
+  description_fa:
+    "ثبت‌نام برای شب‌های هشتم تا یازدهم محرم با ظرفیت ۵۰ نفر و ۲۰ نفر بافر برای هر شب. اطلاعات هر شرکت‌کننده جداگانه ثبت می‌شود.",
+  description_sv:
+    "Registrering för Muharram-kvällar 8–11 med 50 platser och 20 buffertplatser per kväll. Information om varje deltagare anges separat.",
+  perMemberMode: true,
+  minMembers: 1,
+  maxMembers: 20,
+  sessions: [
+    { name_fa: "شب هشتم", name_sv: "Kväll 8", date: "2026-06-22", capacity: 50, bufferCapacity: 20 },
+    { name_fa: "شب نهم", name_sv: "Kväll 9", date: "2026-06-23", capacity: 50, bufferCapacity: 20 },
+    { name_fa: "شب دهم", name_sv: "Kväll 10", date: "2026-06-24", capacity: 50, bufferCapacity: 20 },
+    { name_fa: "شب یازدهم", name_sv: "Kväll 11", date: "2026-06-25", capacity: 50, bufferCapacity: 20 },
+  ],
   fields: [
+    // ---- Shared (one per registration) ----
     {
+      scope: "shared" as const,
       fieldType: "text",
       label_fa: "نام",
       label_sv: "Förnamn",
@@ -180,6 +187,7 @@ export const moharramEventTemplate = {
       options: [] as { fa: string; sv: string }[],
     },
     {
+      scope: "shared" as const,
       fieldType: "text",
       label_fa: "نام خانوادگی",
       label_sv: "Efternamn",
@@ -190,6 +198,7 @@ export const moharramEventTemplate = {
       options: [],
     },
     {
+      scope: "shared" as const,
       fieldType: "phone",
       label_fa: "شماره تلفن",
       label_sv: "Telefonnummer",
@@ -197,40 +206,53 @@ export const moharramEventTemplate = {
       placeholder_sv: "701234567",
       required: true,
       isLookupField: true,
+      unique: true,
       options: [],
     },
     {
-      fieldType: "number",
-      label_fa: "تعداد بزرگسالان",
-      label_sv: "Antal vuxna",
-      placeholder_fa: "",
-      placeholder_sv: "",
-      required: true,
-      isLookupField: false,
-      options: [],
-      minValue: 1,
-      maxValue: 5,
-    },
-    {
-      fieldType: "number",
-      label_fa: "تعداد کودکان (زیر ۸ سال)",
-      label_sv: "Antal barn (under 8 år)",
-      placeholder_fa: "",
-      placeholder_sv: "",
-      required: true,
-      isLookupField: false,
-      options: [],
-      minValue: 0,
-      maxValue: 5,
-    },
-    {
+      scope: "shared" as const,
       fieldType: "textarea",
-      label_fa: "پیام",
-      label_sv: "Meddelande",
+      label_fa: "پیام (اختیاری)",
+      label_sv: "Meddelande (valfritt)",
       placeholder_fa: "",
       placeholder_sv: "",
       required: false,
       isLookupField: false,
+      options: [],
+    },
+    // ---- Per-member (one per attendee) ----
+    {
+      scope: "perMember" as const,
+      fieldType: "text",
+      label_fa: "نام",
+      label_sv: "Förnamn",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [],
+    },
+    {
+      scope: "perMember" as const,
+      fieldType: "text",
+      label_fa: "نام خانوادگی",
+      label_sv: "Efternamn",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: true,
+      isLookupField: false,
+      options: [],
+    },
+    {
+      scope: "perMember" as const,
+      fieldType: "checkbox",
+      label_fa: "زیر ۸ سال (در ظرفیت محاسبه نمی‌شود)",
+      label_sv: "Under 8 år (räknas inte mot kapaciteten)",
+      placeholder_fa: "",
+      placeholder_sv: "",
+      required: false,
+      isLookupField: false,
+      excludeFromCapacityWhenChecked: true,
       options: [],
     },
   ],
@@ -285,11 +307,11 @@ export const topics: SeedTopic[] = [
     description_sv:
       "Vi firar och uppmärksammar persiska och religiösa kulturella högtider i Sverige — från Yalda och Nouruz till Muharram och Ghadr-nätterna. En plats för att bevara identitet, föra arvet vidare till nästa generation och dela vår rika kultur med det svenska samhället.",
     icon: "Sparkles",
-    backgroundUrl: PICSUM("culture-bg", 1920, 1080),
+    backgroundUrl: 'https://i.ibb.co/0R219z8J/Generated-Image-June-16-2026-12-29-AM-1.png',
     registration: "none",
     slides: [
       {
-        imageUrl: PICSUM("culture-slide-1"),
+        imageUrl: 'https://i.ibb.co/9kF68Jyt/Generated-Image-June-16-2026-10-24-AM-1.png',
         title_fa: "میراث، در قلب اروپا",
         title_sv: "Arvet — mitt i Europa",
         subtitle_fa: "گرامیداشت مناسبت‌های ایرانی در کنار خانواده",
@@ -299,7 +321,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("culture-slide-2"),
+        imageUrl: 'https://i.ibb.co/dJ6NKRZk/Generated-Image-June-16-2026-10-30-AM-1.png',
         title_fa: "شب‌های به‌یادماندنی",
         title_sv: "Kvällar att minnas",
         subtitle_fa: "یلدا، نوروز و مناسبت‌های مذهبی",
@@ -309,7 +331,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("culture-slide-3"),
+        imageUrl: 'https://i.ibb.co/GQF9DVCv/Generated-Image-June-16-2026-10-28-AM-1.png',
         title_fa: "هویت و همبستگی",
         title_sv: "Identitet och gemenskap",
         subtitle_fa: "از نسل امروز برای نسل فردا",
@@ -331,7 +353,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Varje kväll från första till elfte Muharram hålls ett program med föreläsning, ceremoni och servering i föreningens lokaler. Exakta tider och platser meddelas inför varje kväll.</p>",
         icon: "Moon",
-        imageUrl: PICSUM("event-muharram"),
+        imageUrl: 'https://i.ibb.co/1GvZcBt0/IMG-1796-1.jpg',
         highlighted: true,
         eventTemplateKey: "moharram",
       },
@@ -346,7 +368,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Ett familjeprogram med poesi, musik, lekar, middag och en traditionell Yalda-duk. Passar alla åldrar.</p>",
         icon: "Moon",
-        imageUrl: PICSUM("event-yalda"),
+        imageUrl: 'https://i.ibb.co/qFkrfjNy/Generated-Image-June-16-2026-11-03-AM-1.png',
       },
       {
         slug: "nowruz",
@@ -359,8 +381,8 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Nyårsväxlingen, kulturprogram, servering och underhållning för barn och vuxna i en glad och familjevänlig miljö.</p>",
         icon: "Flower2",
-        imageUrl: PICSUM("event-nowruz"),
-        highlighted: true,
+        imageUrl: 'https://i.ibb.co/p9H7Lny/Generated-Image-June-16-2026-11-06-AM-1.png',
+        highlighted: false,
       },
       {
         slug: "ghadr-nights",
@@ -373,7 +395,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Vaknattsprogram med böner, föreläsning och iftar-måltid i föreningens lokaler.</p>",
         icon: "Star",
-        imageUrl: PICSUM("event-ghadr"),
+        imageUrl: 'https://i.ibb.co/R4M8wdXY/Generated-Image-June-16-2026-11-10-AM-1.png',
       },
     ],
   },
@@ -388,11 +410,11 @@ export const topics: SeedTopic[] = [
     description_sv:
       "Varierade kurser för barn, ungdomar och vuxna — från persiska och arabiska till matematik och livskunskap. Anmäl dig till varje kurs via formuläret på respektive kurssida.",
     icon: "GraduationCap",
-    backgroundUrl: PICSUM("education-bg", 1920, 1080),
+    backgroundUrl: 'https://i.ibb.co/Z6bwMW2m/Generated-Image-June-16-2026-12-33-AM-1.png',
     registration: "form",
     slides: [
       {
-        imageUrl: PICSUM("education-slide-1"),
+        imageUrl: 'https://i.ibb.co/6CQ3v4N/Generated-Image-June-16-2026-10-34-AM-1.png',
         title_fa: "یادگیری در هر سن",
         title_sv: "Lärande i alla åldrar",
         subtitle_fa: "دوره‌هایی برای کودکان، نوجوانان و بزرگ‌سالان",
@@ -402,7 +424,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("education-slide-2"),
+        imageUrl: 'https://i.ibb.co/FkD1k1ys/Generated-Image-June-16-2026-10-37-AM-1.png',
         title_fa: "زبان مادری، پل به ریشه‌ها",
         title_sv: "Modersmålet — bron till våra rötter",
         subtitle_fa: "کلاس‌های فارسی و عربی",
@@ -412,7 +434,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("education-slide-3"),
+        imageUrl: 'https://i.ibb.co/DHCsd5wx/Generated-Image-June-16-2026-10-41-AM-1.png',
         title_fa: "مهارت‌های زندگی",
         title_sv: "Livets färdigheter",
         subtitle_fa: "کارگاه‌های کاربردی برای زنان و خانواده",
@@ -434,7 +456,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Veckokurser med standardläromedel, talövningar och gruppaktiviteter för att stärka modersmålet.</p>",
         icon: "BookOpen",
-        imageUrl: PICSUM("event-persian"),
+        imageUrl: 'https://i.ibb.co/gZr667XN/Generated-Image-June-16-2026-11-12-AM-1.png',
       },
       {
         slug: "math-students",
@@ -447,7 +469,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Veckosessioner för elever på olika nivåer, med fokus på grundbegrepp och provuppgifter.</p>",
         icon: "Calculator",
-        imageUrl: PICSUM("event-math"),
+        imageUrl: 'https://i.ibb.co/Rkrfzm1h/Generated-Image-June-16-2026-11-14-AM-1.png',
       },
       {
         slug: "life-management-women",
@@ -460,7 +482,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Månatliga workshops med experter och utrymme för samtal mellan deltagarna.</p>",
         icon: "HeartHandshake",
-        imageUrl: PICSUM("event-life-mgmt"),
+        imageUrl: 'https://i.ibb.co/wh118Rr6/Generated-Image-June-16-2026-11-16-AM-1.png',
       },
       {
         slug: "arabic-kids",
@@ -473,7 +495,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Veckokurser med lek, sång och böcker för att göra arabiska roligt för barn.</p>",
         icon: "Languages",
-        imageUrl: PICSUM("event-arabic"),
+        imageUrl: 'https://i.ibb.co/VYRH59Zv/Generated-Image-June-16-2026-11-21-AM-1.png',
       },
     ],
   },
@@ -488,11 +510,11 @@ export const topics: SeedTopic[] = [
     description_sv:
       "Regelbundna idrottsaktiviteter för män, kvinnor och barn i flera grenar. Vårt mål är att främja fysisk och mental hälsa i en trygg och vänlig miljö.",
     icon: "Dumbbell",
-    backgroundUrl: PICSUM("sport-bg", 1920, 1080),
+    backgroundUrl: 'https://i.ibb.co/LXB90kbD/Generated-Image-June-16-2026-12-35-AM-1.png',
     registration: "form",
     slides: [
       {
-        imageUrl: PICSUM("sport-slide-1"),
+        imageUrl: 'https://i.ibb.co/tTFb8PfB/Generated-Image-June-16-2026-10-44-AM-1.png',
         title_fa: "حرکت، سلامتی، شادی",
         title_sv: "Rörelse, hälsa, glädje",
         subtitle_fa: "برنامه‌های ورزشی هفتگی برای همه",
@@ -502,7 +524,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("sport-slide-2"),
+        imageUrl: 'https://i.ibb.co/W4gvgmxr/Generated-Image-June-16-2026-10-46-AM-1.png',
         title_fa: "سالن‌های مجزای بانوان",
         title_sv: "Separata sektioner för kvinnor",
         subtitle_fa: "محیطی امن و راحت برای ورزش بانوان",
@@ -512,7 +534,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("sport-slide-3"),
+        imageUrl: 'https://i.ibb.co/CK24k19Z/Generated-Image-June-16-2026-10-48-AM-1.png',
         title_fa: "تیم‌های ورزشی کانون",
         title_sv: "Föreningens idrottslag",
         subtitle_fa: "والیبال، شنا، پیلاتس و رقص",
@@ -534,7 +556,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Regelbunden träning för volleybollintresserade män med uppvärmning, teknik och matchspel.</p>",
         icon: "Volleyball",
-        imageUrl: PICSUM("event-men-vb"),
+        imageUrl: 'https://i.ibb.co/DDwjyK8C/Generated-Image-June-16-2026-11-23-AM-1.png',
       },
       {
         slug: "women-volleyball",
@@ -545,7 +567,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>محیطی امن و دوستانه برای تمرین والیبال بانوان در همه‌ی سطوح.</p>",
         body_sv: "<p>En trygg och vänlig miljö för volleybollträning för kvinnor på alla nivåer.</p>",
         icon: "Volleyball",
-        imageUrl: PICSUM("event-women-vb"),
+        imageUrl: 'https://i.ibb.co/BVk2z0TX/Generated-Image-June-16-2026-11-25-AM-1.png',
       },
       {
         slug: "men-swimming",
@@ -556,7 +578,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>جلسات شنا برای آقایان در سطوح مختلف، با امکان مربی.</p>",
         body_sv: "<p>Simpass för män på olika nivåer, instruktör tillgänglig.</p>",
         icon: "Waves",
-        imageUrl: PICSUM("event-men-swim"),
+        imageUrl: 'https://i.ibb.co/tT87bz9v/Generated-Image-June-16-2026-11-26-AM-1.png',
       },
       {
         slug: "women-swimming",
@@ -567,7 +589,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>محیطی کاملاً خصوصی برای شنای بانوان به همراه مربی خانم.</p>",
         body_sv: "<p>Helt privat miljö för kvinnors simning med kvinnlig instruktör.</p>",
         icon: "Waves",
-        imageUrl: PICSUM("event-women-swim"),
+        imageUrl: 'https://i.ibb.co/Z6Tz3bhy/Generated-Image-June-16-2026-11-29-AM-1.png',
       },
       {
         slug: "women-pilates",
@@ -578,7 +600,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>کلاس‌های منظم پیلاتس با مربی متخصص بانوان.</p>",
         body_sv: "<p>Regelbundna Pilatesklasser med kvinnlig specialistinstruktör.</p>",
         icon: "Activity",
-        imageUrl: PICSUM("event-pilates"),
+        imageUrl: 'https://i.ibb.co/wZKLYvd7/Generated-Image-June-16-2026-11-31-AM-1.png',
       },
       {
         slug: "women-dance",
@@ -589,7 +611,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>سبک‌های مختلف رقص ایرانی و مدرن در فضایی صمیمی و امن.</p>",
         body_sv: "<p>Olika persiska och moderna dansstilar i en vänlig och trygg miljö.</p>",
         icon: "Music2",
-        imageUrl: PICSUM("event-dance"),
+        imageUrl: 'https://i.ibb.co/Q3Q0D22P/Generated-Image-June-16-2026-11-33-AM-1.png',
       },
     ],
   },
@@ -604,11 +626,11 @@ export const topics: SeedTopic[] = [
     description_sv:
       "Konst-, film- och kreativitetsprogram för alla åldrar. Målet är att utveckla konstnärlig sensibilitet, samtala om film och introducera barn till musik och hantverk.",
     icon: "Palette",
-    backgroundUrl: PICSUM("art-bg", 1920, 1080),
+    backgroundUrl: 'https://i.ibb.co/4g41MqWn/Generated-Image-June-16-2026-12-39-AM-1.png',
     registration: "form",
     slides: [
       {
-        imageUrl: PICSUM("art-slide-1"),
+        imageUrl: 'https://i.ibb.co/tMLnhpP6/Generated-Image-June-16-2026-10-50-AM-1.png',
         title_fa: "نمایش و گفت‌وگو",
         title_sv: "Visning och samtal",
         subtitle_fa: "کلوب‌های فیلم برای آقایان، بانوان و خانواده",
@@ -618,7 +640,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("art-slide-2"),
+        imageUrl: 'https://i.ibb.co/fz41yMrn/Generated-Image-June-16-2026-10-52-AM-1.png',
         title_fa: "هنر در دستان کودکان",
         title_sv: "Konst i barnens händer",
         subtitle_fa: "کارگاه‌های نقاشی، کاردستی و موسیقی",
@@ -628,7 +650,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("art-slide-3"),
+        imageUrl: 'https://i.ibb.co/mV6CXWyT/Generated-Image-June-16-2026-10-54-AM-1.png',
         title_fa: "خلاقیت در جمع",
         title_sv: "Kreativitet i gemenskap",
         subtitle_fa: "جایی برای کشف و بیان",
@@ -648,7 +670,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>جلسات ماهانه با انتخاب فیلم‌های ایرانی و جهانی و بحث پس از نمایش.</p>",
         body_sv: "<p>Månatliga möten med utvalda persiska och internationella filmer följt av diskussion.</p>",
         icon: "Film",
-        imageUrl: PICSUM("event-men-movie"),
+        imageUrl: 'https://i.ibb.co/fdXtX4d3/Generated-Image-June-16-2026-11-36-AM-1.png',
       },
       {
         slug: "women-movie-club",
@@ -659,18 +681,18 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>گردهمایی ماهانه برای دیدن و تحلیل فیلم در جمعی صمیمی.</p>",
         body_sv: "<p>Månatlig sammankomst för att se och analysera film i en vänlig grupp.</p>",
         icon: "Film",
-        imageUrl: PICSUM("event-women-movie"),
+        imageUrl: 'https://i.ibb.co/mVsnF6Kb/Generated-Image-June-16-2026-11-37-AM-1.png',
       },
       {
         slug: "family-movie-club",
-        title_fa: "کلوب فیلم خانواده",
+        title_fa: "کلوب دورهمی و فیلم خانوادگی",
         title_sv: "Familjefilmklubb",
         excerpt_fa: "نمایش فیلم مناسب همه‌ی اعضای خانواده.",
         excerpt_sv: "Filmvisning lämplig för hela familjen.",
-        body_fa: "<p>عصرهای خانوادگی همراه با فیلم، پاپ‌کورن و گفت‌وگوی سبک.</p>",
-        body_sv: "<p>Familjekvällar med film, popcorn och lättsamt samtal.</p>",
+        body_fa: "<p>عصرهای خانوادگی همراه با فیلم و گفت‌وگوی سبک.</p>",
+        body_sv: "<p>Familjekvällar med film och lättsamt samtal.</p>",
         icon: "Film",
-        imageUrl: PICSUM("event-family-movie"),
+        imageUrl: 'https://i.ibb.co/ybZMthN/Generated-Image-June-16-2026-11-40-AM-1.png',
       },
       {
         slug: "kids-handicraft",
@@ -681,7 +703,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>جلسات هفتگی با ابزارهای رنگ، کاغذ، خمیر و سایر مواد هنری.</p>",
         body_sv: "<p>Veckosessioner med färg, papper, lera och annat skapande material.</p>",
         icon: "Paintbrush",
-        imageUrl: PICSUM("event-handicraft"),
+        imageUrl: 'https://i.ibb.co/DPZqxxVP/Generated-Image-June-16-2026-11-41-AM-1.png',
       },
       {
         slug: "kids-music",
@@ -692,7 +714,7 @@ export const topics: SeedTopic[] = [
         body_fa: "<p>کلاس‌های شاد و بازی‌محور برای پرورش گوش موسیقایی کودکان.</p>",
         body_sv: "<p>Roliga och lekfulla klasser för att utveckla barns musikalitet.</p>",
         icon: "Music",
-        imageUrl: PICSUM("event-kids-music"),
+        imageUrl: 'https://i.ibb.co/PGz8GfvR/Generated-Image-June-16-2026-11-44-AM-1.png',
       },
     ],
   },
@@ -707,11 +729,11 @@ export const topics: SeedTopic[] = [
     description_sv:
       "Veckovisa sammankomster för bön och andlighet i en vänlig miljö. Programmen kräver ingen anmälan och är öppna för alla medlemmar och gäster.",
     icon: "Users",
-    backgroundUrl: PICSUM("social-bg", 1920, 1080),
+    backgroundUrl: 'https://i.ibb.co/Cs92vC13/Generated-Image-June-16-2026-12-42-AM-1.png',
     registration: "none",
     slides: [
       {
-        imageUrl: PICSUM("social-slide-1"),
+        imageUrl: 'https://i.ibb.co/Kjy913vc/Generated-Image-June-16-2026-10-55-AM-1.png',
         title_fa: "گردهم‌آیی هفتگی",
         title_sv: "Veckosammankomster",
         subtitle_fa: "دعای کمیل پنجشنبه‌ها، دعای توسل سه‌شنبه‌ها",
@@ -721,7 +743,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("social-slide-2"),
+        imageUrl: 'https://i.ibb.co/Kz9xGVmH/Generated-Image-June-16-2026-10-57-AM-1.png',
         title_fa: "فضایی برای آرامش",
         title_sv: "En plats för lugn",
         subtitle_fa: "دور هم، با نیت پاک",
@@ -731,7 +753,7 @@ export const topics: SeedTopic[] = [
         ctaLink: "#events",
       },
       {
-        imageUrl: PICSUM("social-slide-3"),
+        imageUrl: 'https://i.ibb.co/HLm1mqv1/Generated-Image-June-16-2026-10-59-AM-1-1.png',
         title_fa: "همراه با خانواده",
         title_sv: "Tillsammans med familjen",
         subtitle_fa: "باز برای همه‌ی اعضا و میهمانان",
@@ -753,7 +775,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Veckoprogram med bön, kort föreläsning och servering. Öppet för alla.</p>",
         icon: "BookHeart",
-        imageUrl: PICSUM("event-komeyl"),
+        imageUrl: 'https://i.ibb.co/LhSCHYnL/Generated-Image-June-16-2026-11-49-AM-1.png',
       },
       {
         slug: "tavasol-dua",
@@ -766,7 +788,7 @@ export const topics: SeedTopic[] = [
         body_sv:
           "<p>Veckoprogram med bön, kort föreläsning och servering. Ingen anmälan krävs.</p>",
         icon: "BookHeart",
-        imageUrl: PICSUM("event-tavasol"),
+        imageUrl: 'https://i.ibb.co/rGMkCRNH/Generated-Image-June-16-2026-11-56-AM-1.png',
       },
     ],
   },

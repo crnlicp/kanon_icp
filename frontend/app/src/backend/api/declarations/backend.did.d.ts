@@ -15,9 +15,18 @@ export interface AboutContentReturn {
   'body_fa' : string,
   'body_sv' : string,
 }
+export interface ActivityRegistrationConfigReturn {
+  'perMemberFields' : Array<FormFieldReturn>,
+  'sharedFields' : Array<FormFieldReturn>,
+  'activityId' : bigint,
+  'perMemberMode' : boolean,
+  'maxMembers' : bigint,
+  'sessions' : Array<EventSessionReturn>,
+  'hasRegistration' : boolean,
+  'minMembers' : bigint,
+}
 export interface ActivityReturn {
   'id' : bigint,
-  'regAllowedPhones' : Array<string>,
   'formTemplateId' : [] | [bigint],
   'body_fa' : string,
   'body_sv' : string,
@@ -25,8 +34,6 @@ export interface ActivityReturn {
   'icon' : string,
   'createdAt' : bigint,
   'slug' : string,
-  'regMaxRegistrationsPerPhone' : [] | [bigint],
-  'regBlockDuplicateEmail' : boolean,
   'highlighted' : boolean,
   'customFormFields' : Array<FormFieldReturn>,
   'imageUrl' : string,
@@ -34,7 +41,6 @@ export interface ActivityReturn {
   'excerpt_fa' : string,
   'excerpt_sv' : string,
   'hasRegistration' : boolean,
-  'regMaxCapacity' : [] | [bigint],
   'registrationMode' : string,
   'title_fa' : string,
   'title_sv' : string,
@@ -54,10 +60,13 @@ export interface EventRegistrationTemplateReturn {
   'description_fa' : string,
   'description_sv' : string,
   'createdAt' : bigint,
+  'perMemberMode' : boolean,
   'fields' : Array<FormFieldReturn>,
+  'maxMembers' : bigint,
   'sessions' : Array<EventSessionReturn>,
   'name_fa' : string,
   'name_sv' : string,
+  'minMembers' : bigint,
 }
 export interface EventSessionReturn {
   'id' : bigint,
@@ -72,12 +81,16 @@ export interface FormFieldReturn {
   'id' : bigint,
   'minValue' : [] | [bigint],
   'sortOrder' : bigint,
+  'allowedValues' : Array<string>,
+  'unique' : boolean,
   'label_fa' : string,
   'label_sv' : string,
   'isLookupField' : boolean,
+  'perMember' : boolean,
   'placeholder_fa' : string,
   'placeholder_sv' : string,
   'required' : boolean,
+  'excludeFromCapacityWhenChecked' : boolean,
   'maxValue' : [] | [bigint],
   'options' : Array<{ 'fa' : string, 'sv' : string }>,
   'fieldType' : string,
@@ -88,8 +101,10 @@ export interface FormTemplateReturn {
   'description_sv' : string,
   'createdAt' : bigint,
   'fields' : Array<FormFieldReturn>,
+  'maxMembers' : bigint,
   'name_fa' : string,
   'name_sv' : string,
+  'minMembers' : bigint,
 }
 export interface HeroSlideReturn {
   'id' : bigint,
@@ -136,8 +151,18 @@ export interface RegistrationFieldValueReturn {
   'fieldLabel' : string,
   'fieldId' : bigint,
 }
+export interface RegistrationMemberReturn {
+  'values' : Array<RegistrationMemberValueReturn>,
+  'countsTowardCapacity' : boolean,
+}
+export interface RegistrationMemberValueReturn {
+  'value' : string,
+  'fieldLabel' : string,
+  'fieldId' : bigint,
+}
 export interface RegistrationReturn {
   'id' : bigint,
+  'members' : Array<RegistrationMemberReturn>,
   'name' : string,
   'createdAt' : bigint,
   'fieldValues' : Array<RegistrationFieldValueReturn>,
@@ -151,6 +176,7 @@ export interface RegistrationReturn {
 }
 export interface RegistrationWithStatusReturn {
   'id' : bigint,
+  'members' : Array<RegistrationMemberReturn>,
   'name' : string,
   'createdAt' : bigint,
   'fieldValues' : Array<
@@ -235,13 +261,12 @@ export type StreamingStrategy = {
     'Callback' : { 'token' : HttpToken, 'callback' : [Principal, string] }
   };
 export type SubmitRegistrationResult = { 'ok' : RegistrationWithStatusReturn } |
+  { 'duplicateValue' : bigint } |
   { 'invalidInput' : null } |
-  { 'duplicateEmail' : null } |
   { 'capacityFull' : null } |
   { 'sessionsUnavailable' : Array<bigint> } |
-  { 'phoneNotAllowed' : null } |
   { 'registrationDisabled' : null } |
-  { 'maxRegistrationsReached' : null };
+  { 'valueNotAllowed' : bigint };
 export interface TopicReturn {
   'id' : bigint,
   'description_fa' : string,
@@ -279,10 +304,6 @@ export interface _SERVICE {
       [] | [bigint],
       Array<FormFieldReturn>,
       Array<EventSessionReturn>,
-      [] | [bigint],
-      Array<string>,
-      [] | [bigint],
-      boolean,
       boolean,
       bigint,
     ],
@@ -297,11 +318,23 @@ export interface _SERVICE {
       string,
       Array<EventSessionReturn>,
       Array<FormFieldReturn>,
+      boolean,
+      bigint,
+      bigint,
     ],
     EventRegistrationTemplateReturn
   >,
   'createFormTemplate' : ActorMethod<
-    [string, string, string, string, string, Array<FormFieldReturn>],
+    [
+      string,
+      string,
+      string,
+      string,
+      string,
+      Array<FormFieldReturn>,
+      bigint,
+      bigint,
+    ],
     FormTemplateReturn
   >,
   'createSlide' : ActorMethod<
@@ -339,11 +372,27 @@ export interface _SERVICE {
   'deleteTopic' : ActorMethod<[string, bigint], boolean>,
   'getAboutContent' : ActorMethod<[], AboutContentReturn>,
   'getActivitiesByTopic' : ActorMethod<[bigint], Array<ActivityReturn>>,
+  'getActivitiesUsingEventTemplate' : ActorMethod<
+    [bigint],
+    Array<
+      {
+        'id' : bigint,
+        'liveRegistrationCount' : bigint,
+        'slug' : string,
+        'title_fa' : string,
+        'title_sv' : string,
+      }
+    >
+  >,
   'getActivity' : ActorMethod<[bigint], [] | [ActivityReturn]>,
   'getActivityBySlug' : ActorMethod<[bigint, string], [] | [ActivityReturn]>,
   'getActivityFormFields' : ActorMethod<
     [bigint],
     [] | [Array<FormFieldReturn>]
+  >,
+  'getActivityRegistrationConfig' : ActorMethod<
+    [bigint],
+    [] | [ActivityRegistrationConfigReturn]
   >,
   'getAllActivities' : ActorMethod<[], Array<ActivityReturn>>,
   'getAllRegistrations' : ActorMethod<[string], Array<RegistrationReturn>>,
@@ -393,6 +442,7 @@ export interface _SERVICE {
       bigint,
       Array<bigint>,
       Array<{ 'value' : string, 'fieldId' : bigint }>,
+      Array<Array<{ 'value' : string, 'fieldId' : bigint }>>,
     ],
     SubmitRegistrationResult
   >,
@@ -413,6 +463,7 @@ export interface _SERVICE {
       bigint,
       Array<bigint>,
       Array<{ 'value' : string, 'fieldId' : bigint }>,
+      Array<Array<{ 'value' : string, 'fieldId' : bigint }>>,
     ],
     SubmitRegistrationResult
   >,
@@ -440,10 +491,6 @@ export interface _SERVICE {
       [] | [bigint],
       Array<FormFieldReturn>,
       Array<EventSessionReturn>,
-      [] | [bigint],
-      Array<string>,
-      [] | [bigint],
-      boolean,
       boolean,
       bigint,
     ],
@@ -459,11 +506,24 @@ export interface _SERVICE {
       string,
       Array<EventSessionReturn>,
       Array<FormFieldReturn>,
+      boolean,
+      bigint,
+      bigint,
     ],
     [] | [EventRegistrationTemplateReturn]
   >,
   'updateFormTemplate' : ActorMethod<
-    [string, bigint, string, string, string, string, Array<FormFieldReturn>],
+    [
+      string,
+      bigint,
+      string,
+      string,
+      string,
+      string,
+      Array<FormFieldReturn>,
+      bigint,
+      bigint,
+    ],
     [] | [FormTemplateReturn]
   >,
   'updateSeoSettings' : ActorMethod<[string, SeoSettings], undefined>,
