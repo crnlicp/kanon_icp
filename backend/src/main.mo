@@ -1348,7 +1348,7 @@ persistent actor {
             resolveMember(members[i], pmConfig.perMemberFields, memberSessions, activity.sessions)
           });
           let eff = effectiveMemberCount(rms);
-          if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
+          if (eff > maxPersonCount) { return #invalidInput };
           effectivePersonCount := eff;
           resolvedMembers := ?rms;
           // Derive top-level session list from the union of all member lists
@@ -1713,7 +1713,7 @@ persistent actor {
                 resolveMember(newMembers[i], pmConfig.perMemberFields, memberSessions, activity.sessions)
               });
               let eff = effectiveMemberCount(rms);
-              if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
+              if (eff > maxPersonCount) { return #invalidInput };
               effectivePersonCount := eff;
               resolvedMembers := ?rms;
               if (pmConfig.perMemberSessionSelection) {

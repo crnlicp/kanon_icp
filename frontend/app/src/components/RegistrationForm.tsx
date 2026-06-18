@@ -45,21 +45,18 @@ function countMembersForCapacity(members: MemberValues[], perMemberFields: FormF
   }, 0);
 }
 
-/** True when the given member counts toward session capacity. */
-function memberCountsTowardCapacity(member: MemberValues, perMemberFields: FormFieldReturn[]): boolean {
-  const excludeFieldIds = perMemberFields
-    .filter((f) => f.fieldType === "checkbox" && f.excludeFromCapacityWhenChecked)
-    .map((f) => String(f.id));
-  if (excludeFieldIds.length === 0) return true;
-  return !excludeFieldIds.some((fid) => member[fid] === "true");
-}
-
 export default function RegistrationForm({ activityId, formFields, sessions, registrationConfig }: RegistrationFormProps) {
   const { t, localized } = useI18n();
   const perMemberMode = !!registrationConfig?.perMemberMode;
   const perMemberSessionSelection = !!registrationConfig?.perMemberSessionSelection;
-  const sharedFields = perMemberMode ? registrationConfig?.sharedFields ?? [] : null;
-  const perMemberFields = perMemberMode ? registrationConfig?.perMemberFields ?? [] : [];
+  const sharedFields = useMemo(
+    () => (perMemberMode ? registrationConfig?.sharedFields ?? [] : null),
+    [perMemberMode, registrationConfig?.sharedFields],
+  );
+  const perMemberFields = useMemo(
+    () => (perMemberMode ? registrationConfig?.perMemberFields ?? [] : []),
+    [perMemberMode, registrationConfig?.perMemberFields],
+  );
   // Min/max apply in both per-member and shared modes (general bounds for personCount).
   const minMembers = Number(registrationConfig?.minMembers ?? 1n);
   const maxMembers = Number(registrationConfig?.maxMembers ?? 20n);
@@ -154,13 +151,10 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
           : [];
 
         // Per-member session IDs (only when this mode is enabled).
-        // Excluded members (those not counted toward capacity) submit no sessions.
+        // Members excluded from capacity still report which sessions they
+        // attend; the backend skips them when computing per-session load.
         const memberSessionIdsPayload: bigint[][] | null = perMemberMode && perMemberSessionSelection
-          ? memberSessions.map((ids, i) =>
-              memberCountsTowardCapacity(members[i] ?? {}, perMemberFields)
-                ? ids.map(BigInt)
-                : [],
-            )
+          ? memberSessions.map((ids) => ids.map(BigInt))
           : null;
 
         // When per-member mode is on, the backend computes the effective person
@@ -512,7 +506,7 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
                     `m${idx}`,
                   );
                 })}
-                {perMemberSessionSelection && sessions.length > 0 && availability.length > 0 && memberCountsTowardCapacity(m, perMemberFields) && (
+                {perMemberSessionSelection && sessions.length > 0 && availability.length > 0 && (
                   <div className="pt-2">
                     <p className="text-xs text-white/40 mb-1.5">{t("sessions")}</p>
                     <SessionSelector
@@ -612,8 +606,8 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
         disabled={
           submitting ||
           (sessions.length > 0 && !(perMemberMode && perMemberSessionSelection) && selectedSessionIds.length === 0) ||
-          (perMemberMode && perMemberSessionSelection && members.some((m, i) =>
-            memberCountsTowardCapacity(m, perMemberFields) && (memberSessions[i]?.length ?? 0) === 0,
+          (perMemberMode && perMemberSessionSelection && members.some((_m, i) =>
+            (memberSessions[i]?.length ?? 0) === 0,
           )) ||
           (perMemberMode && (members.length < minMembers || members.length > maxMembers))
         }

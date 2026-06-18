@@ -44,19 +44,10 @@ function countMembersForCapacity(members: MemberValues[], perMemberFields: FormF
   }, 0);
 }
 
-/** True when the given member counts toward session capacity. */
-function memberCountsTowardCapacity(member: MemberValues, perMemberFields: FormFieldReturn[]): boolean {
-  const excludeFieldIds = perMemberFields
-    .filter((f) => f.fieldType === "checkbox" && f.excludeFromCapacityWhenChecked)
-    .map((f) => String(f.id));
-  if (excludeFieldIds.length === 0) return true;
-  return !excludeFieldIds.some((fid) => member[fid] === "true");
-}
-
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors";
 
-export default function RegistrationLookup({ activityId: _activityId, availability, lookupField, registrationConfig }: Props) {
+export default function RegistrationLookup({ availability, lookupField, registrationConfig }: Props) {
   const { t, lang, localized } = useI18n();
   const [open, setOpen] = useState(false);
   const [lookupId, setLookupId] = useState("");
@@ -79,10 +70,16 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
 
   const perMemberMode = !!registrationConfig?.perMemberMode;
   const perMemberSessionSelection = !!registrationConfig?.perMemberSessionSelection;
-  const perMemberFields = registrationConfig?.perMemberFields ?? [];
+  const perMemberFields = useMemo(
+    () => registrationConfig?.perMemberFields ?? [],
+    [registrationConfig?.perMemberFields],
+  );
   // Shared fields: all non-perMember activity fields (still relevant in shared mode).
   // Lookup field is included but rendered read-only so users don't lock themselves out.
-  const sharedFields = registrationConfig?.sharedFields ?? [];
+  const sharedFields = useMemo(
+    () => registrationConfig?.sharedFields ?? [],
+    [registrationConfig?.sharedFields],
+  );
   const minMembers = perMemberMode ? Number(registrationConfig?.minMembers ?? 1n) : 1;
   const maxMembers = perMemberMode ? Number(registrationConfig?.maxMembers ?? 20n) : 20;
 
@@ -215,11 +212,7 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
         ? BigInt(effectiveModifyCount || 1)
         : BigInt(modifyPersonCount);
       const memberSessionIdsPayload: bigint[][] | null = perMemberMode && perMemberSessionSelection
-        ? modifyMemberSessions.map((ids, i) =>
-            memberCountsTowardCapacity(modifyMembers[i] ?? {}, perMemberFields)
-              ? ids.map(BigInt)
-              : [],
-          )
+        ? modifyMemberSessions.map((ids) => ids.map(BigInt))
         : null;
       const topSessionIds = perMemberMode && perMemberSessionSelection
         ? []
@@ -718,7 +711,7 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                               </div>
                             );
                           })}
-                          {perMemberSessionSelection && availability.length > 0 && memberCountsTowardCapacity(m, perMemberFields) && (
+                          {perMemberSessionSelection && availability.length > 0 && (
                             <div className="pt-2">
                               <p className="text-xs text-white/40 mb-1.5">{t("sessions")}</p>
                               <SessionSelector
@@ -763,8 +756,8 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                       disabled={
                         modifying ||
                         (perMemberMode && (modifyMembers.length < minMembers || modifyMembers.length > maxMembers)) ||
-                        (perMemberMode && perMemberSessionSelection && modifyMembers.some((m, i) =>
-                          memberCountsTowardCapacity(m, perMemberFields) && (modifyMemberSessions[i]?.length ?? 0) === 0,
+                        (perMemberMode && perMemberSessionSelection && modifyMembers.some((_m, i) =>
+                          (modifyMemberSessions[i]?.length ?? 0) === 0,
                         )) ||
                         (availability.length > 0 && !(perMemberMode && perMemberSessionSelection) && modifySessionIds.length === 0)
                       }
