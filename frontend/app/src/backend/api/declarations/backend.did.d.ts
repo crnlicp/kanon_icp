@@ -16,6 +16,7 @@ export interface AboutContentReturn {
   'body_sv' : string,
 }
 export interface ActivityRegistrationConfigReturn {
+  'perMemberSessionSelection' : boolean,
   'perMemberFields' : Array<FormFieldReturn>,
   'sharedFields' : Array<FormFieldReturn>,
   'activityId' : bigint,
@@ -57,6 +58,7 @@ export interface ContactMessageReturn {
 }
 export interface EventRegistrationTemplateReturn {
   'id' : bigint,
+  'perMemberSessionSelection' : boolean,
   'description_fa' : string,
   'description_sv' : string,
   'createdAt' : bigint,
@@ -153,6 +155,7 @@ export interface RegistrationFieldValueReturn {
 }
 export interface RegistrationMemberReturn {
   'values' : Array<RegistrationMemberValueReturn>,
+  'selectedSessions' : Array<SessionStatusReturn>,
   'countsTowardCapacity' : boolean,
 }
 export interface RegistrationMemberValueReturn {
@@ -262,6 +265,7 @@ export type StreamingStrategy = {
   };
 export type SubmitRegistrationResult = { 'ok' : RegistrationWithStatusReturn } |
   { 'duplicateValue' : bigint } |
+  { 'sessionsRequireBuffer' : Array<bigint> } |
   { 'invalidInput' : null } |
   { 'capacityFull' : null } |
   { 'sessionsUnavailable' : Array<bigint> } |
@@ -318,6 +322,7 @@ export interface _SERVICE {
       string,
       Array<EventSessionReturn>,
       Array<FormFieldReturn>,
+      boolean,
       boolean,
       bigint,
       bigint,
@@ -443,6 +448,8 @@ export interface _SERVICE {
       Array<bigint>,
       Array<{ 'value' : string, 'fieldId' : bigint }>,
       Array<Array<{ 'value' : string, 'fieldId' : bigint }>>,
+      [] | [Array<Array<bigint>>],
+      boolean,
     ],
     SubmitRegistrationResult
   >,
@@ -464,6 +471,8 @@ export interface _SERVICE {
       Array<bigint>,
       Array<{ 'value' : string, 'fieldId' : bigint }>,
       Array<Array<{ 'value' : string, 'fieldId' : bigint }>>,
+      [] | [Array<Array<bigint>>],
+      boolean,
     ],
     SubmitRegistrationResult
   >,
@@ -506,6 +515,7 @@ export interface _SERVICE {
       string,
       Array<EventSessionReturn>,
       Array<FormFieldReturn>,
+      boolean,
       boolean,
       bigint,
       bigint,

@@ -534,5 +534,5 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 3n, fieldType: "phone", label_fa: "تماس اضطراری", label_sv: "Nödkontakt", placeholder_fa: "", placeholder_sv: "", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
       { id: 4n, fieldType: "select", label_fa: "سطح آمادگی", label_sv: "Konditionsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n, perMemberSessionSelection: false },
 ];

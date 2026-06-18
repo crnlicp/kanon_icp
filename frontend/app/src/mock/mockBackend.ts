@@ -142,6 +142,7 @@ export const mockBackend: backendInterface = {
       activityId,
       hasRegistration: activity.hasRegistration,
       perMemberMode: perMemberFields.length > 0,
+      perMemberSessionSelection: false,
       minMembers: 1n,
       maxMembers: 20n,
       sharedFields,
@@ -222,11 +223,11 @@ export const mockBackend: backendInterface = {
 
   async getEventRegistrationTemplates() { return mockEventRegistrationTemplates; },
   async getEventRegistrationTemplate(id: bigint) { return mockEventRegistrationTemplates.find((t) => t.id === id) ?? null; },
-  async createEventRegistrationTemplate(_token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, minMembers: bigint, maxMembers: bigint) {
-    return { id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: BigInt(Date.now()) * 1_000_000n, perMemberMode, minMembers, maxMembers };
+  async createEventRegistrationTemplate(_token: string, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, perMemberSessionSelection: boolean, minMembers: bigint, maxMembers: bigint) {
+    return { id: BigInt(Date.now()), name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: BigInt(Date.now()) * 1_000_000n, perMemberMode, minMembers, maxMembers, perMemberSessionSelection };
   },
-  async updateEventRegistrationTemplate(_token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, minMembers: bigint, maxMembers: bigint) {
-    return { id, name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: 0n, perMemberMode, minMembers, maxMembers };
+  async updateEventRegistrationTemplate(_token: string, id: bigint, name_fa: string, name_sv: string, description_fa: string, description_sv: string, sessions: import("../backend/api/backend").EventSessionReturn[], fields: import("../backend/api/backend").FormFieldReturn[], perMemberMode: boolean, perMemberSessionSelection: boolean, minMembers: bigint, maxMembers: bigint) {
+    return { id, name_fa, name_sv, description_fa, description_sv, sessions, fields, createdAt: 0n, perMemberMode, minMembers, maxMembers, perMemberSessionSelection };
   },
   async deleteEventRegistrationTemplate() { return true; },
   async getActivitiesUsingEventTemplate(_id: bigint) { return [] as { id: bigint; slug: string; title_fa: string; title_sv: string; liveRegistrationCount: bigint }[]; },
@@ -269,7 +270,7 @@ export const mockBackend: backendInterface = {
     return { id: BigInt(Date.now()), name, email, phone, message, createdAt: BigInt(Date.now()) * 1_000_000n };
   },
 
-  async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues, _members) {
+  async submitRegistration(activityId, name, email, phone, message, personCount, _selectedSessionIds, _fieldValues, _members, _memberSessionIds, _acceptBuffer) {
     return { __kind__: "ok" as const, ok: { id: BigInt(Date.now()), activityId, name, email, phone, message, personCount, selectedSessions: [], fieldValues: [], createdAt: BigInt(Date.now()) * 1_000_000n, archived: false, members: [] } };
   },
 
@@ -367,7 +368,7 @@ export const mockBackend: backendInterface = {
     });
   },
 
-  async modifyRegistration(id, lookupValue, newPersonCount, _newSessionIds, _fieldValues, _newMembers) {
+  async modifyRegistration(id, lookupValue, newPersonCount, _newSessionIds, _fieldValues, _newMembers, _newMemberSessionIds, _acceptBuffer) {
     const reg = mockRegistrations.find((r) => {
       if (r.id !== id) return false;
       if (r.phone === lookupValue) return true;

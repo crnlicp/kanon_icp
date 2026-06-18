@@ -518,5 +518,5 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 3n, fieldType: "radio", label_fa: "شرکت می‌کنید به‌عنوان", label_sv: "Du deltar som", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "تیم", sv: "Team" }, { fa: "فردی", sv: "Individ" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
       { id: 4n, fieldType: "select", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "انتخاب کنید", placeholder_sv: "Välj", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n },
+    createdAt: 1748000000000000000n, perMemberMode: false, minMembers: 1n, maxMembers: 20n, perMemberSessionSelection: false },
 ];

@@ -18,6 +18,7 @@ interface TemplateItem {
   perMemberMode: boolean;
   minMembers: bigint;
   maxMembers: bigint;
+  perMemberSessionSelection: boolean;
 }
 
 interface UsageItem {
@@ -43,6 +44,7 @@ const emptyForm = {
   perMemberMode: false,
   minMembers: 1n,
   maxMembers: 20n,
+  perMemberSessionSelection: false,
 };
 
 export default function AdminEventRegistrationTemplates({ token, readOnly }: Props) {
@@ -82,6 +84,7 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
           form.sessions,
           form.fields,
           form.perMemberMode,
+          form.perMemberSessionSelection,
           form.minMembers,
           form.maxMembers,
         );
@@ -94,6 +97,7 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
           form.sessions,
           form.fields,
           form.perMemberMode,
+          form.perMemberSessionSelection,
           form.minMembers,
           form.maxMembers,
         );
@@ -131,6 +135,7 @@ export default function AdminEventRegistrationTemplates({ token, readOnly }: Pro
       perMemberMode: tmpl.perMemberMode,
       minMembers: tmpl.minMembers,
       maxMembers: tmpl.maxMembers,
+      perMemberSessionSelection: tmpl.perMemberSessionSelection,
     });
     setShowForm(true);
     // Fetch which activities currently bind to this template so the admin can

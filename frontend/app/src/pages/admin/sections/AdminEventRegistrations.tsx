@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore, Check, ChevronDown, ChevronUp } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
-import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn } from "../../../backend/api/backend";
+import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn, ActivityRegistrationConfigReturn } from "../../../backend/api/backend";
 
 interface Props {
   token: string;
@@ -21,6 +21,7 @@ interface RegItem {
   members: {
     countsTowardCapacity: boolean;
     values: { fieldId: number; fieldLabel: string; value: string }[];
+    selectedSessions: { sessionId: number; sessionName: string; status: string }[];
   }[];
   createdAt: number;
   archived: boolean;
@@ -41,6 +42,7 @@ export default function AdminEventRegistrations({ token }: Props) {
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
   const [sessionFilter, setSessionFilter] = useState<number | "all">("all");
+  const [activityConfig, setActivityConfig] = useState<ActivityRegistrationConfigReturn | null>(null);
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [expandedMembers, setExpandedMembers] = useState<Record<number, boolean>>({});
@@ -79,11 +81,13 @@ export default function AdminEventRegistrations({ token }: Props) {
     setLoading(true);
     try {
       const { backend } = await import("../../../actor");
-      const [data, stats] = await Promise.all([
+      const [data, stats, cfg] = await Promise.all([
         backend.getRegistrationsWithStatus(token, BigInt(selectedActivityId)),
         backend.getSessionStats(token, BigInt(selectedActivityId)),
+        backend.getActivityRegistrationConfig(BigInt(selectedActivityId)),
       ]);
       setSessionStats(stats);
+      setActivityConfig(cfg);
       setSessionFilter("all");
       setRegistrations(
         data
@@ -110,6 +114,11 @@ export default function AdminEventRegistrations({ token }: Props) {
                 fieldId: Number(v.fieldId),
                 fieldLabel: v.fieldLabel,
                 value: v.value,
+              })),
+              selectedSessions: (m.selectedSessions ?? []).map((ss) => ({
+                sessionId: Number(ss.sessionId),
+                sessionName: ss.sessionName,
+                status: ss.status,
               })),
             })),
             createdAt: Number(r.createdAt),
@@ -156,6 +165,41 @@ export default function AdminEventRegistrations({ token }: Props) {
   const visibleRegistrations = registrations
     .filter((r) => showArchived || !r.archived)
     .filter((r) => sessionFilter === "all" || r.selectedSessions.some((ss) => ss.sessionId === sessionFilter));
+
+  // Backend stores labels as "fa / sv". Pick the part matching the current language.
+  const localizedLabel = (label: string) => {
+    const parts = label.split(" / ");
+    if (parts.length < 2) return label;
+    return lang === "fa" ? parts[0] : parts.slice(1).join(" / ");
+  };
+
+  // Re-resolve a field label from the current activity config (so renamed or
+  // "Field N" snapshots still display the real label in the user's language).
+  const fieldLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    if (activityConfig) {
+      for (const f of [...activityConfig.sharedFields, ...activityConfig.perMemberFields]) {
+        map.set(Number(f.id), lang === "fa" ? f.label_fa : f.label_sv);
+      }
+    }
+    return map;
+  }, [activityConfig, lang]);
+
+  const resolveFieldLabel = (fieldId: number, storedLabel: string) =>
+    fieldLabelById.get(fieldId) ?? localizedLabel(storedLabel);
+
+  // Re-resolve session names from sessionStats so chips always show the current
+  // localized name rather than the "fa / sv" snapshot.
+  const sessionNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const ss of sessionStats) {
+      map.set(Number(ss.sessionId), lang === "fa" ? ss.name_fa : ss.name_sv);
+    }
+    return map;
+  }, [sessionStats, lang]);
+
+  const resolveSessionName = (sessionId: number, storedName: string) =>
+    sessionNameById.get(sessionId) ?? localizedLabel(storedName);
 
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
@@ -318,31 +362,37 @@ export default function AdminEventRegistrations({ token }: Props) {
                 </div>
               </div>
 
-              {/* Session chips */}
-              {reg.selectedSessions.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {reg.selectedSessions.map((ss) => {
-                    const isBuffer = ss.status === "buffer";
-                    return (
-                      <span
-                        key={ss.sessionId}
-                        className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
-                          isBuffer
-                            ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
-                            : "bg-white/[0.06] text-white/60 border-white/10"
-                        }`}
-                      >
-                        {ss.sessionName}
-                        {isBuffer && (
-                          <span className="text-[10px] uppercase tracking-wide font-semibold">
-                            {t("buffer")}
-                          </span>
-                        )}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              {/* Session chips — show top-level union for shared-session mode,
+                  show per-member chips inside each member card for per-member mode. */}
+              {(() => {
+                const hasPerMemberSessions = reg.members.some((m) => m.selectedSessions.length > 0);
+                if (hasPerMemberSessions) return null;
+                if (reg.selectedSessions.length === 0) return null;
+                return (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {reg.selectedSessions.map((ss) => {
+                      const isBuffer = ss.status === "buffer";
+                      return (
+                        <span
+                          key={ss.sessionId}
+                          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
+                            isBuffer
+                              ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                              : "bg-white/[0.06] text-white/60 border-white/10"
+                          }`}
+                        >
+                          {resolveSessionName(ss.sessionId, ss.sessionName)}
+                          {isBuffer && (
+                            <span className="text-[10px] uppercase tracking-wide font-semibold">
+                              {t("buffer")}
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               {reg.fieldValues.length > 0 && (
                 <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
@@ -352,7 +402,7 @@ export default function AdminEventRegistrations({ token }: Props) {
                     const isTrue = fv.value === "true";
                     return (
                       <div key={fvIdx} className="flex items-start gap-2 text-sm">
-                        <span className="text-white/40 shrink-0 min-w-[100px]">{fv.fieldLabel}:</span>
+                        <span className="text-white/40 shrink-0 min-w-[100px]">{resolveFieldLabel(fv.fieldId, fv.fieldLabel)}:</span>
                         {isTrue ? (
                           <Check size={14} className="text-green-400 mt-0.5" />
                         ) : (
@@ -396,7 +446,7 @@ export default function AdminEventRegistrations({ token }: Props) {
                               const isTrue = v.value === "true";
                               return (
                                 <div key={vIdx} className="flex items-start gap-2">
-                                  <span className="text-white/40 shrink-0 min-w-[100px]">{v.fieldLabel}:</span>
+                                  <span className="text-white/40 shrink-0 min-w-[100px]">{resolveFieldLabel(v.fieldId, v.fieldLabel)}:</span>
                                   {isTrue ? (
                                     <Check size={14} className="text-green-400 mt-0.5" />
                                   ) : (
@@ -406,6 +456,22 @@ export default function AdminEventRegistrations({ token }: Props) {
                               );
                             })}
                           </div>
+                          {m.selectedSessions.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {m.selectedSessions.map((ss) => (
+                                <span
+                                  key={ss.sessionId}
+                                  className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                                    ss.status === "confirmed"
+                                      ? "bg-green-500/15 text-green-400 border-green-500/20"
+                                      : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                                  }`}
+                                >
+                                  {resolveSessionName(ss.sessionId, ss.sessionName)} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

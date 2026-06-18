@@ -343,31 +343,35 @@ async function seedEventTemplates(
   section("Creating event registration templates");
   const map = new Map<string, bigint>();
 
-  const sessions: EventSessionReturn[] = moharramEventTemplate.sessions.map((s, i) => ({
-    id: BigInt(i + 1),
-    sortOrder: BigInt(i + 1),
-    date: s.date ?? "",
-    name_fa: s.name_fa,
-    name_sv: s.name_sv,
-    capacity: BigInt(s.capacity),
-    bufferCapacity: BigInt(s.bufferCapacity),
-  }));
-  const fields: FormFieldReturn[] = moharramEventTemplate.fields.map((f, i) => field(i, f));
+  const eventTemplates = [moharramEventTemplate];
+  for (const template of eventTemplates) {
+    const sessions: EventSessionReturn[] = template.sessions.map((s, i) => ({
+      id: BigInt(i + 1),
+      sortOrder: BigInt(i + 1),
+      date: s.date ?? "",
+      name_fa: s.name_fa,
+      name_sv: s.name_sv,
+      capacity: BigInt(s.capacity),
+      bufferCapacity: BigInt(s.bufferCapacity),
+    }));
+    const fields: FormFieldReturn[] = template.fields.map((f, i) => field(i, f));
 
-  const tpl = await backend.createEventRegistrationTemplate(
-    token,
-    moharramEventTemplate.name_fa,
-    moharramEventTemplate.name_sv,
-    moharramEventTemplate.description_fa,
-    moharramEventTemplate.description_sv,
-    sessions,
-    fields,
-    moharramEventTemplate.perMemberMode,
-    BigInt(moharramEventTemplate.minMembers),
-    BigInt(moharramEventTemplate.maxMembers)
-  );
-  log(`Template '${moharramEventTemplate.name_sv}' created (id=${tpl.id})`);
-  map.set(moharramEventTemplate.key, tpl.id);
+    const tpl = await backend.createEventRegistrationTemplate(
+      token,
+      template.name_fa,
+      template.name_sv,
+      template.description_fa,
+      template.description_sv,
+      sessions,
+      fields,
+      template.perMemberMode,
+      template.perMemberSessionSelection ?? false,
+      BigInt(template.minMembers),
+      BigInt(template.maxMembers)
+    );
+    log(`Template '${template.name_sv}' created (id=${tpl.id})`);
+    map.set(template.key, tpl.id);
+  }
   return map;
 }
 

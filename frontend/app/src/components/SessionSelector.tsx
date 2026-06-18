@@ -14,6 +14,8 @@ interface Props {
    * where the spot count is derived from the member list.
    */
   disablePersonCounter?: boolean;
+  /** When true, the person-count UI is removed entirely (header included). */
+  hidePersonCounter?: boolean;
   /** Minimum allowed person count (default 1). */
   minPersonCount?: number;
   /** Maximum allowed person count (default 20). */
@@ -28,6 +30,7 @@ export default function SessionSelector({
   onPersonCountChange,
   unavailableIds = [],
   disablePersonCounter = false,
+  hidePersonCounter = false,
   minPersonCount = 1,
   maxPersonCount = 20,
 }: Props) {
@@ -46,7 +49,7 @@ export default function SessionSelector({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {sorted.map((session) => {
           const id = Number(session.sessionId);
           const isSelected = selectedIds.includes(id);
@@ -78,7 +81,7 @@ export default function SessionSelector({
           return (
             <label
               key={id}
-              className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
+              className={`flex flex-col gap-1.5 p-3 rounded-xl border transition-colors cursor-pointer ${
                 isDisabled
                   ? "opacity-50 cursor-not-allowed border-white/5 bg-white/[0.02]"
                   : isSelected
@@ -86,36 +89,40 @@ export default function SessionSelector({
                   : "border-white/10 bg-white/[0.03] hover:border-white/20"
               } ${isUnavailable ? "border-red-500/40" : ""}`}
             >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => toggle(id, isDisabled)}
-                disabled={isDisabled}
-                className="mt-0.5 w-4 h-4 accent-primary shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`text-sm font-medium ${isDisabled ? "text-white/40" : "text-white"}`}>
-                    {localized(session.name_fa, session.name_sv)}
-                  </span>
-                  {session.date && (
-                    <span className="text-xs text-white/40">{session.date}</span>
-                  )}
-                  <span className={`text-xs px-2 py-0.5 rounded-full border ${badgeClass}`}>
-                    {badgeText}
-                  </span>
-                </div>
-                {isUnavailable && (
-                  <p className="text-xs text-red-400 mt-1">{t("nowFullDeselect")}</p>
-                )}
+              {/* Row 1: checkbox + title */}
+              <div className="flex items-center gap-2 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggle(id, isDisabled)}
+                  disabled={isDisabled}
+                  className="w-4 h-4 accent-primary shrink-0"
+                />
+                <span
+                  className={`text-sm font-medium truncate ${isDisabled ? "text-white/40" : "text-white"}`}
+                  title={localized(session.name_fa, session.name_sv)}
+                >
+                  {localized(session.name_fa, session.name_sv)}
+                </span>
               </div>
+              {/* Row 2: date */}
+              <div className="text-xs text-white/40 min-h-[1rem]">{session.date || ""}</div>
+              {/* Row 3: capacity badge */}
+              <div>
+                <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full border ${badgeClass}`}>
+                  {badgeText}
+                </span>
+              </div>
+              {isUnavailable && (
+                <p className="text-xs text-red-400">{t("nowFullDeselect")}</p>
+              )}
             </label>
           );
         })}
       </div>
 
       {/* Person count */}
-      {disablePersonCounter ? (
+      {hidePersonCounter ? null : disablePersonCounter ? (
         <div className="flex items-center gap-3">
           <label className="text-sm text-white/70 shrink-0">{t("spotsNeeded")}</label>
           <span className="text-white font-semibold">{personCount}</span>

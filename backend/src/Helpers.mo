@@ -85,6 +85,7 @@ module {
       fields         = Array.map<T.FormField, T.FormFieldReturn>(t.fields, fieldToReturn);
       createdAt      = t.createdAt;
       perMemberMode  = switch (t.perMemberMode) { case (?b) b; case null false };
+      perMemberSessionSelection = switch (t.perMemberSessionSelection) { case (?b) b; case null false };
       minMembers     = switch (t.minMembers) { case (?n) n; case null 1 };
       maxMembers     = switch (t.maxMembers) { case (?n) n; case null 20 };
     }
@@ -97,6 +98,22 @@ module {
         m.values,
         func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
       );
+      selectedSessions = [];
+    }
+  };
+
+  // Variant used when per-member statuses have already been computed.
+  public func memberToReturnWithStatus(
+    m : T.RegistrationMember,
+    statuses : [T.SessionStatusReturn],
+  ) : T.RegistrationMemberReturn {
+    {
+      countsTowardCapacity = m.countsTowardCapacity;
+      values = Array.map<T.RegistrationFieldValue, T.RegistrationMemberValueReturn>(
+        m.values,
+        func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
+      );
+      selectedSessions = statuses;
     }
   };
 
@@ -227,25 +244,58 @@ module {
     }
   };
 
+  // Variant that includes per-member session statuses. Use when the activity
+  // is loaded so per-member capacity assignments can be computed.
+  public func regToReturnWithStatusFull(
+    r : T.Registration,
+    sessionStatuses : [T.SessionStatusReturn],
+    perMemberStatuses : [[T.SessionStatusReturn]],
+  ) : T.RegistrationWithStatusReturn {
+    let mems = switch (r.members) {
+      case (?arr) {
+        Array.tabulate<T.RegistrationMemberReturn>(arr.size(), func (i) {
+          let st = if (i < perMemberStatuses.size()) perMemberStatuses[i] else [];
+          memberToReturnWithStatus(arr[i], st)
+        })
+      };
+      case null { [] };
+    };
+    {
+      id               = r.id;
+      activityId       = r.activityId;
+      name             = r.name;
+      email            = r.email;
+      phone            = r.phone;
+      message          = r.message;
+      personCount      = r.personCount;
+      selectedSessions = sessionStatuses;
+      fieldValues      = Array.map<T.RegistrationFieldValue, { fieldId : Nat; fieldLabel : Text; value : Text }>(
+        r.fieldValues,
+        func (fv) { { fieldId = fv.fieldId; fieldLabel = fv.fieldLabel; value = fv.value } }
+      );
+      createdAt        = r.createdAt;
+      archived         = switch (r.archived) { case (?b) b; case null false };
+      members          = mems;
+    }
+  };
+
   // Compute per-session statuses for a registration.
   // allRegsForActivity: all registrations for this activity (including the target).
   // excludeRegId: if set, exclude that reg from the "before" count (used for modify).
+  //
+  // For per-member-session registrations, each session's status is reported
+  // as "buffer" if any of the registration's members for that session lands in
+  // buffer; "confirmed" otherwise.
   public func computeSessionStatuses(
     allRegsForActivity : [T.Registration],
     targetReg          : T.Registration,
     sessions           : [T.EventSession],
     excludeRegId       : ?Nat,
   ) : [T.SessionStatusReturn] {
-    // Sort registrations by createdAt ascending (first-come-first-served)
-    let sorted = Array.sort<T.Registration>(
-      allRegsForActivity,
-      func (a, b) { Int.compare(a.createdAt, b.createdAt) }
-    );
-
+    let perMember = regUsesPerMemberSessions(targetReg);
     Array.map<T.RegistrationSessionSnapshot, T.SessionStatusReturn>(
       targetReg.selectedSessions,
       func (snap) {
-        // Find capacity info for this session
         var cap : Nat = 0;
         var buf : Nat = 0;
         for (s in sessions.vals()) {
@@ -254,29 +304,28 @@ module {
             buf := s.bufferCapacity;
           };
         };
+        let running = sessionRunningBefore(allRegsForActivity, snap.sessionId, targetReg, excludeRegId);
 
-        // Count people registered for this session BEFORE the target (by arrival time)
-        var before : Nat = 0;
-        for (reg in sorted.vals()) {
-          // Skip the excluded reg (used in modify to not count the old version)
-          let shouldSkip = switch (excludeRegId) {
-            case (?eid) { reg.id == eid };
-            case null   { false };
-          };
-          // Only count regs that arrived before the target and include this session
-          if (not shouldSkip and reg.id != targetReg.id and reg.createdAt <= targetReg.createdAt) {
-            for (ss in reg.selectedSessions.vals()) {
-              if (ss.sessionId == snap.sessionId) {
-                before += reg.personCount;
+        let status = if (perMember) {
+          // Determine status for each counting member that is in this session;
+          // any buffer assignment makes the aggregate status "buffer".
+          var anyBuffer = false;
+          var pos = running;
+          switch (targetReg.members) {
+            case (?ms) {
+              for (m in ms.vals()) {
+                if (m.countsTowardCapacity and memberInSession(targetReg, m, snap.sessionId)) {
+                  if (pos >= cap) { anyBuffer := true };
+                  pos += 1;
+                };
               };
             };
+            case null {};
           };
-        };
-
-        let status = if (before + targetReg.personCount <= cap) {
-          "confirmed"
+          if (anyBuffer) "buffer" else "confirmed"
         } else {
-          "buffer"
+          // Atomic: whole personCount must fit within cap to be confirmed
+          if (running + targetReg.personCount <= cap) "confirmed" else "buffer"
         };
 
         { sessionId = snap.sessionId; sessionName = snap.sessionName; status }
@@ -284,8 +333,127 @@ module {
     )
   };
 
-  // Compute (confirmedCount, bufferCount) for a session from a list of registrations.
-  // excludeRegId: if set, exclude that reg's contribution (used during modify validation).
+  // Compute per-member statuses for each session that member is registered for.
+  // Returned outer array matches `targetReg.members` order; inner arrays list
+  // SessionStatusReturn for the member's effective session list (own list when
+  // present; otherwise reg.selectedSessions).
+  public func computePerMemberStatuses(
+    allRegsForActivity : [T.Registration],
+    targetReg          : T.Registration,
+    sessions           : [T.EventSession],
+    excludeRegId       : ?Nat,
+  ) : [[T.SessionStatusReturn]] {
+    switch (targetReg.members) {
+      case null { [] };
+      case (?ms) {
+        // Pre-compute per-session running offset and (cap, buf), and an
+        // ordered list of "counting in-session member indices" so each member
+        // can be assigned the right slot.
+        Array.tabulate<[T.SessionStatusReturn]>(ms.size(), func (mIdx) {
+          let m = ms[mIdx];
+          let sessList = switch (m.selectedSessions) {
+            case (?ss) ss;
+            case null targetReg.selectedSessions;
+          };
+          Array.map<T.RegistrationSessionSnapshot, T.SessionStatusReturn>(sessList, func (snap) {
+            var cap : Nat = 0;
+            for (s in sessions.vals()) {
+              if (s.id == snap.sessionId) { cap := s.capacity };
+            };
+            let running = sessionRunningBefore(allRegsForActivity, snap.sessionId, targetReg, excludeRegId);
+            // Position within target reg: count earlier counting members in this session.
+            var pos = running;
+            var i : Nat = 0;
+            while (i < mIdx) {
+              let earlier = ms[i];
+              if (earlier.countsTowardCapacity and memberInSession(targetReg, earlier, snap.sessionId)) {
+                pos += 1;
+              };
+              i += 1;
+            };
+            let status = if (not m.countsTowardCapacity) {
+              // Members not counting toward capacity track the registration's
+              // collective status instead; default to confirmed when no slot is needed.
+              "confirmed"
+            } else if (pos < cap) {
+              "confirmed"
+            } else {
+              "buffer"
+            };
+            { sessionId = snap.sessionId; sessionName = snap.sessionName; status }
+          })
+        })
+      };
+    }
+  };
+
+  // Determine whether a registration uses per-member session selection.
+  // Returns true if any of its members has its own selectedSessions list.
+  public func regUsesPerMemberSessions(reg : T.Registration) : Bool {
+    switch (reg.members) {
+      case (?ms) {
+        for (m in ms.vals()) {
+          switch (m.selectedSessions) { case (?_) { return true }; case null {} };
+        };
+        false
+      };
+      case null { false };
+    }
+  };
+
+  // How many slots a registration contributes to a given session, and whether
+  // that contribution is atomic (whole personCount block — legacy mode) or
+  // per-individual unit (per-member session selection).
+  public func regSessionUnits(reg : T.Registration, sessionId : Nat) : { count : Nat; atomic : Bool } {
+    if (regUsesPerMemberSessions(reg)) {
+      var n : Nat = 0;
+      switch (reg.members) {
+        case (?ms) {
+          for (m in ms.vals()) {
+            if (m.countsTowardCapacity) {
+              let sessList = switch (m.selectedSessions) {
+                case (?ss) ss;
+                case null reg.selectedSessions;
+              };
+              for (snap in sessList.vals()) {
+                if (snap.sessionId == sessionId) { n += 1 };
+              };
+            };
+          };
+        };
+        case null {};
+      };
+      return { count = n; atomic = false };
+    };
+    // Legacy / shared-sessions: whole personCount applies if reg has the session
+    var has = false;
+    for (snap in reg.selectedSessions.vals()) {
+      if (snap.sessionId == sessionId) { has := true };
+    };
+    if (has) { { count = reg.personCount; atomic = true } } else { { count = 0; atomic = true } }
+  };
+
+  // Whether a particular member of a per-member-session registration is
+  // signed up for the given session. For shared-sessions registrations, this
+  // returns the registration-level membership.
+  public func memberInSession(reg : T.Registration, member : T.RegistrationMember, sessionId : Nat) : Bool {
+    let sessList = switch (member.selectedSessions) {
+      case (?ss) ss;
+      case null reg.selectedSessions;
+    };
+    for (snap in sessList.vals()) {
+      if (snap.sessionId == sessionId) { return true };
+    };
+    false
+  };
+
+  // Compute (confirmed, buffer, atomicHardFail) for a single session, and
+  // also return per-unit confirmed/buffer assignment so callers can map back
+  // to individual members. running counts atomic blocks fully and per-unit
+  // contributions one slot at a time.
+  //
+  // excludeRegId: if set, exclude that reg's contribution (used during modify
+  // validation).
   public func computeSessionCounts(
     regsForActivity : [T.Registration],
     sessionId       : Nat,
@@ -308,22 +476,57 @@ module {
         case null   { false };
       };
       if (not shouldSkip) {
-        var hasSession = false;
-        for (ss in reg.selectedSessions.vals()) {
-          if (ss.sessionId == sessionId) { hasSession := true };
-        };
-        if (hasSession) {
-          if (running + reg.personCount <= cap) {
-            confirmed += reg.personCount;
-          } else if (running + reg.personCount <= cap + buf) {
-            buffer += reg.personCount;
+        let units = regSessionUnits(reg, sessionId);
+        if (units.count > 0) {
+          if (units.atomic) {
+            if (running + units.count <= cap) {
+              confirmed += units.count;
+            } else if (running + units.count <= cap + buf) {
+              buffer += units.count;
+            };
+            running += units.count;
+          } else {
+            var i : Nat = 0;
+            while (i < units.count) {
+              if (running < cap) { confirmed += 1 }
+              else if (running < cap + buf) { buffer += 1 };
+              running += 1;
+              i += 1;
+            };
           };
-          running += reg.personCount;
         };
       };
     };
 
     (confirmed, buffer)
+  };
+
+  // Compute the running offset (= total slots already taken before the
+  // target reg arrives) for a given session. Used to derive per-member
+  // statuses for the target without rebuilding the global counts.
+  public func sessionRunningBefore(
+    regsForActivity : [T.Registration],
+    sessionId       : Nat,
+    targetReg       : T.Registration,
+    excludeRegId    : ?Nat,
+  ) : Nat {
+    let sorted = Array.sort<T.Registration>(
+      regsForActivity,
+      func (a, b) { Int.compare(a.createdAt, b.createdAt) }
+    );
+    var running : Nat = 0;
+    label scan for (reg in sorted.vals()) {
+      if (reg.id == targetReg.id) { break scan };
+      let shouldSkip = switch (excludeRegId) {
+        case (?eid) { reg.id == eid };
+        case null   { false };
+      };
+      if (not shouldSkip) {
+        let units = regSessionUnits(reg, sessionId);
+        running += units.count;
+      };
+    };
+    running
   };
 
   public func socialToReturn(s : T.SocialLink) : T.SocialLinkReturn {

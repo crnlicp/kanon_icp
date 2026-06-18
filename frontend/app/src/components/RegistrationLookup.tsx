@@ -44,6 +44,15 @@ function countMembersForCapacity(members: MemberValues[], perMemberFields: FormF
   }, 0);
 }
 
+/** True when the given member counts toward session capacity. */
+function memberCountsTowardCapacity(member: MemberValues, perMemberFields: FormFieldReturn[]): boolean {
+  const excludeFieldIds = perMemberFields
+    .filter((f) => f.fieldType === "checkbox" && f.excludeFromCapacityWhenChecked)
+    .map((f) => String(f.id));
+  if (excludeFieldIds.length === 0) return true;
+  return !excludeFieldIds.some((fid) => member[fid] === "true");
+}
+
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors";
 
@@ -61,12 +70,15 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
   const [modifySessionIds, setModifySessionIds] = useState<number[]>([]);
   const [modifyPersonCount, setModifyPersonCount] = useState(1);
   const [modifyMembers, setModifyMembers] = useState<MemberValues[]>([]);
+  const [modifyMemberSessions, setModifyMemberSessions] = useState<number[][]>([]);
   const [modifyFieldValues, setModifyFieldValues] = useState<Record<string, string>>({});
   const [modifyUnavailableIds, setModifyUnavailableIds] = useState<number[]>([]);
   const [modifying, setModifying] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [bufferPrompt, setBufferPrompt] = useState<{ sessionIds: number[] } | null>(null);
 
   const perMemberMode = !!registrationConfig?.perMemberMode;
+  const perMemberSessionSelection = !!registrationConfig?.perMemberSessionSelection;
   const perMemberFields = registrationConfig?.perMemberFields ?? [];
   // Shared fields: all non-perMember activity fields (still relevant in shared mode).
   // Lookup field is included but rendered read-only so users don't lock themselves out.
@@ -78,6 +90,44 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
     if (!perMemberMode) return modifyPersonCount;
     return Math.max(0, countMembersForCapacity(modifyMembers, perMemberFields));
   }, [perMemberMode, modifyPersonCount, modifyMembers, perMemberFields]);
+
+  // Backend stores labels as "fa / sv"; pick the part matching the current language.
+  const splitLocalized = useCallback((label: string) => {
+    const parts = label.split(" / ");
+    if (parts.length < 2) return label;
+    return lang === "fa" ? parts[0] : parts.slice(1).join(" / ");
+  }, [lang]);
+
+  // Re-resolve field labels from the current activity config (handles renamed
+  // fields and old "Field N" snapshots).
+  const fieldLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const f of [...sharedFields, ...perMemberFields]) {
+      map.set(Number(f.id), lang === "fa" ? f.label_fa : f.label_sv);
+    }
+    return map;
+  }, [sharedFields, perMemberFields, lang]);
+
+  const resolveFieldLabel = useCallback(
+    (fieldId: bigint | number, storedLabel: string) =>
+      fieldLabelById.get(Number(fieldId)) ?? splitLocalized(storedLabel),
+    [fieldLabelById, splitLocalized],
+  );
+
+  // Re-resolve session names from availability so chips show the localized name.
+  const sessionNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const s of availability) {
+      map.set(Number(s.sessionId), lang === "fa" ? s.name_fa : s.name_sv);
+    }
+    return map;
+  }, [availability, lang]);
+
+  const resolveSessionName = useCallback(
+    (sessionId: bigint | number, storedName: string) =>
+      sessionNameById.get(Number(sessionId)) ?? splitLocalized(storedName),
+    [sessionNameById, splitLocalized],
+  );
 
   const lookupLabel = lookupField
     ? (lang === "fa" ? lookupField.label_fa : lookupField.label_sv)
@@ -124,18 +174,25 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
             return vals;
           }),
         );
+        setModifyMemberSessions(
+          registration.members.map((m) =>
+            (m.selectedSessions ?? []).map((s) => Number(s.sessionId)),
+          ),
+        );
       } else {
         setModifyMembers(Array.from({ length: minMembers }, () => ({})));
+        setModifyMemberSessions(Array.from({ length: minMembers }, () => []));
       }
     } else {
       setModifyMembers([]);
+      setModifyMemberSessions([]);
     }
     setModifyUnavailableIds([]);
     setState("modifying");
   };
 
-  const handleModify = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleModify = async (e: React.FormEvent | null, acceptBuffer = false) => {
+    if (e) e.preventDefault();
     if (!registration) return;
     setModifying(true);
     setErrorMsg(null);
@@ -157,18 +214,33 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
       const personCountPayload = perMemberMode
         ? BigInt(effectiveModifyCount || 1)
         : BigInt(modifyPersonCount);
+      const memberSessionIdsPayload: bigint[][] | null = perMemberMode && perMemberSessionSelection
+        ? modifyMemberSessions.map((ids, i) =>
+            memberCountsTowardCapacity(modifyMembers[i] ?? {}, perMemberFields)
+              ? ids.map(BigInt)
+              : [],
+          )
+        : null;
+      const topSessionIds = perMemberMode && perMemberSessionSelection
+        ? []
+        : modifySessionIds.map(BigInt);
       const result = await backend.modifyRegistration(
         registration.id,
         lookupValue.trim(),
         personCountPayload,
-        modifySessionIds.map(BigInt),
+        topSessionIds,
         newFieldValuesPayload,
         newMembersPayload,
+        memberSessionIdsPayload,
+        acceptBuffer,
       );
       if (result.__kind__ === "ok") {
+        setBufferPrompt(null);
         setRegistration(result.ok);
         setModifyUnavailableIds([]);
         setState("found");
+      } else if (result.__kind__ === "sessionsRequireBuffer") {
+        setBufferPrompt({ sessionIds: result.sessionsRequireBuffer.map(Number) });
       } else if (result.__kind__ === "sessionsUnavailable") {
         setModifyUnavailableIds(result.sessionsUnavailable.map(Number));
         setErrorMsg(t("sessionsUnavailableError"));
@@ -318,51 +390,84 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                       </div>
                     </div>
 
-                    {registration.selectedSessions.length > 0 && (
-                      <div className="space-y-1">
-                        <p className="text-xs text-white/40 uppercase tracking-wide">{t("selectedSessions")}</p>
-                        {registration.selectedSessions.map((ss) => (
-                          <div key={Number(ss.sessionId)} className="flex items-center gap-2">
-                            <span className="text-sm text-white/80">{ss.sessionName}</span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full border ${
-                                ss.status === "confirmed"
-                                  ? "bg-green-500/15 text-green-400 border-green-500/20"
-                                  : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
-                              }`}
-                            >
-                              {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {(() => {
+                      const hasPerMemberSessions = (registration.members ?? []).some(
+                        (m) => (m.selectedSessions ?? []).length > 0,
+                      );
+                      if (hasPerMemberSessions) return null;
+                      if (registration.selectedSessions.length === 0) return null;
+                      return (
+                        <div className="space-y-1">
+                          <p className="text-xs text-white/40 uppercase tracking-wide">{t("selectedSessions")}</p>
+                          {registration.selectedSessions.map((ss) => (
+                            <div key={Number(ss.sessionId)} className="flex items-center gap-2">
+                              <span className="text-sm text-white/80">{resolveSessionName(ss.sessionId, ss.sessionName)}</span>
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full border ${
+                                  ss.status === "confirmed"
+                                    ? "bg-green-500/15 text-green-400 border-green-500/20"
+                                    : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                                }`}
+                              >
+                                {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {registration.fieldValues.length > 0 && (
                       <div className="space-y-1 pt-2 border-t border-white/5">
-                        {registration.fieldValues.map((fv, i) => (
-                          <div key={i} className="flex gap-2 text-sm">
-                            <span className="text-white/40 shrink-0 min-w-[100px]">{fv.fieldLabel}:</span>
-                            <span className="text-white/70">{fv.value || "—"}</span>
-                          </div>
-                        ))}
+                        {registration.fieldValues.map((fv, i) => {
+                          if (fv.value === "" || fv.value === "false") return null;
+                          return (
+                            <div key={i} className="flex gap-2 text-sm">
+                              <span className="text-white/40 shrink-0 min-w-[100px]">{resolveFieldLabel(fv.fieldId, fv.fieldLabel)}:</span>
+                              <span className="text-white/70">{fv.value === "true" ? "✓" : (fv.value || "—")}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
                     {registration.members && registration.members.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-white/5">
                         <p className="text-xs text-white/40 uppercase tracking-wide">{t("perMemberFields")}</p>
-                        <ul className="space-y-1.5 text-sm">
+                        <ul className="space-y-2 text-sm">
                           {registration.members.map((m, i) => (
-                            <li key={i} className="flex flex-wrap items-center gap-2">
-                              <span className="text-white/40">#{i + 1}</span>
-                              <span className="text-white/80">
-                                {m.values.map((v) => v.value).filter(Boolean).join(" · ") || `${t("member")} ${i + 1}`}
-                              </span>
-                              {!m.countsTowardCapacity && (
-                                <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
-                                  {t("notCountedTowardCapacity")}
-                                </span>
+                            <li key={i} className="border-l border-white/10 pl-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-white/40">#{i + 1}</span>
+                                {m.values
+                                  .filter((v) => v.value && v.value !== "false")
+                                  .map((v, vi) => (
+                                    <span key={vi} className="text-white/80">
+                                      <span className="text-white/40">{resolveFieldLabel(v.fieldId, v.fieldLabel)}:</span>{" "}
+                                      {v.value === "true" ? "✓" : v.value}
+                                    </span>
+                                  ))}
+                                {!m.countsTowardCapacity && (
+                                  <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
+                                    {t("notCountedTowardCapacity")}
+                                  </span>
+                                )}
+                              </div>
+                              {(m.selectedSessions ?? []).length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                  {m.selectedSessions.map((ss) => (
+                                    <span
+                                      key={Number(ss.sessionId)}
+                                      className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                                        ss.status === "confirmed"
+                                          ? "bg-green-500/15 text-green-400 border-green-500/20"
+                                          : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                                      }`}
+                                    >
+                                      {resolveSessionName(ss.sessionId, ss.sessionName)} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                             </li>
                           ))}
@@ -403,10 +508,10 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
               )}
 
               {state === "modifying" && (
-                <form onSubmit={handleModify} className="space-y-4">
+                <form onSubmit={(e) => handleModify(e)} className="space-y-4">
                   <p className="text-sm text-white/60">{t("modifyRegistration")}</p>
 
-                  {availability.length > 0 && (
+                  {availability.length > 0 && !(perMemberMode && perMemberSessionSelection) && (
                     <SessionSelector
                       availability={availability}
                       selectedIds={modifySessionIds}
@@ -545,7 +650,10 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                             {modifyMembers.length > minMembers && (
                               <button
                                 type="button"
-                                onClick={() => setModifyMembers((prev) => prev.filter((_, i) => i !== idx))}
+                                onClick={() => {
+                                  setModifyMembers((prev) => prev.filter((_, i) => i !== idx));
+                                  setModifyMemberSessions((prev) => prev.filter((_, i) => i !== idx));
+                                }}
                                 className="p-1.5 rounded hover:bg-accent/10 text-white/40 hover:text-accent"
                                 title={t("removeMember")}
                               >
@@ -610,12 +718,35 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                               </div>
                             );
                           })}
+                          {perMemberSessionSelection && availability.length > 0 && memberCountsTowardCapacity(m, perMemberFields) && (
+                            <div className="pt-2">
+                              <p className="text-xs text-white/40 mb-1.5">{t("sessions")}</p>
+                              <SessionSelector
+                                availability={availability}
+                                selectedIds={modifyMemberSessions[idx] ?? []}
+                                personCount={1}
+                                onSelectionChange={(ids) => setModifyMemberSessions((prev) => prev.map((s, i) => (i === idx ? ids : s)))}
+                                onPersonCountChange={() => { /* fixed at 1 per member */ }}
+                                unavailableIds={modifyUnavailableIds}
+                                disablePersonCounter
+                                minPersonCount={1}
+                                maxPersonCount={1}
+                                hidePersonCounter
+                              />
+                              {(modifyMemberSessions[idx]?.length ?? 0) === 0 && (
+                                <p className="text-xs text-red-400/80 mt-1">{t("selectAtLeastOneSession")}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                       {modifyMembers.length < maxMembers && (
                         <button
                           type="button"
-                          onClick={() => setModifyMembers((prev) => [...prev, {}])}
+                          onClick={() => {
+                            setModifyMembers((prev) => [...prev, {}]);
+                            setModifyMemberSessions((prev) => [...prev, []]);
+                          }}
                           className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-dashed border-white/15 text-white/50 hover:text-white/80 hover:border-white/30 transition-colors text-sm"
                         >
                           <Plus size={14} /> {t("addMember")}
@@ -629,7 +760,14 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
                   <div className="flex gap-3">
                     <button
                       type="submit"
-                      disabled={modifying || (perMemberMode && (modifyMembers.length < minMembers || modifyMembers.length > maxMembers))}
+                      disabled={
+                        modifying ||
+                        (perMemberMode && (modifyMembers.length < minMembers || modifyMembers.length > maxMembers)) ||
+                        (perMemberMode && perMemberSessionSelection && modifyMembers.some((m, i) =>
+                          memberCountsTowardCapacity(m, perMemberFields) && (modifyMemberSessions[i]?.length ?? 0) === 0,
+                        )) ||
+                        (availability.length > 0 && !(perMemberMode && perMemberSessionSelection) && modifySessionIds.length === 0)
+                      }
                       className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl text-sm transition-colors disabled:opacity-50"
                     >
                       {modifying ? t("loading") : t("saveChanges")}
@@ -671,6 +809,43 @@ export default function RegistrationLookup({ activityId: _activityId, availabili
           </motion.div>
         )}
       </AnimatePresence>
+
+      {bufferPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-navy border border-white/10 p-5 space-y-4">
+            <h3 className="text-lg font-semibold text-white">{t("bufferConfirmTitle")}</h3>
+            <p className="text-sm text-white/70">{t("bufferConfirmBody")}</p>
+            <ul className="text-sm text-yellow-300/90 space-y-1">
+              {bufferPrompt.sessionIds.map((sid) => {
+                const s = availability.find((ss) => Number(ss.sessionId) === sid);
+                if (!s) return null;
+                return (
+                  <li key={sid}>
+                    {localized(s.name_fa, s.name_sv)}{s.date ? ` · ${s.date}` : ""}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => { setBufferPrompt(null); setModifying(false); }}
+                className="px-4 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                {t("bufferCancelButton")}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleModify(null, true)}
+                disabled={modifying}
+                className="px-4 py-2 rounded-lg text-sm bg-primary hover:bg-primary-dark text-navy font-semibold disabled:opacity-50"
+              >
+                {t("bufferContinueButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

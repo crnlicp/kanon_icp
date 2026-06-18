@@ -14,6 +14,7 @@ interface Props {
     perMemberMode: boolean;
     minMembers: bigint;
     maxMembers: bigint;
+    perMemberSessionSelection: boolean;
   };
   onChange: (patch: Partial<Props["template"]>) => void;
 }
@@ -162,6 +163,21 @@ export default function EventRegistrationTemplateBuilder({ template, onChange }:
               />
             </div>
           </div>
+        )}
+
+        {template.perMemberMode && template.sessions.length > 0 && (
+          <label className="flex items-start gap-2 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={template.perMemberSessionSelection}
+              onChange={(e) => onChange({ perMemberSessionSelection: e.target.checked })}
+              className="w-4 h-4 mt-0.5 rounded accent-primary"
+            />
+            <span className="text-sm text-white/70">
+              {t("perMemberSessionSelection")}
+              <span className="block text-xs text-white/30 mt-0.5">{t("perMemberSessionSelectionHint")}</span>
+            </span>
+          </label>
         )}
       </div>
 

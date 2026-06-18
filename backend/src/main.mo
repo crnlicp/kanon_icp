@@ -786,6 +786,7 @@ persistent actor {
     tmplSessions : [EventSessionReturn],
     fields : [FormFieldReturn],
     perMemberMode : Bool,
+    perMemberSessionSelection : Bool,
     minMembers : Nat,
     maxMembers : Nat,
   ) : async EventRegistrationTemplateReturn {
@@ -800,6 +801,7 @@ persistent actor {
       fields = buildFormFields(fields);
       createdAt = Time.now();
       perMemberMode = ?perMemberMode;
+      perMemberSessionSelection = ?perMemberSessionSelection;
       minMembers = ?minMembers;
       maxMembers = ?maxMembers;
     };
@@ -817,6 +819,7 @@ persistent actor {
     tmplSessions : [EventSessionReturn],
     fields : [FormFieldReturn],
     perMemberMode : Bool,
+    perMemberSessionSelection : Bool,
     minMembers : Nat,
     maxMembers : Nat,
   ) : async ?EventRegistrationTemplateReturn {
@@ -831,6 +834,7 @@ persistent actor {
           fields = buildFormFields(fields);
           createdAt = existing.createdAt;
           perMemberMode = ?perMemberMode;
+          perMemberSessionSelection = ?perMemberSessionSelection;
           minMembers = ?minMembers;
           maxMembers = ?maxMembers;
         };
@@ -962,6 +966,7 @@ persistent actor {
           activityId      = activity.id;
           hasRegistration = activity.hasRegistration;
           perMemberMode   = pm.enabled;
+          perMemberSessionSelection = pm.perMemberSessionSelection;
           minMembers      = pm.minMembers;
           maxMembers      = pm.maxMembers;
           sharedFields    = Array.map<FormField, FormFieldReturn>(pm.sharedFields, H.fieldToReturn);
@@ -1102,6 +1107,7 @@ persistent actor {
   // event-custom mode keeps the legacy single-counter behavior.
   func resolveActivityPerMemberConfig(activity : Activity) : {
     enabled         : Bool;
+    perMemberSessionSelection : Bool;
     minMembers      : Nat;
     maxMembers      : Nat;
     sharedFields    : [FormField];
@@ -1109,6 +1115,7 @@ persistent actor {
   } {
     let allFields = resolveActivityFields(activity);
     var enabled = false;
+    var perMemberSessions = false;
     var minM : Nat = 1;
     var maxM : Nat = maxPersonCount;
     switch (activity.eventTemplateId) {
@@ -1116,6 +1123,7 @@ persistent actor {
         switch (Map.get(eventRegTemplates, Nat.compare, tid)) {
           case (?tmpl) {
             enabled := switch (tmpl.perMemberMode) { case (?b) b; case null false };
+            perMemberSessions := switch (tmpl.perMemberSessionSelection) { case (?b) b; case null false };
             minM := switch (tmpl.minMembers) {
               case (?n) { if (n < 1) 1 else n };
               case null { 1 };
@@ -1173,6 +1181,7 @@ persistent actor {
     };
     {
       enabled = enabled and perBuf.size() > 0;
+      perMemberSessionSelection = perMemberSessions and enabled and perBuf.size() > 0 and activity.sessions.size() > 0;
       minMembers = minM;
       maxMembers = maxM;
       sharedFields = List.toArray(sharedBuf);
@@ -1183,9 +1192,12 @@ persistent actor {
   // Resolve a single member submission into a stored RegistrationMember.
   // countsTowardCapacity is false when any per-member field flagged
   // excludeFromCapacityWhenChecked has value == "true".
+  // sessionIds, when non-null, snapshots a per-member session list.
   func resolveMember(
     memberValues    : [{ fieldId : Nat; value : Text }],
     perMemberFields : [FormField],
+    sessionIds      : ?[Nat],
+    actSessions     : [EventSession],
   ) : T.RegistrationMember {
     let values = Array.map<{ fieldId : Nat; value : Text }, T.RegistrationFieldValue>(
       memberValues,
@@ -1208,7 +1220,11 @@ persistent actor {
         };
       };
     };
-    { values; countsTowardCapacity = counts }
+    let snaps : ?[T.RegistrationSessionSnapshot] = switch (sessionIds) {
+      case (?ids) { ?snapshotSessions(ids, actSessions) };
+      case null { null };
+    };
+    { values; countsTowardCapacity = counts; selectedSessions = snaps }
   };
 
   func effectiveMemberCount(members : [T.RegistrationMember]) : Nat {
@@ -1220,11 +1236,14 @@ persistent actor {
   };
 
   // Validate per-member submission shape (sizes + required fields).
+  // memberSessionIds parallels membersInput; null = no per-member sessions.
   func validateMembers(
-    membersInput    : [[{ fieldId : Nat; value : Text }]],
-    perMemberFields : [FormField],
-    minMembers      : Nat,
-    maxMembers      : Nat,
+    membersInput     : [[{ fieldId : Nat; value : Text }]],
+    memberSessionIds : ?[[Nat]],
+    perMemberFields  : [FormField],
+    perMemberSessions : Bool,
+    minMembers       : Nat,
+    maxMembers       : Nat,
   ) : Bool {
     let n = membersInput.size();
     if (n < minMembers or n > maxMembers or n > maxPersonCount) { return false };
@@ -1243,6 +1262,18 @@ persistent actor {
         };
       };
     };
+    switch (memberSessionIds) {
+      case (?ids) {
+        if (not perMemberSessions) { return false };
+        if (ids.size() != n) { return false };
+        for (sl in ids.vals()) {
+          if (sl.size() > maxSessions) { return false };
+        };
+      };
+      case null {
+        if (perMemberSessions) { return false };
+      };
+    };
     true
   };
 
@@ -1256,6 +1287,8 @@ persistent actor {
     selectedSessionIds : [Nat],
     fieldValues        : [{ fieldId : Nat; value : Text }],
     members            : [[{ fieldId : Nat; value : Text }]],
+    memberSessionIds   : ?[[Nat]],
+    acceptBuffer       : Bool,
   ) : async SubmitRegistrationResult {
     // 1. Input size validation
     if (
@@ -1284,18 +1317,58 @@ persistent actor {
         let pmConfig = resolveActivityPerMemberConfig(activity);
         var effectivePersonCount : Nat = personCount;
         var resolvedMembers : ?[T.RegistrationMember] = null;
+        // Effective session list at the registration level. For per-member
+        // session selection we derive it as the union of all member lists so
+        // legacy admin views and queries still see a top-level summary.
+        var effectiveSessionIds : [Nat] = selectedSessionIds;
         if (pmConfig.enabled) {
-          if (not validateMembers(members, pmConfig.perMemberFields, pmConfig.minMembers, pmConfig.maxMembers)) {
+          if (not validateMembers(members, memberSessionIds, pmConfig.perMemberFields, pmConfig.perMemberSessionSelection, pmConfig.minMembers, pmConfig.maxMembers)) {
             return #invalidInput;
           };
-          let rms = Array.map<[{ fieldId : Nat; value : Text }], T.RegistrationMember>(
-            members,
-            func (m) { resolveMember(m, pmConfig.perMemberFields) }
-          );
+          // Validate member session IDs reference real sessions on this activity
+          switch (memberSessionIds) {
+            case (?ids) {
+              for (sl in ids.vals()) {
+                for (sid in sl.vals()) {
+                  var found = false;
+                  for (s in activity.sessions.vals()) {
+                    if (s.id == sid) { found := true };
+                  };
+                  if (not found) { return #invalidInput };
+                };
+              };
+            };
+            case null {};
+          };
+          let rms = Array.tabulate<T.RegistrationMember>(members.size(), func (i) {
+            let memberSessions : ?[Nat] = switch (memberSessionIds) {
+              case (?ids) { ?ids[i] };
+              case null { null };
+            };
+            resolveMember(members[i], pmConfig.perMemberFields, memberSessions, activity.sessions)
+          });
           let eff = effectiveMemberCount(rms);
           if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
           effectivePersonCount := eff;
           resolvedMembers := ?rms;
+          // Derive top-level session list from the union of all member lists
+          // (per-member-session mode). Maintain insertion order, deduped.
+          if (pmConfig.perMemberSessionSelection) {
+            let unionBuf = List.empty<Nat>();
+            switch (memberSessionIds) {
+              case (?ids) {
+                for (sl in ids.vals()) {
+                  for (sid in sl.vals()) {
+                    if (not arrayContainsNat(List.toArray(unionBuf), sid)) {
+                      unionBuf.add(sid);
+                    };
+                  };
+                };
+              };
+              case null {};
+            };
+            effectiveSessionIds := List.toArray(unionBuf);
+          };
         };
 
         // 3. Per-field allowed-values whitelist: if a field declares a
@@ -1358,10 +1431,14 @@ persistent actor {
           };
         };
 
-        // 6. Per-session capacity check (only when sessions are selected)
-        if (selectedSessionIds.size() > 0) {
-          let failedSessionsBuf = List.empty<Nat>();
-          for (sid in selectedSessionIds.vals()) {
+        // 6. Per-session capacity check.
+        //    For shared sessions the whole effectivePersonCount is checked
+        //    against each selected session. For per-member sessions each
+        //    session's load is the count of counting-members assigned to it.
+        if (effectiveSessionIds.size() > 0) {
+          let hardFailBuf = List.empty<Nat>();
+          let bufferBuf = List.empty<Nat>();
+          for (sid in effectiveSessionIds.vals()) {
             var sessionCap : Nat = 0;
             var sessionBuf : Nat = 0;
             var sessionFound = false;
@@ -1374,13 +1451,37 @@ persistent actor {
             };
             if (sessionFound) {
               let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, null);
-              if (confirmed + buffer + effectivePersonCount > sessionCap + sessionBuf) {
-                failedSessionsBuf.add(sid);
+              // Determine how many slots THIS submission needs for this session.
+              var needed : Nat = effectivePersonCount;
+              if (pmConfig.enabled and pmConfig.perMemberSessionSelection) {
+                needed := 0;
+                switch (memberSessionIds, resolvedMembers) {
+                  case (?ids, ?rms) {
+                    var i : Nat = 0;
+                    while (i < ids.size()) {
+                      if (i < rms.size() and rms[i].countsTowardCapacity) {
+                        for (s in ids[i].vals()) {
+                          if (s == sid) { needed += 1 };
+                        };
+                      };
+                      i += 1;
+                    };
+                  };
+                  case _ {};
+                };
+              };
+              if (confirmed + buffer + needed > sessionCap + sessionBuf) {
+                hardFailBuf.add(sid);
+              } else if (confirmed + buffer + needed > sessionCap) {
+                bufferBuf.add(sid);
               };
             };
           };
-          if (failedSessionsBuf.size() > 0) {
-            return #sessionsUnavailable(List.toArray(failedSessionsBuf));
+          if (hardFailBuf.size() > 0) {
+            return #sessionsUnavailable(List.toArray(hardFailBuf));
+          };
+          if (bufferBuf.size() > 0 and not acceptBuffer) {
+            return #sessionsRequireBuffer(List.toArray(bufferBuf));
           };
         };
 
@@ -1446,7 +1547,7 @@ persistent actor {
           phone;
           message;
           personCount = effectivePersonCount;
-          selectedSessions = snapshotSessions(selectedSessionIds, activity.sessions);
+          selectedSessions = snapshotSessions(effectiveSessionIds, activity.sessions);
           fieldValues = resolvedFields;
           createdAt = Time.now();
           archived = ?false;
@@ -1457,7 +1558,8 @@ persistent actor {
         // 8. Compute statuses (reg is now in the map)
         let allRegsNow = regsForActivity(activityId);
         let statuses = H.computeSessionStatuses(allRegsNow, reg, activity.sessions, null);
-        #ok(H.regToReturnWithStatus(reg, statuses))
+        let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, reg, activity.sessions, null);
+        #ok(H.regToReturnWithStatusFull(reg, statuses, perMemberStatuses))
       };
       case null { #registrationDisabled };
     }
@@ -1523,7 +1625,8 @@ persistent actor {
           case (?activity) {
             let actRegs = regsForActivity(reg.activityId);
             let statuses = H.computeSessionStatuses(actRegs, reg, activity.sessions, null);
-            ?H.regToReturnWithStatus(reg, statuses)
+            let perMemberStatuses = H.computePerMemberStatuses(actRegs, reg, activity.sessions, null);
+            ?H.regToReturnWithStatusFull(reg, statuses, perMemberStatuses)
           };
           case null {
             // Activity was deleted — return without status
@@ -1554,6 +1657,8 @@ persistent actor {
     newSelectedSessionIds : [Nat],
     newFieldValues        : [{ fieldId : Nat; value : Text }],
     newMembers            : [[{ fieldId : Nat; value : Text }]],
+    newMemberSessionIds   : ?[[Nat]],
+    acceptBuffer          : Bool,
   ) : async SubmitRegistrationResult {
     // Validate input sizes
     if (
@@ -1581,18 +1686,52 @@ persistent actor {
             let pmConfig = resolveActivityPerMemberConfig(activity);
             var effectivePersonCount : Nat = newPersonCount;
             var resolvedMembers : ?[T.RegistrationMember] = existing.members;
+            var effectiveSessionIds : [Nat] = newSelectedSessionIds;
             if (pmConfig.enabled) {
-              if (not validateMembers(newMembers, pmConfig.perMemberFields, pmConfig.minMembers, pmConfig.maxMembers)) {
+              if (not validateMembers(newMembers, newMemberSessionIds, pmConfig.perMemberFields, pmConfig.perMemberSessionSelection, pmConfig.minMembers, pmConfig.maxMembers)) {
                 return #invalidInput;
               };
-              let rms = Array.map<[{ fieldId : Nat; value : Text }], T.RegistrationMember>(
-                newMembers,
-                func (m) { resolveMember(m, pmConfig.perMemberFields) }
-              );
+              switch (newMemberSessionIds) {
+                case (?ids) {
+                  for (sl in ids.vals()) {
+                    for (sid in sl.vals()) {
+                      var found = false;
+                      for (s in activity.sessions.vals()) {
+                        if (s.id == sid) { found := true };
+                      };
+                      if (not found) { return #invalidInput };
+                    };
+                  };
+                };
+                case null {};
+              };
+              let rms = Array.tabulate<T.RegistrationMember>(newMembers.size(), func (i) {
+                let memberSessions : ?[Nat] = switch (newMemberSessionIds) {
+                  case (?ids) { ?ids[i] };
+                  case null { null };
+                };
+                resolveMember(newMembers[i], pmConfig.perMemberFields, memberSessions, activity.sessions)
+              });
               let eff = effectiveMemberCount(rms);
               if (eff < 1 or eff > maxPersonCount) { return #invalidInput };
               effectivePersonCount := eff;
               resolvedMembers := ?rms;
+              if (pmConfig.perMemberSessionSelection) {
+                let unionBuf = List.empty<Nat>();
+                switch (newMemberSessionIds) {
+                  case (?ids) {
+                    for (sl in ids.vals()) {
+                      for (sid in sl.vals()) {
+                        if (not arrayContainsNat(List.toArray(unionBuf), sid)) {
+                          unionBuf.add(sid);
+                        };
+                      };
+                    };
+                  };
+                  case null {};
+                };
+                effectiveSessionIds := List.toArray(unionBuf);
+              };
             };
 
             let actRegs = regsForActivity(existing.activityId);
@@ -1618,9 +1757,10 @@ persistent actor {
             };
 
             // Per-session capacity check excluding the current registration
-            if (newSelectedSessionIds.size() > 0) {
-              let failedSessionsBuf = List.empty<Nat>();
-              for (sid in newSelectedSessionIds.vals()) {
+            if (effectiveSessionIds.size() > 0) {
+              let hardFailBuf = List.empty<Nat>();
+              let bufferBuf = List.empty<Nat>();
+              for (sid in effectiveSessionIds.vals()) {
                 var sessionCap : Nat = 0;
                 var sessionBuf : Nat = 0;
                 var sessionFound = false;
@@ -1633,13 +1773,36 @@ persistent actor {
                 };
                 if (sessionFound) {
                   let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, ?id);
-                  if (confirmed + buffer + effectivePersonCount > sessionCap + sessionBuf) {
-                    failedSessionsBuf.add(sid);
+                  var needed : Nat = effectivePersonCount;
+                  if (pmConfig.enabled and pmConfig.perMemberSessionSelection) {
+                    needed := 0;
+                    switch (newMemberSessionIds, resolvedMembers) {
+                      case (?ids, ?rms) {
+                        var i : Nat = 0;
+                        while (i < ids.size()) {
+                          if (i < rms.size() and rms[i].countsTowardCapacity) {
+                            for (s in ids[i].vals()) {
+                              if (s == sid) { needed += 1 };
+                            };
+                          };
+                          i += 1;
+                        };
+                      };
+                      case _ {};
+                    };
+                  };
+                  if (confirmed + buffer + needed > sessionCap + sessionBuf) {
+                    hardFailBuf.add(sid);
+                  } else if (confirmed + buffer + needed > sessionCap) {
+                    bufferBuf.add(sid);
                   };
                 };
               };
-              if (failedSessionsBuf.size() > 0) {
-                return #sessionsUnavailable(List.toArray(failedSessionsBuf));
+              if (hardFailBuf.size() > 0) {
+                return #sessionsUnavailable(List.toArray(hardFailBuf));
+              };
+              if (bufferBuf.size() > 0 and not acceptBuffer) {
+                return #sessionsRequireBuffer(List.toArray(bufferBuf));
               };
             };
 
@@ -1668,7 +1831,7 @@ persistent actor {
               phone      = existing.phone;
               message    = existing.message;
               personCount = effectivePersonCount;
-              selectedSessions = snapshotSessions(newSelectedSessionIds, activity.sessions);
+              selectedSessions = snapshotSessions(effectiveSessionIds, activity.sessions);
               fieldValues = resolvedFields;
               createdAt   = existing.createdAt;
               archived    = existing.archived;
@@ -1678,7 +1841,8 @@ persistent actor {
 
             let allRegsNow = regsForActivity(existing.activityId);
             let statuses = H.computeSessionStatuses(allRegsNow, updated, activity.sessions, null);
-            #ok(H.regToReturnWithStatus(updated, statuses))
+            let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, updated, activity.sessions, null);
+            #ok(H.regToReturnWithStatusFull(updated, statuses, perMemberStatuses))
           };
           case null { #registrationDisabled };
         }
@@ -1723,7 +1887,8 @@ persistent actor {
           actRegs,
           func (r) {
             let statuses = H.computeSessionStatuses(nonArchived, r, activity.sessions, null);
-            H.regToReturnWithStatus(r, statuses)
+            let perMemberStatuses = H.computePerMemberStatuses(nonArchived, r, activity.sessions, null);
+            H.regToReturnWithStatusFull(r, statuses, perMemberStatuses)
           }
         )
       };

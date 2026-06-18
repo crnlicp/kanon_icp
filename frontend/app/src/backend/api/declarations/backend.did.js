@@ -60,6 +60,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const EventRegistrationTemplateReturn = IDL.Record({
     'id' : IDL.Nat,
+    'perMemberSessionSelection' : IDL.Bool,
     'description_fa' : IDL.Text,
     'description_sv' : IDL.Text,
     'createdAt' : IDL.Int,
@@ -119,6 +120,7 @@ export const idlFactory = ({ IDL }) => {
     'body_sv' : IDL.Text,
   });
   const ActivityRegistrationConfigReturn = IDL.Record({
+    'perMemberSessionSelection' : IDL.Bool,
     'perMemberFields' : IDL.Vec(FormFieldReturn),
     'sharedFields' : IDL.Vec(FormFieldReturn),
     'activityId' : IDL.Nat,
@@ -133,8 +135,14 @@ export const idlFactory = ({ IDL }) => {
     'fieldLabel' : IDL.Text,
     'fieldId' : IDL.Nat,
   });
+  const SessionStatusReturn = IDL.Record({
+    'status' : IDL.Text,
+    'sessionName' : IDL.Text,
+    'sessionId' : IDL.Nat,
+  });
   const RegistrationMemberReturn = IDL.Record({
     'values' : IDL.Vec(RegistrationMemberValueReturn),
+    'selectedSessions' : IDL.Vec(SessionStatusReturn),
     'countsTowardCapacity' : IDL.Bool,
   });
   const RegistrationFieldValueReturn = IDL.Record({
@@ -179,11 +187,6 @@ export const idlFactory = ({ IDL }) => {
     'jsonLd' : IDL.Text,
     'sitemapPriority' : IDL.Text,
     'sitemapChangefreq' : IDL.Text,
-  });
-  const SessionStatusReturn = IDL.Record({
-    'status' : IDL.Text,
-    'sessionName' : IDL.Text,
-    'sessionId' : IDL.Nat,
   });
   const RegistrationWithStatusReturn = IDL.Record({
     'id' : IDL.Nat,
@@ -287,6 +290,7 @@ export const idlFactory = ({ IDL }) => {
   const SubmitRegistrationResult = IDL.Variant({
     'ok' : RegistrationWithStatusReturn,
     'duplicateValue' : IDL.Nat,
+    'sessionsRequireBuffer' : IDL.Vec(IDL.Nat),
     'invalidInput' : IDL.Null,
     'capacityFull' : IDL.Null,
     'sessionsUnavailable' : IDL.Vec(IDL.Nat),
@@ -334,6 +338,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Vec(EventSessionReturn),
           IDL.Vec(FormFieldReturn),
+          IDL.Bool,
           IDL.Bool,
           IDL.Nat,
           IDL.Nat,
@@ -530,6 +535,8 @@ export const idlFactory = ({ IDL }) => {
           IDL.Vec(
             IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat }))
           ),
+          IDL.Opt(IDL.Vec(IDL.Vec(IDL.Nat))),
+          IDL.Bool,
         ],
         [SubmitRegistrationResult],
         [],
@@ -559,6 +566,8 @@ export const idlFactory = ({ IDL }) => {
           IDL.Vec(
             IDL.Vec(IDL.Record({ 'value' : IDL.Text, 'fieldId' : IDL.Nat }))
           ),
+          IDL.Opt(IDL.Vec(IDL.Vec(IDL.Nat))),
+          IDL.Bool,
         ],
         [SubmitRegistrationResult],
         [],
@@ -604,6 +613,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Vec(EventSessionReturn),
           IDL.Vec(FormFieldReturn),
+          IDL.Bool,
           IDL.Bool,
           IDL.Nat,
           IDL.Nat,

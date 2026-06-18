@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Globe, ChevronRight } from "lucide-react";
+import { Menu, X, Globe, ChevronRight, ChevronLeft } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import WavingFlag from "./WavingFlag";
@@ -184,7 +184,11 @@ export default function Header({ logoUrl, title, topics = [] }: HeaderProps) {
                         onClick={() => setMobileOpen(false)}
                       >
                         <span className="text-white/90">{topic.title}</span>
-                        <ChevronRight size={16} className="text-white/30" />
+                        {isRtl ? (
+                          <ChevronLeft size={16} className="text-white/30" />
+                        ) : (
+                          <ChevronRight size={16} className="text-white/30" />
+                        )}
                       </Link>
                     ))}
                   </div>
@@ -199,7 +203,11 @@ export default function Header({ logoUrl, title, topics = [] }: HeaderProps) {
                   onClick={() => setMobileOpen(false)}
                 >
                   <span className="text-white/90">{t("aboutUs")}</span>
-                  <ChevronRight size={16} className="text-white/30" />
+                  {isRtl ? (
+                    <ChevronLeft size={16} className="text-white/30" />
+                  ) : (
+                    <ChevronRight size={16} className="text-white/30" />
+                  )}
                 </Link>
                 <Link
                   to={`/${lang}/contact`}
@@ -207,7 +215,11 @@ export default function Header({ logoUrl, title, topics = [] }: HeaderProps) {
                   onClick={() => setMobileOpen(false)}
                 >
                   <span className="text-white/90">{t("contactUs")}</span>
-                  <ChevronRight size={16} className="text-white/30" />
+                  {isRtl ? (
+                    <ChevronLeft size={16} className="text-white/30" />
+                  ) : (
+                    <ChevronRight size={16} className="text-white/30" />
+                  )}
                 </Link>
               </div>
 

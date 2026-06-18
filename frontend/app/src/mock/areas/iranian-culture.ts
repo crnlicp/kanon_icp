@@ -732,7 +732,7 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 3n, fieldType: "phone", label_fa: "شماره تلفن", label_sv: "Telefonnummer", placeholder_fa: "76...", placeholder_sv: "76...", required: true, options: [], isLookupField: true, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
       { id: 4n, fieldType: "number", label_fa: "تعداد نفرات", label_sv: "Antal deltagare", placeholder_fa: "مثلاً ۲", placeholder_sv: "T.ex. 2", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, minValue: 1n, maxValue: 10n, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: ts(30), perMemberMode: false, minMembers: 1n, maxMembers: 20n },
+    createdAt: ts(30), perMemberMode: false, minMembers: 1n, maxMembers: 20n, perMemberSessionSelection: false },
   {
     id: 8002n,
     name_fa: "کارگاه گروهی", name_sv: "Gruppworkshop",
@@ -747,6 +747,6 @@ export const mockEventRegistrationTemplates: EventRegistrationTemplateReturn[] =
       { id: 3n, fieldType: "radio", label_fa: "سطح تجربه", label_sv: "Erfarenhetsnivå", placeholder_fa: "", placeholder_sv: "", required: true, options: [{ fa: "مبتدی", sv: "Nybörjare" }, { fa: "متوسط", sv: "Medel" }, { fa: "پیشرفته", sv: "Avancerad" }], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 3n },
       { id: 4n, fieldType: "checkbox", label_fa: "قوانین را می‌پذیرم", label_sv: "Jag accepterar reglerna", placeholder_fa: "موافقم", placeholder_sv: "Jag godkänner", required: true, options: [], isLookupField: false, perMember: false, excludeFromCapacityWhenChecked: false, unique: false, allowedValues: [], sortOrder: 4n },
     ],
-    createdAt: ts(25), perMemberMode: false, minMembers: 1n, maxMembers: 20n },
+    createdAt: ts(25), perMemberMode: false, minMembers: 1n, maxMembers: 20n, perMemberSessionSelection: false },
 ];
 

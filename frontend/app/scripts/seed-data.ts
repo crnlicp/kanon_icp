@@ -165,6 +165,7 @@ export const moharramEventTemplate = {
   description_sv:
     "Registrering för Muharram-kvällar 8–11 med 50 platser och 20 buffertplatser per kväll. Information om varje deltagare anges separat.",
   perMemberMode: true,
+  perMemberSessionSelection: true,
   minMembers: 1,
   maxMembers: 20,
   sessions: [
@@ -175,28 +176,6 @@ export const moharramEventTemplate = {
   ],
   fields: [
     // ---- Shared (one per registration) ----
-    {
-      scope: "shared" as const,
-      fieldType: "text",
-      label_fa: "نام",
-      label_sv: "Förnamn",
-      placeholder_fa: "",
-      placeholder_sv: "",
-      required: true,
-      isLookupField: false,
-      options: [] as { fa: string; sv: string }[],
-    },
-    {
-      scope: "shared" as const,
-      fieldType: "text",
-      label_fa: "نام خانوادگی",
-      label_sv: "Efternamn",
-      placeholder_fa: "",
-      placeholder_sv: "",
-      required: true,
-      isLookupField: false,
-      options: [],
-    },
     {
       scope: "shared" as const,
       fieldType: "phone",
@@ -257,6 +236,7 @@ export const moharramEventTemplate = {
     },
   ],
 };
+
 
 export type SeedSlide = {
   imageUrl: string;

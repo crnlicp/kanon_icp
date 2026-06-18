@@ -45,9 +45,19 @@ function countMembersForCapacity(members: MemberValues[], perMemberFields: FormF
   }, 0);
 }
 
+/** True when the given member counts toward session capacity. */
+function memberCountsTowardCapacity(member: MemberValues, perMemberFields: FormFieldReturn[]): boolean {
+  const excludeFieldIds = perMemberFields
+    .filter((f) => f.fieldType === "checkbox" && f.excludeFromCapacityWhenChecked)
+    .map((f) => String(f.id));
+  if (excludeFieldIds.length === 0) return true;
+  return !excludeFieldIds.some((fid) => member[fid] === "true");
+}
+
 export default function RegistrationForm({ activityId, formFields, sessions, registrationConfig }: RegistrationFormProps) {
   const { t, localized } = useI18n();
   const perMemberMode = !!registrationConfig?.perMemberMode;
+  const perMemberSessionSelection = !!registrationConfig?.perMemberSessionSelection;
   const sharedFields = perMemberMode ? registrationConfig?.sharedFields ?? [] : null;
   const perMemberFields = perMemberMode ? registrationConfig?.perMemberFields ?? [] : [];
   // Min/max apply in both per-member and shared modes (general bounds for personCount).
@@ -57,6 +67,7 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
   const [dynamicFormData, setDynamicFormData] = useState<Record<string, string>>({});
   const [members, setMembers] = useState<MemberValues[]>(() => Array.from({ length: minMembers }, () => ({})));
+  const [memberSessions, setMemberSessions] = useState<number[][]>(() => Array.from({ length: minMembers }, () => []));
   const [submitting, setSubmitting] = useState(false);
 
   const [selectedSessionIds, setSelectedSessionIds] = useState<number[]>([]);
@@ -65,6 +76,7 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
   const [unavailableIds, setUnavailableIds] = useState<number[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successRegistration, setSuccessRegistration] = useState<RegistrationWithStatusReturn | null>(null);
+  const [bufferPrompt, setBufferPrompt] = useState<{ sessionIds: number[] } | null>(null);
 
   // Keep members list in range when min/max from config arrive late.
   useEffect(() => {
@@ -100,17 +112,23 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
     setMembers((prev) => prev.map((m, i) => (i === idx ? { ...m, [fieldId]: value } : m)));
   };
 
+  const updateMemberSessions = (idx: number, ids: number[]) => {
+    setMemberSessions((prev) => prev.map((s, i) => (i === idx ? ids : s)));
+  };
+
   const addMember = () => {
     setMembers((prev) => (prev.length < maxMembers ? [...prev, {}] : prev));
+    setMemberSessions((prev) => (prev.length < maxMembers ? [...prev, []] : prev));
   };
 
   const removeMember = (idx: number) => {
     setMembers((prev) => (prev.length > minMembers ? prev.filter((_, i) => i !== idx) : prev));
+    setMemberSessions((prev) => (prev.length > minMembers ? prev.filter((_, i) => i !== idx) : prev));
   };
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    async (e: React.FormEvent | null, acceptBuffer = false) => {
+      if (e) e.preventDefault();
       setSubmitting(true);
       setErrorMsg(null);
       setUnavailableIds([]);
@@ -135,10 +153,27 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
             )
           : [];
 
+        // Per-member session IDs (only when this mode is enabled).
+        // Excluded members (those not counted toward capacity) submit no sessions.
+        const memberSessionIdsPayload: bigint[][] | null = perMemberMode && perMemberSessionSelection
+          ? memberSessions.map((ids, i) =>
+              memberCountsTowardCapacity(members[i] ?? {}, perMemberFields)
+                ? ids.map(BigInt)
+                : [],
+            )
+          : null;
+
         // When per-member mode is on, the backend computes the effective person
         // count from the members list, but we also pass it as `personCount` so
         // legacy views display a sensible number.
         const submittedPersonCount = perMemberMode ? BigInt(effectivePersonCount || 1) : BigInt(personCount);
+
+        // Top-level session IDs: when per-member-session mode is on, the backend
+        // derives them from the union of member lists, but we still pass an
+        // empty array to keep the candid happy.
+        const topSessionIds = perMemberMode && perMemberSessionSelection
+          ? []
+          : selectedSessionIds.map(BigInt);
 
         const result = await backend.submitRegistration(
           BigInt(activityId),
@@ -147,18 +182,25 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
           formFields ? "" : formData.phone,
           formFields ? "" : formData.message,
           submittedPersonCount,
-          selectedSessionIds.map(BigInt),
+          topSessionIds,
           fieldValues,
           membersPayload,
+          memberSessionIdsPayload,
+          acceptBuffer,
         );
 
         if (result.__kind__ === "ok") {
+          setBufferPrompt(null);
           setSuccessRegistration(result.ok);
           setFormData({ name: "", email: "", phone: "", message: "" });
           setDynamicFormData({});
           setMembers(Array.from({ length: minMembers }, () => ({})));
+          setMemberSessions(Array.from({ length: minMembers }, () => []));
           setSelectedSessionIds([]);
           setPersonCount(1);
+        } else if (result.__kind__ === "sessionsRequireBuffer") {
+          // Surface a confirm dialog; on accept, resubmit with acceptBuffer=true.
+          setBufferPrompt({ sessionIds: result.sessionsRequireBuffer.map(Number) });
         } else if (result.__kind__ === "sessionsUnavailable") {
           setUnavailableIds(result.sessionsUnavailable.map(Number));
           setErrorMsg(t("sessionsUnavailableError"));
@@ -177,7 +219,7 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
       }
       setSubmitting(false);
     },
-    [activityId, formData, dynamicFormData, formFields, perMemberMode, sharedFields, perMemberFields, members, effectivePersonCount, personCount, selectedSessionIds, minMembers, t],
+    [activityId, formData, dynamicFormData, formFields, perMemberMode, perMemberSessionSelection, sharedFields, perMemberFields, members, memberSessions, effectivePersonCount, personCount, selectedSessionIds, minMembers, t],
   );
 
   const renderField = (
@@ -312,42 +354,79 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
           {successRegistration.members && successRegistration.members.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-xs text-white/40 uppercase tracking-wide">{t("perMemberFields")}</p>
-              <ul className="space-y-1 text-sm text-white/70">
+              <ul className="space-y-2 text-sm text-white/70">
                 {successRegistration.members.map((m, i) => (
-                  <li key={i} className="flex flex-wrap items-center gap-2">
-                    <span className="text-white/40">#{i + 1}</span>
-                    <span>
-                      {m.values.map((v) => v.value).filter(Boolean).join(" · ") || `${t("member")} ${i + 1}`}
-                    </span>
-                    {!m.countsTowardCapacity && (
-                      <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
-                        {t("notCountedTowardCapacity")}
+                  <li key={i} className="border-l border-white/10 pl-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-white/40">#{i + 1}</span>
+                      <span>
+                        {m.values
+                          .map((v) => v.value)
+                          .filter((v) => v && v !== "false")
+                          .map((v) => (v === "true" ? "✓" : v))
+                          .join(" · ") || `${t("member")} ${i + 1}`}
                       </span>
+                      {!m.countsTowardCapacity && (
+                        <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
+                          {t("notCountedTowardCapacity")}
+                        </span>
+                      )}
+                    </div>
+                    {(m.selectedSessions ?? []).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {m.selectedSessions.map((ss) => {
+                          const s = sessions.find((sx) => Number(sx.id) === Number(ss.sessionId));
+                          const name = s ? localized(s.name_fa, s.name_sv) : ss.sessionName;
+                          return (
+                            <span
+                              key={Number(ss.sessionId)}
+                              className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                                ss.status === "confirmed"
+                                  ? "bg-green-500/15 text-green-400 border-green-500/20"
+                                  : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                              }`}
+                            >
+                              {name} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                            </span>
+                          );
+                        })}
+                      </div>
                     )}
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          {successRegistration.selectedSessions.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-xs text-white/40 uppercase tracking-wide">{t("selectedSessions")}</p>
-              <div className="flex flex-wrap gap-2">
-                {successRegistration.selectedSessions.map((ss) => (
-                  <span
-                    key={Number(ss.sessionId)}
-                    className={`text-xs px-2.5 py-1 rounded-full border ${
-                      ss.status === "confirmed"
-                        ? "bg-green-500/15 text-green-400 border-green-500/20"
-                        : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
-                    }`}
-                  >
-                    {ss.sessionName} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
-                  </span>
-                ))}
+          {(() => {
+            const hasPerMemberSessions = (successRegistration.members ?? []).some(
+              (m) => (m.selectedSessions ?? []).length > 0,
+            );
+            if (hasPerMemberSessions) return null;
+            if (successRegistration.selectedSessions.length === 0) return null;
+            return (
+              <div className="space-y-1.5">
+                <p className="text-xs text-white/40 uppercase tracking-wide">{t("selectedSessions")}</p>
+                <div className="flex flex-wrap gap-2">
+                  {successRegistration.selectedSessions.map((ss) => {
+                    const s = sessions.find((sx) => Number(sx.id) === Number(ss.sessionId));
+                    const name = s ? localized(s.name_fa, s.name_sv) : ss.sessionName;
+                    return (
+                      <span
+                        key={Number(ss.sessionId)}
+                        className={`text-xs px-2.5 py-1 rounded-full border ${
+                          ss.status === "confirmed"
+                            ? "bg-green-500/15 text-green-400 border-green-500/20"
+                            : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                        }`}
+                      >
+                        {name} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     );
@@ -361,9 +440,9 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
       : null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Session selector */}
-      {sessions.length > 0 && availability.length > 0 && (
+    <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
+      {/* Session selector — hidden when each member picks sessions individually. */}
+      {sessions.length > 0 && availability.length > 0 && !(perMemberMode && perMemberSessionSelection) && (
         <div className="space-y-2">
           <p className="text-sm text-white/50">{t("sessions")}</p>
           <SessionSelector
@@ -433,6 +512,26 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
                     `m${idx}`,
                   );
                 })}
+                {perMemberSessionSelection && sessions.length > 0 && availability.length > 0 && memberCountsTowardCapacity(m, perMemberFields) && (
+                  <div className="pt-2">
+                    <p className="text-xs text-white/40 mb-1.5">{t("sessions")}</p>
+                    <SessionSelector
+                      availability={availability}
+                      selectedIds={memberSessions[idx] ?? []}
+                      personCount={1}
+                      onSelectionChange={(ids) => updateMemberSessions(idx, ids)}
+                      onPersonCountChange={() => { /* fixed at 1 per member */ }}
+                      unavailableIds={unavailableIds}
+                      disablePersonCounter
+                      minPersonCount={1}
+                      maxPersonCount={1}
+                      hidePersonCounter
+                    />
+                    {(memberSessions[idx]?.length ?? 0) === 0 && (
+                      <p className="text-xs text-red-400/80 mt-1">{t("selectAtLeastOneSession")}</p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -512,7 +611,10 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
         type="submit"
         disabled={
           submitting ||
-          (sessions.length > 0 && selectedSessionIds.length === 0) ||
+          (sessions.length > 0 && !(perMemberMode && perMemberSessionSelection) && selectedSessionIds.length === 0) ||
+          (perMemberMode && perMemberSessionSelection && members.some((m, i) =>
+            memberCountsTowardCapacity(m, perMemberFields) && (memberSessions[i]?.length ?? 0) === 0,
+          )) ||
           (perMemberMode && (members.length < minMembers || members.length > maxMembers))
         }
         className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-primary-dark text-navy font-semibold rounded-xl transition-colors disabled:opacity-50"
@@ -521,6 +623,43 @@ export default function RegistrationForm({ activityId, formFields, sessions, reg
       >
         {submitting ? t("loading") : t("submit")}
       </motion.button>
+
+      {bufferPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-navy border border-white/10 p-5 space-y-4">
+            <h3 className="text-lg font-semibold text-white">{t("bufferConfirmTitle")}</h3>
+            <p className="text-sm text-white/70">{t("bufferConfirmBody")}</p>
+            <ul className="text-sm text-yellow-300/90 space-y-1">
+              {bufferPrompt.sessionIds.map((sid) => {
+                const s = sessions.find((ss) => Number(ss.id) === sid);
+                if (!s) return null;
+                return (
+                  <li key={sid}>
+                    {localized(s.name_fa, s.name_sv)}{s.date ? ` · ${s.date}` : ""}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => { setBufferPrompt(null); setSubmitting(false); }}
+                className="px-4 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                {t("bufferCancelButton")}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSubmit(null, true)}
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm bg-primary hover:bg-primary-dark text-navy font-semibold disabled:opacity-50"
+              >
+                {t("bufferContinueButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

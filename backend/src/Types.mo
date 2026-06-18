@@ -96,6 +96,9 @@ module {
     perMemberMode : ?Bool;
     minMembers    : ?Nat;
     maxMembers    : ?Nat;
+    // When true (and perMemberMode is on) each member picks their own
+    // session(s); otherwise all members share the registration's session list.
+    perMemberSessionSelection : ?Bool;
   };
 
   // ─── Event Session Types ──────────────────────────────────────────────────
@@ -147,9 +150,14 @@ module {
   // Per-member snapshot stored with a registration when the bound template
   // had perMemberMode enabled. countsTowardCapacity reflects the resolved
   // exclusion-flag check at submission time.
+  // selectedSessions: when present, this member chose their own session list
+  // (per-member-session-selection mode). Capacity is then counted per member
+  // for each session they selected. When null, the registration's top-level
+  // selectedSessions apply to every counting member (legacy behavior).
   public type RegistrationMember = {
     values : [RegistrationFieldValue];
     countsTowardCapacity : Bool;
+    selectedSessions : ?[RegistrationSessionSnapshot];
   };
 
   public type Registration = {
@@ -270,6 +278,7 @@ module {
     fields         : [FormFieldReturn];
     createdAt      : Int;
     perMemberMode  : Bool;
+    perMemberSessionSelection : Bool;
     minMembers     : Nat;
     maxMembers     : Nat;
   };
@@ -286,12 +295,16 @@ module {
   public type RegistrationMemberReturn = {
     values : [RegistrationMemberValueReturn];
     countsTowardCapacity : Bool;
+    // Per-member computed session statuses. Empty when the member did not
+    // pick their own sessions (legacy registrations / shared-session mode).
+    selectedSessions : [SessionStatusReturn];
   };
 
   public type ActivityRegistrationConfigReturn = {
     activityId      : Nat;
     hasRegistration : Bool;
     perMemberMode   : Bool;
+    perMemberSessionSelection : Bool;
     minMembers      : Nat;
     maxMembers      : Nat;
     sharedFields    : [FormFieldReturn];
@@ -413,7 +426,11 @@ module {
     #duplicateValue       : Nat;     // fieldId of the unique field that conflicted
     #registrationDisabled;
     #invalidInput;
-    #sessionsUnavailable  : [Nat];  // session IDs that are totally full
+    #sessionsUnavailable  : [Nat];  // session IDs that are totally full (cap + buffer would overflow)
+    // session IDs that would place at least one member into the buffer
+    // (waitlist). The client should ask the user to confirm and resubmit
+    // with `acceptBuffer = true`, or cancel.
+    #sessionsRequireBuffer : [Nat];
   };
 
   public type SiteSettingsReturn = {

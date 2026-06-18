@@ -18,6 +18,7 @@ type SubmitRegistrationResult =
    invalidInput;
    ok: RegistrationWithStatusReturn;
    registrationDisabled;
+   sessionsRequireBuffer: vec nat;
    sessionsUnavailable: vec nat;
    valueNotAllowed: nat;
  };
@@ -149,6 +150,7 @@ type RegistrationMemberValueReturn =
 type RegistrationMemberReturn = 
  record {
    countsTowardCapacity: bool;
+   selectedSessions: vec SessionStatusReturn;
    values: vec RegistrationMemberValueReturn;
  };
 type RegistrationFieldValueReturn = 
@@ -263,6 +265,7 @@ type EventRegistrationTemplateReturn =
    name_fa: text;
    name_sv: text;
    perMemberMode: bool;
+   perMemberSessionSelection: bool;
    sessions: vec EventSessionReturn;
  };
 type ContactMessageReturn = 
@@ -305,6 +308,7 @@ type ActivityRegistrationConfigReturn =
    minMembers: nat;
    perMemberFields: vec FormFieldReturn;
    perMemberMode: bool;
+   perMemberSessionSelection: bool;
    sessions: vec EventSessionReturn;
    sharedFields: vec FormFieldReturn;
  };
@@ -330,8 +334,8 @@ service : {
   createEventRegistrationTemplate: (token: text, name_fa: text, name_sv:
    text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn, perMemberMode: 
-   bool, minMembers: nat, maxMembers: nat) ->
-   (EventRegistrationTemplateReturn);
+   bool, perMemberSessionSelection: bool, minMembers: nat, maxMembers:
+   nat) -> (EventRegistrationTemplateReturn);
   createFormTemplate: (token: text, name_fa: text, name_sv: text,
    description_fa: text, description_sv: text, fields: vec FormFieldReturn,
    minMembers: nat, maxMembers: nat) -> (FormTemplateReturn);
@@ -410,7 +414,8 @@ service : {
        }, newMembers: vec vec record {
                                 fieldId: nat;
                                 value: text;
-                              }) -> (SubmitRegistrationResult);
+                              }, newMemberSessionIds: opt vec vec nat,
+   acceptBuffer: bool) -> (SubmitRegistrationResult);
   setMockMode: (token: text, enabled: bool) -> (bool);
   setPageSeoOverride: (token: text, override: PageSeoOverride) -> ();
   setRegistrationArchived: (token: text, id: nat, archived: bool) -> (bool);
@@ -421,11 +426,11 @@ service : {
    fieldValues: vec record {
                       fieldId: nat;
                       value: text;
-                    }, members:
-   vec vec record {
-             fieldId: nat;
-             value: text;
-           }) -> (SubmitRegistrationResult);
+                    }, members: vec vec record {
+                                          fieldId: nat;
+                                          value: text;
+                                        }, memberSessionIds: opt vec vec nat,
+   acceptBuffer: bool) -> (SubmitRegistrationResult);
   updateAboutContent: (token: text, headerImageUrl: text, body_fa: text,
    body_sv: text) -> (AboutContentReturn);
   updateActivity: (token: text, id: nat, topicId: nat, slug: text, title_fa:
@@ -438,8 +443,8 @@ service : {
   updateEventRegistrationTemplate: (token: text, id: nat, name_fa: text,
    name_sv: text, description_fa: text, description_sv: text, tmplSessions:
    vec EventSessionReturn, fields: vec FormFieldReturn, perMemberMode: 
-   bool, minMembers: nat, maxMembers: nat) ->
-   (opt EventRegistrationTemplateReturn);
+   bool, perMemberSessionSelection: bool, minMembers: nat, maxMembers:
+   nat) -> (opt EventRegistrationTemplateReturn);
   updateFormTemplate: (token: text, id: nat, name_fa: text, name_sv: 
    text, description_fa: text, description_sv: text, fields:
    vec FormFieldReturn, minMembers: nat, maxMembers: nat) ->
