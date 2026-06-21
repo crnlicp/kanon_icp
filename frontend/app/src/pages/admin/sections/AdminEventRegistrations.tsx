@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore, Check, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import Toast from "../../../components/Toast";
 import { useI18n } from "../../../i18n";
 import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn, ActivityRegistrationConfigReturn } from "../../../backend/api/backend";
@@ -45,6 +45,7 @@ export default function AdminEventRegistrations({ token }: Props) {
   const [activityConfig, setActivityConfig] = useState<ActivityRegistrationConfigReturn | null>(null);
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedMembers, setExpandedMembers] = useState<Record<number, boolean>>({});
   const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
     message: "", type: "success", visible: false,
@@ -162,10 +163,6 @@ export default function AdminEventRegistrations({ token }: Props) {
     }
   };
 
-  const visibleRegistrations = registrations
-    .filter((r) => showArchived || !r.archived)
-    .filter((r) => sessionFilter === "all" || r.selectedSessions.some((ss) => ss.sessionId === sessionFilter));
-
   // Backend stores labels as "fa / sv". Pick the part matching the current language.
   const localizedLabel = (label: string) => {
     const parts = label.split(" / ");
@@ -185,8 +182,13 @@ export default function AdminEventRegistrations({ token }: Props) {
     return map;
   }, [activityConfig, lang]);
 
-  const resolveFieldLabel = (fieldId: number, storedLabel: string) =>
-    fieldLabelById.get(fieldId) ?? localizedLabel(storedLabel);
+  const resolveFieldLabel = useCallback(
+    (fieldId: number, storedLabel: string) =>
+      fieldLabelById.get(fieldId) ?? localizedLabel(storedLabel),
+    // localizedLabel is recreated each render but only depends on `lang`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fieldLabelById, lang],
+  );
 
   // Re-resolve session names from sessionStats so chips always show the current
   // localized name rather than the "fa / sv" snapshot.
@@ -198,8 +200,61 @@ export default function AdminEventRegistrations({ token }: Props) {
     return map;
   }, [sessionStats, lang]);
 
-  const resolveSessionName = (sessionId: number, storedName: string) =>
-    sessionNameById.get(sessionId) ?? localizedLabel(storedName);
+  const resolveSessionName = useCallback(
+    (sessionId: number, storedName: string) =>
+      sessionNameById.get(sessionId) ?? localizedLabel(storedName),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionNameById, lang],
+  );
+
+  // Global free-text search across all visible fields of a registration.
+  // Matches are case-insensitive; whitespace-separated terms must all match
+  // somewhere in the registration's haystack (AND semantics).
+  const matchesSearch = useCallback(
+    (r: RegItem, query: string) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+      const parts: string[] = [
+        r.name,
+        r.email,
+        r.phone,
+        String(r.personCount),
+        String(r.id),
+        r.archived ? "archived" : "",
+      ];
+      for (const ss of r.selectedSessions) {
+        parts.push(ss.sessionName);
+        parts.push(resolveSessionName(ss.sessionId, ss.sessionName));
+        parts.push(ss.status);
+      }
+      for (const fv of r.fieldValues) {
+        parts.push(fv.fieldLabel);
+        parts.push(resolveFieldLabel(fv.fieldId, fv.fieldLabel));
+        parts.push(fv.value);
+      }
+      for (const m of r.members) {
+        for (const v of m.values) {
+          parts.push(v.fieldLabel);
+          parts.push(resolveFieldLabel(v.fieldId, v.fieldLabel));
+          parts.push(v.value);
+        }
+        for (const ss of m.selectedSessions) {
+          parts.push(ss.sessionName);
+          parts.push(resolveSessionName(ss.sessionId, ss.sessionName));
+          parts.push(ss.status);
+        }
+      }
+      const haystack = parts.join(" \u0001 ").toLowerCase();
+      const terms = q.split(/\s+/).filter(Boolean);
+      return terms.every((term) => haystack.includes(term));
+    },
+    [resolveFieldLabel, resolveSessionName],
+  );
+
+  const visibleRegistrations = registrations
+    .filter((r) => showArchived || !r.archived)
+    .filter((r) => sessionFilter === "all" || r.selectedSessions.some((ss) => ss.sessionId === sessionFilter))
+    .filter((r) => matchesSearch(r, searchQuery));
 
   const formatDate = (ns: number) => {
     const ms = ns / 1_000_000;
@@ -219,14 +274,14 @@ export default function AdminEventRegistrations({ token }: Props) {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between mb-6 gap-4">
         <h2 className="text-2xl font-bold text-white">{t("eventRegistrations")}</h2>
-        <div className="flex items-center gap-3">
-          <Filter size={16} className="text-white/40" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto lg:justify-end">
+          <Filter size={16} className="text-white/40 shrink-0" />
           <select
             value={selectedActivityId ?? ""}
             onChange={(e) => setSelectedActivityId(e.target.value ? Number(e.target.value) : null)}
-            className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+            className="flex-1 min-w-[10rem] sm:flex-none sm:w-auto bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
           >
             {activities.map((a) => (
               <option key={a.id} value={a.id} className="bg-black/70">
@@ -235,7 +290,7 @@ export default function AdminEventRegistrations({ token }: Props) {
             ))}
           </select>
           {selectedActivityId !== null && activities.find((a) => a.id === selectedActivityId)?.highlighted && (
-            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold" title={t("highlighted")}>
+            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold shrink-0" title={t("highlighted")}>
               <Star size={10} className="fill-accent" />
               {t("highlighted")}
             </span>
@@ -244,7 +299,7 @@ export default function AdminEventRegistrations({ token }: Props) {
             <select
               value={sessionFilter === "all" ? "" : sessionFilter}
               onChange={(e) => setSessionFilter(e.target.value === "" ? "all" : Number(e.target.value))}
-              className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="flex-1 min-w-[8rem] sm:flex-none sm:w-auto bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
             >
               <option value="" className="bg-black/70">{t("allSessions")}</option>
               {[...sessionStats].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder)).map((ss) => (
@@ -257,13 +312,41 @@ export default function AdminEventRegistrations({ token }: Props) {
           <button
             type="button"
             onClick={() => setShowArchived((s) => !s)}
-            className="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors whitespace-nowrap shrink-0"
           >
             {showArchived ? t("hideArchived") : t("showArchived")}
           </button>
-          <span className="text-sm text-white/40">
+          <span className="text-sm text-white/40 whitespace-nowrap shrink-0">
             {visibleRegistrations.length} {t("registrations")}
           </span>
+        </div>
+      </div>
+
+      {/* Global search across all registration fields */}
+      <div className="mb-6">
+        <div className="relative w-full">
+          <Search size={16} className="absolute top-1/2 -translate-y-1/2 start-3 text-white/40 pointer-events-none" />
+          {/* type="text" instead of "search" to suppress the browser's native
+              clear control (which would otherwise duplicate our X button). */}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("searchRegistrationsPlaceholder")}
+            aria-label={t("searchRegistrationsPlaceholder")}
+            className="w-full bg-[#0f172a] border border-white/10 rounded-lg ps-9 pe-9 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              aria-label={t("clearSearch")}
+              title={t("clearSearch")}
+              className="absolute top-1/2 -translate-y-1/2 end-2 p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 

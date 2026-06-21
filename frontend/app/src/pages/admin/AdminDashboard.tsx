@@ -111,8 +111,13 @@ export default function AdminDashboard() {
 
       {/* Sidebar */}
       <motion.aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 glass-strong z-40 flex flex-col transition-transform md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed md:sticky top-0 ${isRtl ? "right-0" : "left-0"} h-screen w-64 glass-strong z-40 flex flex-col transition-transform md:translate-x-0 ${
+          sidebarOpen
+            ? "translate-x-0"
+            : isRtl
+              ? "translate-x-full"
+              : "-translate-x-full"
+        }`}
         initial={false}
       >
         <div className="p-6 border-b border-white/10">

@@ -322,6 +322,8 @@ export const translations = {
     open: "باز",
     full: "پر",
     registrationCount: "تعداد ثبت‌نام",
+    searchRegistrationsPlaceholder: "جستجو در نام، ایمیل، تلفن، اعضا، فیلدها...",
+    clearSearch: "پاک کردن",
 
     // Registration mode
     registrationMode: "نوع ثبت‌نام",
@@ -702,6 +704,8 @@ export const translations = {
     open: "Öppen",
     full: "Full",
     registrationCount: "Antal registreringar",
+    searchRegistrationsPlaceholder: "Sök i namn, e-post, telefon, medlemmar, fält...",
+    clearSearch: "Rensa",
 
     // Registration mode
     registrationMode: "Registreringstyp",

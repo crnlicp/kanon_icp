@@ -1793,8 +1793,16 @@ persistent actor {
                   };
                   if (confirmed + buffer + needed > sessionCap + sessionBuf) {
                     hardFailBuf.add(sid);
-                  } else if (confirmed + buffer + needed > sessionCap) {
-                    bufferBuf.add(sid);
+                  } else {
+                    // Position-based buffer check: an edit preserves
+                    // createdAt, so this registration keeps its original
+                    // queue position rather than being appended at the end.
+                    // Only flag the buffer prompt if this registration's
+                    // own slots would actually land beyond regular cap.
+                    let runningBefore = H.sessionRunningBefore(actRegs, sid, existing, ?id);
+                    if (runningBefore + needed > sessionCap) {
+                      bufferBuf.add(sid);
+                    };
                   };
                 };
               };
