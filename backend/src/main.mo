@@ -1791,18 +1791,23 @@ persistent actor {
                       case _ {};
                     };
                   };
+                  // Slots this registration already occupies in this session.
+                  // Kept slots retain their original queue position; only the
+                  // delta (newly added slots) is treated as arriving "now" and
+                  // must obey the current capacity / buffer limits.
+                  let previousNeeded : Nat = H.regSessionUnits(existing, sid).count;
+                  let addedSlots : Nat = if (needed > previousNeeded) {
+                    needed - previousNeeded : Nat
+                  } else { 0 };
                   if (confirmed + buffer + needed > sessionCap + sessionBuf) {
+                    // No room even in the waiting list for the new total.
                     hardFailBuf.add(sid);
-                  } else {
-                    // Position-based buffer check: an edit preserves
-                    // createdAt, so this registration keeps its original
-                    // queue position rather than being appended at the end.
-                    // Only flag the buffer prompt if this registration's
-                    // own slots would actually land beyond regular cap.
-                    let runningBefore = H.sessionRunningBefore(actRegs, sid, existing, ?id);
-                    if (runningBefore + needed > sessionCap) {
-                      bufferBuf.add(sid);
-                    };
+                  } else if (addedSlots > 0 and confirmed + buffer + addedSlots > sessionCap) {
+                    // Newly added slots would land beyond the regular
+                    // capacity — require explicit buffer acceptance. Kept
+                    // slots are not re-prompted because they retain their
+                    // original position.
+                    bufferBuf.add(sid);
                   };
                 };
               };
