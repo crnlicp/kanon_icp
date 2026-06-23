@@ -279,6 +279,9 @@ export const translations = {
     confirmedStatus: "تأیید شده",
     bufferStatus: "در صف انتظار",
     nowFullDeselect: "ظرفیت تکمیل شد — لطفاً از انتخاب خارج کنید",
+    sessionDatePassed: "تاریخ این جلسه گذشته است",
+    sessionDatePassedHint: "تاریخ این جلسه گذشته است — تنها امکان حذف انتخاب وجود دارد.",
+    fullyBookedDeselectOnlyHint: "ظرفیت تکمیل شده — فقط می‌توانید از انتخاب خارج کنید.",
 
     // Group size
     howManyPeople: "تعداد نفرات گروه؟",
@@ -661,6 +664,9 @@ export const translations = {
     confirmedStatus: "Bekräftad",
     bufferStatus: "Reservlista",
     nowFullDeselect: "Fullbokat — vänligen avmarkera",
+    sessionDatePassed: "Datumet har passerat",
+    sessionDatePassedHint: "Passets datum har passerat — du kan endast avmarkera.",
+    fullyBookedDeselectOnlyHint: "Fullbokat — du kan endast avmarkera.",
 
     // Group size
     howManyPeople: "Hur många personer i er grupp?",

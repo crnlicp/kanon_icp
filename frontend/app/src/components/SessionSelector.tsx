@@ -38,6 +38,11 @@ export default function SessionSelector({
 
   const sorted = [...availability].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
 
+  // Today as YYYY-MM-DD in the user's local timezone — matches the format
+  // produced by the admin <input type="date"> session date picker.
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
   const toggle = (id: number, disabled: boolean) => {
     if (disabled) return;
     if (selectedIds.includes(id)) {
@@ -55,7 +60,13 @@ export default function SessionSelector({
           const isSelected = selectedIds.includes(id);
           const isUnavailable = unavailableIds.includes(id);
           const isTotallyFull = session.totalFull;
-          const isDisabled = isTotallyFull;
+          const isPastDate = !!session.date && session.date < todayStr;
+          // A blocked session (full or past) is only locked when the user is
+          // not already opted in. This lets users in edit mode uncheck a
+          // session they're already part of even when it has since become
+          // full or its date has passed.
+          const isBlocked = isTotallyFull || isPastDate;
+          const isDisabled = isBlocked && !isSelected;
 
           const confirmed = Number(session.confirmedCount);
           const cap = Number(session.capacity);
@@ -66,7 +77,10 @@ export default function SessionSelector({
           let badgeText = "";
           let badgeClass = "";
 
-          if (isTotallyFull) {
+          if (isPastDate) {
+            badgeText = t("sessionDatePassed");
+            badgeClass = "bg-white/10 text-white/40 border-white/10";
+          } else if (isTotallyFull) {
             badgeText = t("fullyBooked");
             badgeClass = "bg-red-500/15 text-red-400 border-red-500/20";
           } else if (session.regularFull) {
@@ -115,6 +129,11 @@ export default function SessionSelector({
               </div>
               {isUnavailable && (
                 <p className="text-xs text-red-400">{t("nowFullDeselect")}</p>
+              )}
+              {!isUnavailable && isBlocked && isSelected && (
+                <p className="text-[11px] text-white/40">
+                  {isPastDate ? t("sessionDatePassedHint") : t("fullyBookedDeselectOnlyHint")}
+                </p>
               )}
             </label>
           );
