@@ -147,6 +147,24 @@ module {
     sessionName : Text;  // snapshot of name at submission time
   };
 
+  // Records when a (registration, [member], session) trio was first joined.
+  // Stored in a separate stable side-map (not on the snapshot itself, to
+  // preserve enhanced-orthogonal-persistence upgrade compatibility for
+  // pre-existing Registration / RegistrationSessionSnapshot records).
+  //
+  // For top-level snapshots (atomic / shared sessions), memberIndex is null.
+  // For per-member snapshots, memberIndex matches the member position in
+  // Registration.members.
+  //
+  // Missing entries (no record for a given (reg, [memberIndex], sessionId))
+  // fall back to `reg.createdAt`, which preserves legacy behavior for
+  // registrations created before this map existed.
+  public type SessionJoinedRecord = {
+    sessionId   : Nat;
+    memberIndex : ?Nat;
+    joinedAt    : Int;
+  };
+
   // Per-member snapshot stored with a registration when the bound template
   // had perMemberMode enabled. countsTowardCapacity reflects the resolved
   // exclusion-flag check at submission time.

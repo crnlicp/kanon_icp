@@ -2,6 +2,8 @@
 import T "./Types";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
+import Nat "mo:core/Nat";
+import List "mo:core/List";
 
 module {
 
@@ -291,6 +293,7 @@ module {
     targetReg          : T.Registration,
     sessions           : [T.EventSession],
     excludeRegId       : ?Nat,
+    lookup             : JoinedAtLookup,
   ) : [T.SessionStatusReturn] {
     let perMember = regUsesPerMemberSessions(targetReg);
     Array.map<T.RegistrationSessionSnapshot, T.SessionStatusReturn>(
@@ -304,27 +307,55 @@ module {
             buf := s.bufferCapacity;
           };
         };
-        let running = sessionRunningBefore(allRegsForActivity, snap.sessionId, targetReg, excludeRegId);
 
         let status = if (perMember) {
-          // Determine status for each counting member that is in this session;
-          // any buffer assignment makes the aggregate status "buffer".
+          // Determine status per counting member; any buffer assignment makes
+          // the aggregate "buffer". Each member is evaluated using its own
+          // joinedAt for this session so members added during a modify do
+          // not inherit the registration's original queue position.
           var anyBuffer = false;
-          var pos = running;
           switch (targetReg.members) {
             case (?ms) {
-              for (m in ms.vals()) {
+              var mIdx : Nat = 0;
+              while (mIdx < ms.size()) {
+                let m = ms[mIdx];
                 if (m.countsTowardCapacity and memberInSession(targetReg, m, snap.sessionId)) {
-                  if (pos >= cap) { anyBuffer := true };
-                  pos += 1;
+                  let memberJa = effectiveMemberJoinedAt(targetReg, mIdx, snap.sessionId, lookup);
+                  let beforeOthers = sessionRunningBeforeAt(
+                    allRegsForActivity, snap.sessionId, memberJa, targetReg.id, excludeRegId, lookup
+                  );
+                  // Add earlier counting members of target reg that share
+                  // this session AND joined first (joinedAt <, or equal
+                  // joinedAt with smaller member index).
+                  var beforeWithin : Nat = 0;
+                  var j : Nat = 0;
+                  while (j < ms.size()) {
+                    if (j != mIdx) {
+                      let other = ms[j];
+                      if (other.countsTowardCapacity and memberInSession(targetReg, other, snap.sessionId)) {
+                        let otherJa = effectiveMemberJoinedAt(targetReg, j, snap.sessionId, lookup);
+                        let isBefore = (otherJa < memberJa) or (otherJa == memberJa and j < mIdx);
+                        if (isBefore) { beforeWithin += 1 };
+                      };
+                    };
+                    j += 1;
+                  };
+                  if (beforeOthers + beforeWithin >= cap) { anyBuffer := true };
                 };
+                mIdx += 1;
               };
             };
             case null {};
           };
           if (anyBuffer) "buffer" else "confirmed"
         } else {
-          // Atomic: whole personCount must fit within cap to be confirmed
+          // Atomic: whole personCount must fit within cap to be confirmed,
+          // using the session's own joinedAt (preserved across modifies for
+          // kept sessions; set to "now" for sessions added during a modify).
+          let ja = effectiveTopJoinedAt(targetReg, snap.sessionId, lookup);
+          let running = sessionRunningBeforeAt(
+            allRegsForActivity, snap.sessionId, ja, targetReg.id, excludeRegId, lookup
+          );
           if (running + targetReg.personCount <= cap) "confirmed" else "buffer"
         };
 
@@ -342,13 +373,11 @@ module {
     targetReg          : T.Registration,
     sessions           : [T.EventSession],
     excludeRegId       : ?Nat,
+    lookup             : JoinedAtLookup,
   ) : [[T.SessionStatusReturn]] {
     switch (targetReg.members) {
       case null { [] };
       case (?ms) {
-        // Pre-compute per-session running offset and (cap, buf), and an
-        // ordered list of "counting in-session member indices" so each member
-        // can be assigned the right slot.
         Array.tabulate<[T.SessionStatusReturn]>(ms.size(), func (mIdx) {
           let m = ms[mIdx];
           let sessList = switch (m.selectedSessions) {
@@ -360,25 +389,29 @@ module {
             for (s in sessions.vals()) {
               if (s.id == snap.sessionId) { cap := s.capacity };
             };
-            let running = sessionRunningBefore(allRegsForActivity, snap.sessionId, targetReg, excludeRegId);
-            // Position within target reg: count earlier counting members in this session.
-            var pos = running;
-            var i : Nat = 0;
-            while (i < mIdx) {
-              let earlier = ms[i];
-              if (earlier.countsTowardCapacity and memberInSession(targetReg, earlier, snap.sessionId)) {
-                pos += 1;
-              };
-              i += 1;
-            };
             let status = if (not m.countsTowardCapacity) {
-              // Members not counting toward capacity track the registration's
-              // collective status instead; default to confirmed when no slot is needed.
-              "confirmed"
-            } else if (pos < cap) {
               "confirmed"
             } else {
-              "buffer"
+              let memberJa = effectiveMemberJoinedAt(targetReg, mIdx, snap.sessionId, lookup);
+              let beforeOthers = sessionRunningBeforeAt(
+                allRegsForActivity, snap.sessionId, memberJa, targetReg.id, excludeRegId, lookup
+              );
+              // Earlier counting members of target reg in this session,
+              // ordered by joinedAt then member index.
+              var beforeWithin : Nat = 0;
+              var j : Nat = 0;
+              while (j < ms.size()) {
+                if (j != mIdx) {
+                  let other = ms[j];
+                  if (other.countsTowardCapacity and memberInSession(targetReg, other, snap.sessionId)) {
+                    let otherJa = effectiveMemberJoinedAt(targetReg, j, snap.sessionId, lookup);
+                    let isBefore = (otherJa < memberJa) or (otherJa == memberJa and j < mIdx);
+                    if (isBefore) { beforeWithin += 1 };
+                  };
+                };
+                j += 1;
+              };
+              if (beforeOthers + beforeWithin < cap) "confirmed" else "buffer"
             };
             { sessionId = snap.sessionId; sessionName = snap.sessionName; status }
           })
@@ -460,39 +493,34 @@ module {
     cap             : Nat,
     buf             : Nat,
     excludeRegId    : ?Nat,
+    lookup          : JoinedAtLookup,
   ) : (Nat, Nat) {
-    let sorted = Array.sort<T.Registration>(
-      regsForActivity,
-      func (a, b) { Int.compare(a.createdAt, b.createdAt) }
-    );
+    let slots = sessionSlotsSorted(regsForActivity, sessionId, lookup);
 
     var running : Nat = 0;
     var confirmed : Nat = 0;
     var buffer : Nat = 0;
 
-    for (reg in sorted.vals()) {
+    for (slot in slots.vals()) {
       let shouldSkip = switch (excludeRegId) {
-        case (?eid) { reg.id == eid };
+        case (?eid) { slot.regId == eid };
         case null   { false };
       };
       if (not shouldSkip) {
-        let units = regSessionUnits(reg, sessionId);
-        if (units.count > 0) {
-          if (units.atomic) {
-            if (running + units.count <= cap) {
-              confirmed += units.count;
-            } else if (running + units.count <= cap + buf) {
-              buffer += units.count;
-            };
-            running += units.count;
-          } else {
-            var i : Nat = 0;
-            while (i < units.count) {
-              if (running < cap) { confirmed += 1 }
-              else if (running < cap + buf) { buffer += 1 };
-              running += 1;
-              i += 1;
-            };
+        if (slot.atomic) {
+          if (running + slot.count <= cap) {
+            confirmed += slot.count;
+          } else if (running + slot.count <= cap + buf) {
+            buffer += slot.count;
+          };
+          running += slot.count;
+        } else {
+          var i : Nat = 0;
+          while (i < slot.count) {
+            if (running < cap) { confirmed += 1 }
+            else if (running < cap + buf) { buffer += 1 };
+            running += 1;
+            i += 1;
           };
         };
       };
@@ -501,29 +529,142 @@ module {
     (confirmed, buffer)
   };
 
-  // Compute the running offset (= total slots already taken before the
-  // target reg arrives) for a given session. Used to derive per-member
-  // statuses for the target without rebuilding the global counts.
-  public func sessionRunningBefore(
+  // ── Per-session join-time helpers ─────────────────────────────────────────
+  //
+  // A registration tracks a single createdAt, but during modifyRegistration
+  // each (member, session) pair may have its own join time stored in a
+  // side-map maintained by the actor (`sessionJoinedAt`). The capacity /
+  // status helpers receive that map's data through a `JoinedAtLookup`
+  // function so kept sessions retain their original queue position while
+  // sessions added during the edit land at the end of the waitlist.
+  //
+  // Lookup signature: (regId, sessionId, memberIndex?) -> ?Int
+  //   - returns the stored joinedAt for that triple when present
+  //   - returns null when no override is recorded, in which case the helpers
+  //     fall back to `reg.createdAt` (legacy behavior, identical to the
+  //     pre-side-map implementation).
+  public type JoinedAtLookup = (Nat, Nat, ?Nat) -> ?Int;
+
+  // Default lookup that always returns null (= every reg falls back to its
+  // createdAt). Used by callers that haven't yet been wired up to the
+  // side-map.
+  public func noJoinedAtLookup(_ : Nat, _ : Nat, _ : ?Nat) : ?Int { null };
+
+  // Resolve the effective join time of a top-level (atomic) snapshot.
+  public func effectiveTopJoinedAt(
+    reg       : T.Registration,
+    sessionId : Nat,
+    lookup    : JoinedAtLookup,
+  ) : Int {
+    switch (lookup(reg.id, sessionId, null)) {
+      case (?t) t;
+      case null reg.createdAt;
+    }
+  };
+
+  // Resolve the effective join time of a per-member snapshot.
+  public func effectiveMemberJoinedAt(
+    reg         : T.Registration,
+    memberIndex : Nat,
+    sessionId   : Nat,
+    lookup      : JoinedAtLookup,
+  ) : Int {
+    switch (lookup(reg.id, sessionId, ?memberIndex)) {
+      case (?t) t;
+      case null reg.createdAt;
+    }
+  };
+
+  // Internal: one slot event per atomic-block (atomic regs) or per
+  // counting-member-slot (per-member regs), tagged with the effective
+  // per-session joinedAt and source reg.
+  type SessionSlot = {
+    regId    : Nat;
+    joinedAt : Int;
+    count    : Nat;
+    atomic   : Bool;
+  };
+
+  // Build all slot events for a session across `regs`, sorted by (joinedAt,
+  // regId). Per-member regs emit one slot per counting member in the session
+  // so each member's joinedAt is respected independently.
+  func sessionSlotsSorted(
+    regs      : [T.Registration],
+    sessionId : Nat,
+    lookup    : JoinedAtLookup,
+  ) : [SessionSlot] {
+    let buf = List.empty<SessionSlot>();
+    for (reg in regs.vals()) {
+      if (regUsesPerMemberSessions(reg)) {
+        switch (reg.members) {
+          case (?ms) {
+            var mIdx : Nat = 0;
+            while (mIdx < ms.size()) {
+              let m = ms[mIdx];
+              if (m.countsTowardCapacity) {
+                let sessList = switch (m.selectedSessions) {
+                  case (?ss) ss;
+                  case null reg.selectedSessions;
+                };
+                for (snap in sessList.vals()) {
+                  if (snap.sessionId == sessionId) {
+                    buf.add({
+                      regId    = reg.id;
+                      joinedAt = effectiveMemberJoinedAt(reg, mIdx, sessionId, lookup);
+                      count    = 1;
+                      atomic   = false;
+                    });
+                  };
+                };
+              };
+              mIdx += 1;
+            };
+          };
+          case null {};
+        };
+      } else {
+        for (snap in reg.selectedSessions.vals()) {
+          if (snap.sessionId == sessionId and reg.personCount > 0) {
+            buf.add({
+              regId    = reg.id;
+              joinedAt = effectiveTopJoinedAt(reg, sessionId, lookup);
+              count    = reg.personCount;
+              atomic   = true;
+            });
+          };
+        };
+      };
+    };
+    Array.sort<SessionSlot>(List.toArray(buf), func (a, b) {
+      let c = Int.compare(a.joinedAt, b.joinedAt);
+      if (c != #equal) c else Nat.compare(a.regId, b.regId)
+    })
+  };
+
+  // Compute how many slots are already taken in `sessionId` before a target
+  // slot whose join time is `targetJoinedAt` (with tiebreaker `targetRegId`
+  // so two regs with identical joinedAt have a stable order). The target
+  // reg is excluded via `excludeRegId`.
+  public func sessionRunningBeforeAt(
     regsForActivity : [T.Registration],
     sessionId       : Nat,
-    targetReg       : T.Registration,
+    targetJoinedAt  : Int,
+    targetRegId     : Nat,
     excludeRegId    : ?Nat,
+    lookup          : JoinedAtLookup,
   ) : Nat {
-    let sorted = Array.sort<T.Registration>(
-      regsForActivity,
-      func (a, b) { Int.compare(a.createdAt, b.createdAt) }
-    );
+    let slots = sessionSlotsSorted(regsForActivity, sessionId, lookup);
     var running : Nat = 0;
-    label scan for (reg in sorted.vals()) {
-      if (reg.id == targetReg.id) { break scan };
+    for (slot in slots.vals()) {
       let shouldSkip = switch (excludeRegId) {
-        case (?eid) { reg.id == eid };
+        case (?eid) { slot.regId == eid };
         case null   { false };
       };
       if (not shouldSkip) {
-        let units = regSessionUnits(reg, sessionId);
-        running += units.count;
+        let isBefore =
+          (slot.joinedAt < targetJoinedAt) or
+          (slot.joinedAt == targetJoinedAt and slot.regId < targetRegId);
+        if (isBefore) { running += slot.count };
       };
     };
     running

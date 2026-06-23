@@ -83,6 +83,14 @@ persistent actor {
   let registrations = Map.empty<Nat, Registration>();
   var nextRegistrationId : Nat = 1;
 
+  // Side-table tracking when each (registration, [member-index], session)
+  // was joined. Separate from Registration to keep enhanced-orthogonal-
+  // persistence upgrades safe (modifying existing stable record types is
+  // rejected; adding new stable maps is allowed). Missing entries are
+  // interpreted by the capacity logic as "joined at reg.createdAt", which
+  // preserves legacy behavior for pre-existing registrations.
+  let sessionJoinedAt = Map.empty<Nat, [T.SessionJoinedRecord]>();
+
   let formTemplates = Map.empty<Nat, FormTemplate>();
   var nextFormTemplateId : Nat = 1;
 
@@ -997,11 +1005,35 @@ persistent actor {
     )
   };
 
+  // Lookup callback passed to capacity helpers. Returns the explicit
+  // joinedAt for (regId, sessionId, memberIndex?) from the side-map, or
+  // null when no override is recorded (helpers then fall back to
+  // reg.createdAt for that slot, preserving legacy behavior for
+  // pre-existing registrations).
+  func joinedAtLookup(regId : Nat, sessionId : Nat, memberIndex : ?Nat) : ?Int {
+    switch (Map.get(sessionJoinedAt, Nat.compare, regId)) {
+      case (?recs) {
+        for (r in recs.vals()) {
+          if (r.sessionId == sessionId) {
+            let memberMatch = switch (r.memberIndex, memberIndex) {
+              case (null, null) { true };
+              case (?a, ?b) { a == b };
+              case _ { false };
+            };
+            if (memberMatch) { return ?r.joinedAt };
+          };
+        };
+        null
+      };
+      case null { null };
+    }
+  };
+
   // Compute SessionAvailabilityReturn for each session of an activity
   func computeAvailability(activity : Activity) : [SessionAvailabilityReturn] {
     let actRegs = regsForActivity(activity.id);
     Array.map<EventSession, SessionAvailabilityReturn>(activity.sessions, func (s) {
-      let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null);
+      let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null, joinedAtLookup);
       {
         sessionId      = s.id;
         name_fa        = s.name.fa;
@@ -1033,7 +1065,7 @@ persistent actor {
       case (?activity) {
         let actRegs = regsForActivity(activityId);
         Array.map<EventSession, SessionStatsReturn>(activity.sessions, func (s) {
-          let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null);
+          let (confirmed, buffer) = H.computeSessionCounts(actRegs, s.id, s.capacity, s.bufferCapacity, null, joinedAtLookup);
           // Count distinct registration records for this session
           var regCount : Nat = 0;
           for (reg in actRegs.vals()) {
@@ -1086,7 +1118,7 @@ persistent actor {
     false
   };
 
-  // Snapshot session names from activity.sessions for the given IDs
+  // Snapshot session names from activity.sessions for the given IDs.
   func snapshotSessions(
     sessionIds : [Nat],
     actSessions : [EventSession],
@@ -1450,7 +1482,7 @@ persistent actor {
               };
             };
             if (sessionFound) {
-              let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, null);
+              let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, null, joinedAtLookup);
               // Determine how many slots THIS submission needs for this session.
               var needed : Nat = effectivePersonCount;
               if (pmConfig.enabled and pmConfig.perMemberSessionSelection) {
@@ -1557,8 +1589,8 @@ persistent actor {
 
         // 8. Compute statuses (reg is now in the map)
         let allRegsNow = regsForActivity(activityId);
-        let statuses = H.computeSessionStatuses(allRegsNow, reg, activity.sessions, null);
-        let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, reg, activity.sessions, null);
+        let statuses = H.computeSessionStatuses(allRegsNow, reg, activity.sessions, null, joinedAtLookup);
+        let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, reg, activity.sessions, null, joinedAtLookup);
         #ok(H.regToReturnWithStatusFull(reg, statuses, perMemberStatuses))
       };
       case null { #registrationDisabled };
@@ -1624,8 +1656,8 @@ persistent actor {
         switch (actOpt) {
           case (?activity) {
             let actRegs = regsForActivity(reg.activityId);
-            let statuses = H.computeSessionStatuses(actRegs, reg, activity.sessions, null);
-            let perMemberStatuses = H.computePerMemberStatuses(actRegs, reg, activity.sessions, null);
+            let statuses = H.computeSessionStatuses(actRegs, reg, activity.sessions, null, joinedAtLookup);
+            let perMemberStatuses = H.computePerMemberStatuses(actRegs, reg, activity.sessions, null, joinedAtLookup);
             ?H.regToReturnWithStatusFull(reg, statuses, perMemberStatuses)
           };
           case null {
@@ -1644,6 +1676,7 @@ persistent actor {
         let actOpt = Map.get(activities, Nat.compare, reg.activityId);
         if (not verifyLookup(reg, actOpt, lookupValue)) { return false };
         ignore Map.delete(registrations, Nat.compare, id);
+        ignore Map.delete(sessionJoinedAt, Nat.compare, id);
         true
       };
       case null { false };
@@ -1681,6 +1714,66 @@ persistent actor {
         switch (actOpt) {
           case (?activity) {
             if (not activity.hasRegistration) { return #registrationDisabled };
+
+            // Timestamp used for any session that is being added to the
+            // registration during this edit. Kept sessions retain their
+            // previously stored joinedAt so their queue position is
+            // preserved.
+            let modifyNow : Int = Time.now();
+
+            // Snapshot of previously stored joinedAt records for this
+            // registration (side-map lookup). Used below to decide which
+            // sessions are "kept" (preserve joinedAt) vs "newly added"
+            // (stamped with modifyNow).
+            let prevJoinedRecords : [T.SessionJoinedRecord] =
+              switch (Map.get(sessionJoinedAt, Nat.compare, existing.id)) {
+                case (?recs) recs;
+                case null []
+              };
+            let prevTopJoinedAt = func (sid : Nat) : ?Int {
+              for (r in prevJoinedRecords.vals()) {
+                if (r.memberIndex == null and r.sessionId == sid) {
+                  return ?r.joinedAt;
+                };
+              };
+              // No prior record — if the session was already on the
+              // registration (legacy submission before the side-map
+              // existed), keep its position by treating it as joined at
+              // the original createdAt.
+              for (snap in existing.selectedSessions.vals()) {
+                if (snap.sessionId == sid) { return ?existing.createdAt };
+              };
+              null
+            };
+            let prevMemberJoinedAt = func (mIdx : Nat, sid : Nat) : ?Int {
+              for (r in prevJoinedRecords.vals()) {
+                switch (r.memberIndex) {
+                  case (?i) {
+                    if (i == mIdx and r.sessionId == sid) {
+                      return ?r.joinedAt;
+                    };
+                  };
+                  case null {};
+                };
+              };
+              // Legacy fallback: if existing.members[mIdx] already had this
+              // session, retain its original queue position.
+              switch (existing.members) {
+                case (?ms) {
+                  if (mIdx < ms.size()) {
+                    let sessList = switch (ms[mIdx].selectedSessions) {
+                      case (?ss) ss;
+                      case null existing.selectedSessions;
+                    };
+                    for (snap in sessList.vals()) {
+                      if (snap.sessionId == sid) { return ?existing.createdAt };
+                    };
+                  };
+                };
+                case null {};
+              };
+              null
+            };
 
             // Per-member mode: validate + derive effective count and members.
             let pmConfig = resolveActivityPerMemberConfig(activity);
@@ -1772,7 +1865,7 @@ persistent actor {
                   };
                 };
                 if (sessionFound) {
-                  let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, ?id);
+                  let (confirmed, buffer) = H.computeSessionCounts(actRegs, sid, sessionCap, sessionBuf, ?id, joinedAtLookup);
                   var needed : Nat = effectivePersonCount;
                   if (pmConfig.enabled and pmConfig.perMemberSessionSelection) {
                     needed := 0;
@@ -1852,9 +1945,48 @@ persistent actor {
             };
             Map.add(registrations, Nat.compare, id, updated);
 
+            // Rebuild the side-map of join times for this registration so
+            // sessions / members added during this edit land at the end of
+            // the per-session waitlist while everything else keeps its
+            // original queue position.
+            let newJoinedRecords = List.empty<T.SessionJoinedRecord>();
+            for (sid in effectiveSessionIds.vals()) {
+              let ja : Int = switch (prevTopJoinedAt(sid)) {
+                case (?t) t;
+                case null modifyNow;
+              };
+              newJoinedRecords.add({ sessionId = sid; memberIndex = null; joinedAt = ja });
+            };
+            switch (resolvedMembers) {
+              case (?ms) {
+                var mIdx : Nat = 0;
+                while (mIdx < ms.size()) {
+                  switch (ms[mIdx].selectedSessions) {
+                    case (?snaps) {
+                      for (snap in snaps.vals()) {
+                        let ja : Int = switch (prevMemberJoinedAt(mIdx, snap.sessionId)) {
+                          case (?t) t;
+                          case null modifyNow;
+                        };
+                        newJoinedRecords.add({
+                          sessionId   = snap.sessionId;
+                          memberIndex = ?mIdx;
+                          joinedAt    = ja;
+                        });
+                      };
+                    };
+                    case null {};
+                  };
+                  mIdx += 1;
+                };
+              };
+              case null {};
+            };
+            Map.add(sessionJoinedAt, Nat.compare, id, List.toArray(newJoinedRecords));
+
             let allRegsNow = regsForActivity(existing.activityId);
-            let statuses = H.computeSessionStatuses(allRegsNow, updated, activity.sessions, null);
-            let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, updated, activity.sessions, null);
+            let statuses = H.computeSessionStatuses(allRegsNow, updated, activity.sessions, null, joinedAtLookup);
+            let perMemberStatuses = H.computePerMemberStatuses(allRegsNow, updated, activity.sessions, null, joinedAtLookup);
             #ok(H.regToReturnWithStatusFull(updated, statuses, perMemberStatuses))
           };
           case null { #registrationDisabled };
@@ -1899,8 +2031,8 @@ persistent actor {
         Array.map<T.Registration, RegistrationWithStatusReturn>(
           actRegs,
           func (r) {
-            let statuses = H.computeSessionStatuses(nonArchived, r, activity.sessions, null);
-            let perMemberStatuses = H.computePerMemberStatuses(nonArchived, r, activity.sessions, null);
+            let statuses = H.computeSessionStatuses(nonArchived, r, activity.sessions, null, joinedAtLookup);
+            let perMemberStatuses = H.computePerMemberStatuses(nonArchived, r, activity.sessions, null, joinedAtLookup);
             H.regToReturnWithStatusFull(r, statuses, perMemberStatuses)
           }
         )
