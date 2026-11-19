@@ -1,0 +1,577 @@
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Loader2, Mail, Phone, Users, Inbox, Filter, Star, Archive, ArchiveRestore, Check, ChevronDown, ChevronUp, Search, X } from "lucide-react";
+import Toast from "../../../components/Toast";
+import { useI18n } from "../../../i18n";
+import type { RegistrationWithStatusReturn, TopicReturn, SessionStatsReturn, ActivityReturn, ActivityRegistrationConfigReturn } from "../../../bindings/backend";
+
+interface Props {
+  token: string;
+}
+
+interface RegItem {
+  id: number;
+  activityId: number;
+  name: string;
+  email: string;
+  phone: string;
+  personCount: number;
+  selectedSessions: { sessionId: number; sessionName: string; status: string }[];
+  fieldValues: { fieldId: number; fieldLabel: string; value: string }[];
+  members: {
+    countsTowardCapacity: boolean;
+    values: { fieldId: number; fieldLabel: string; value: string }[];
+    selectedSessions: { sessionId: number; sessionName: string; status: string }[];
+  }[];
+  createdAt: number;
+  archived: boolean;
+}
+
+interface ActivityOption {
+  id: number;
+  title_sv: string;
+  title_fa: string;
+  topicId: number;
+  highlighted: boolean;
+}
+
+export default function AdminEventRegistrations({ token }: Props) {
+  const { t, lang } = useI18n();
+  const [registrations, setRegistrations] = useState<RegItem[]>([]);
+  const [activities, setActivities] = useState<ActivityOption[]>([]);
+  const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
+  const [sessionStats, setSessionStats] = useState<SessionStatsReturn[]>([]);
+  const [sessionFilter, setSessionFilter] = useState<number | "all">("all");
+  const [activityConfig, setActivityConfig] = useState<ActivityRegistrationConfigReturn | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedMembers, setExpandedMembers] = useState<Record<number, boolean>>({});
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
+    message: "", type: "success", visible: false,
+  });
+
+  useEffect(() => {
+    import("../../../actor").then(({ backend }) => {
+      backend.getTopics().then(async (topics: TopicReturn[]) => {
+        const eventActivities: ActivityOption[] = [];
+        for (const topic of topics) {
+          const acts: ActivityReturn[] = await backend.getActivitiesByTopic(topic.id);
+          for (const a of acts) {
+            const mode = a.registrationMode ?? (a.hasRegistration && a.sessions.length > 0 ? "event" : "");
+            if (mode === "event") {
+              eventActivities.push({
+                id: Number(a.id),
+                title_sv: a.title_sv,
+                title_fa: a.title_fa,
+                topicId: Number(topic.id),
+                highlighted: a.highlighted ?? false,
+              });
+            }
+          }
+        }
+        setActivities(eventActivities);
+        if (eventActivities.length > 0) setSelectedActivityId(eventActivities[0].id);
+        setLoading(false);
+      });
+    });
+  }, []);
+
+  const fetchRegistrations = useCallback(async () => {
+    if (selectedActivityId === null) return;
+    setLoading(true);
+    try {
+      const { backend } = await import("../../../actor");
+      const [data, stats, cfg] = await Promise.all([
+        backend.getRegistrationsWithStatus(token, BigInt(selectedActivityId)),
+        backend.getSessionStats(token, BigInt(selectedActivityId)),
+        backend.getActivityRegistrationConfig(BigInt(selectedActivityId)),
+      ]);
+      setSessionStats(stats);
+      setActivityConfig(cfg);
+      setSessionFilter("all");
+      setRegistrations(
+        data
+          .map((r: RegistrationWithStatusReturn) => ({
+            id: Number(r.id),
+            activityId: Number(r.activityId),
+            name: r.name,
+            email: r.email,
+            phone: r.phone,
+            personCount: Number(r.personCount),
+            selectedSessions: (r.selectedSessions ?? []).map((ss) => ({
+              sessionId: Number(ss.sessionId),
+              sessionName: ss.sessionName,
+              status: ss.status,
+            })),
+            fieldValues: (r.fieldValues || []).map((fv) => ({
+              fieldId: Number(fv.fieldId),
+              fieldLabel: fv.fieldLabel,
+              value: fv.value,
+            })),
+            members: (r.members || []).map((m) => ({
+              countsTowardCapacity: m.countsTowardCapacity,
+              values: m.values.map((v) => ({
+                fieldId: Number(v.fieldId),
+                fieldLabel: v.fieldLabel,
+                value: v.value,
+              })),
+              selectedSessions: (m.selectedSessions ?? []).map((ss) => ({
+                sessionId: Number(ss.sessionId),
+                sessionName: ss.sessionName,
+                status: ss.status,
+              })),
+            })),
+            createdAt: Number(r.createdAt),
+            archived: Boolean(r.archived),
+          }))
+          .sort((a: RegItem, b: RegItem) => b.createdAt - a.createdAt)
+      );
+    } catch {
+      // ignore
+    }
+    setLoading(false);
+  }, [token, selectedActivityId]);
+
+  useEffect(() => {
+    fetchRegistrations();
+  }, [fetchRegistrations]);
+
+  const handleToggleArchive = async (reg: RegItem) => {
+    const nextArchived = !reg.archived;
+    const confirmKey = nextArchived ? "confirmArchiveRegistration" : "confirmUnarchiveRegistration";
+    if (!confirm(t(confirmKey))) return;
+    try {
+      const { backend } = await import("../../../actor");
+      await backend.setRegistrationArchived(token, BigInt(reg.id), nextArchived);
+      setRegistrations((prev) => prev.map((r) => (r.id === reg.id ? { ...r, archived: nextArchived } : r)));
+      setToast({
+        message: t(nextArchived ? "registrationArchived" : "registrationUnarchived"),
+        type: "success",
+        visible: true,
+      });
+      // Session stats can change when archiving/unarchiving frees a slot
+      try {
+        if (selectedActivityId !== null) {
+          const { backend: b } = await import("../../../actor");
+          const stats = await b.getSessionStats(token, BigInt(selectedActivityId));
+          setSessionStats(stats);
+        }
+      } catch { /* ignore */ }
+    } catch {
+      setToast({ message: t("failedToArchiveRegistration"), type: "error", visible: true });
+    }
+  };
+
+  // Backend stores labels as "fa / sv". Pick the part matching the current language.
+  const localizedLabel = (label: string) => {
+    const parts = label.split(" / ");
+    if (parts.length < 2) return label;
+    return lang === "fa" ? parts[0] : parts.slice(1).join(" / ");
+  };
+
+  // Re-resolve a field label from the current activity config (so renamed or
+  // "Field N" snapshots still display the real label in the user's language).
+  const fieldLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    if (activityConfig) {
+      for (const f of [...activityConfig.sharedFields, ...activityConfig.perMemberFields]) {
+        map.set(Number(f.id), lang === "fa" ? f.label_fa : f.label_sv);
+      }
+    }
+    return map;
+  }, [activityConfig, lang]);
+
+  const resolveFieldLabel = useCallback(
+    (fieldId: number, storedLabel: string) =>
+      fieldLabelById.get(fieldId) ?? localizedLabel(storedLabel),
+    // localizedLabel is recreated each render but only depends on `lang`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fieldLabelById, lang],
+  );
+
+  // Re-resolve session names from sessionStats so chips always show the current
+  // localized name rather than the "fa / sv" snapshot.
+  const sessionNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const ss of sessionStats) {
+      map.set(Number(ss.sessionId), lang === "fa" ? ss.name_fa : ss.name_sv);
+    }
+    return map;
+  }, [sessionStats, lang]);
+
+  const resolveSessionName = useCallback(
+    (sessionId: number, storedName: string) =>
+      sessionNameById.get(sessionId) ?? localizedLabel(storedName),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionNameById, lang],
+  );
+
+  // Global free-text search across all visible fields of a registration.
+  // Matches are case-insensitive; whitespace-separated terms must all match
+  // somewhere in the registration's haystack (AND semantics).
+  const matchesSearch = useCallback(
+    (r: RegItem, query: string) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+      const parts: string[] = [
+        r.name,
+        r.email,
+        r.phone,
+        String(r.personCount),
+        String(r.id),
+        r.archived ? "archived" : "",
+      ];
+      for (const ss of r.selectedSessions) {
+        parts.push(ss.sessionName);
+        parts.push(resolveSessionName(ss.sessionId, ss.sessionName));
+        parts.push(ss.status);
+      }
+      for (const fv of r.fieldValues) {
+        parts.push(fv.fieldLabel);
+        parts.push(resolveFieldLabel(fv.fieldId, fv.fieldLabel));
+        parts.push(fv.value);
+      }
+      for (const m of r.members) {
+        for (const v of m.values) {
+          parts.push(v.fieldLabel);
+          parts.push(resolveFieldLabel(v.fieldId, v.fieldLabel));
+          parts.push(v.value);
+        }
+        for (const ss of m.selectedSessions) {
+          parts.push(ss.sessionName);
+          parts.push(resolveSessionName(ss.sessionId, ss.sessionName));
+          parts.push(ss.status);
+        }
+      }
+      const haystack = parts.join(" \u0001 ").toLowerCase();
+      const terms = q.split(/\s+/).filter(Boolean);
+      return terms.every((term) => haystack.includes(term));
+    },
+    [resolveFieldLabel, resolveSessionName],
+  );
+
+  const visibleRegistrations = registrations
+    .filter((r) => showArchived || !r.archived)
+    .filter((r) => sessionFilter === "all" || r.selectedSessions.some((ss) => ss.sessionId === sessionFilter))
+    .filter((r) => matchesSearch(r, searchQuery));
+
+  const formatDate = (ns: number) => {
+    const ms = ns / 1_000_000;
+    return new Date(ms).toLocaleDateString(undefined, {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  };
+
+  if (loading && activities.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between mb-6 gap-4">
+        <h2 className="text-2xl font-bold text-white">{t("eventRegistrations")}</h2>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto lg:justify-end">
+          <Filter size={16} className="text-white/40 shrink-0" />
+          <select
+            value={selectedActivityId ?? ""}
+            onChange={(e) => setSelectedActivityId(e.target.value ? Number(e.target.value) : null)}
+            className="flex-1 min-w-[10rem] sm:flex-none sm:w-auto bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+          >
+            {activities.map((a) => (
+              <option key={a.id} value={a.id} className="bg-black/70">
+                {a.highlighted ? "★ " : ""}{lang === "fa" ? a.title_fa : a.title_sv}
+              </option>
+            ))}
+          </select>
+          {selectedActivityId !== null && activities.find((a) => a.id === selectedActivityId)?.highlighted && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold shrink-0" title={t("highlighted")}>
+              <Star size={10} className="fill-accent" />
+              {t("highlighted")}
+            </span>
+          )}
+          {sessionStats.length > 0 && (
+            <select
+              value={sessionFilter === "all" ? "" : sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value === "" ? "all" : Number(e.target.value))}
+              className="flex-1 min-w-[8rem] sm:flex-none sm:w-auto bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+            >
+              <option value="" className="bg-black/70">{t("allSessions")}</option>
+              {[...sessionStats].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder)).map((ss) => (
+                <option key={Number(ss.sessionId)} value={Number(ss.sessionId)} className="bg-black/70">
+                  {lang === "fa" ? ss.name_fa : ss.name_sv}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowArchived((s) => !s)}
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors whitespace-nowrap shrink-0"
+          >
+            {showArchived ? t("hideArchived") : t("showArchived")}
+          </button>
+          <span className="text-sm text-white/40 whitespace-nowrap shrink-0">
+            {visibleRegistrations.length} {t("registrations")}
+          </span>
+        </div>
+      </div>
+
+      {/* Global search across all registration fields */}
+      <div className="mb-6">
+        <div className="relative w-full">
+          <Search size={16} className="absolute top-1/2 -translate-y-1/2 start-3 text-white/40 pointer-events-none" />
+          {/* type="text" instead of "search" to suppress the browser's native
+              clear control (which would otherwise duplicate our X button). */}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("searchRegistrationsPlaceholder")}
+            aria-label={t("searchRegistrationsPlaceholder")}
+            className="w-full bg-[#0f172a] border border-white/10 rounded-lg ps-9 pe-9 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              aria-label={t("clearSearch")}
+              title={t("clearSearch")}
+              className="absolute top-1/2 -translate-y-1/2 end-2 p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Session stats — prominent */}
+      {sessionStats.length > 0 && (
+        <div className="mb-8 rounded-xl border border-white/10 overflow-hidden">
+          <div className="px-4 py-3 bg-white/[0.03] border-b border-white/10">
+            <p className="text-sm font-medium text-white/70">{t("sessionStats")}</p>
+          </div>
+          <div className="divide-y divide-white/5">
+            {[...sessionStats].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder)).map((ss) => {
+              const cap = Number(ss.capacity);
+              const buf = Number(ss.bufferCapacity);
+              const confirmed = Number(ss.confirmedCount);
+              const buffered = Number(ss.bufferCount);
+              const isFull = confirmed >= cap && buffered >= buf;
+              return (
+                <div key={Number(ss.sessionId)} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                  <span className="text-sm text-white font-medium min-w-[100px]">
+                    {lang === "fa" ? ss.name_fa : ss.name_sv}
+                  </span>
+                  {ss.date && <span className="text-xs text-white/40">{ss.date}</span>}
+                  <span className="text-xs text-white/60">{confirmed}/{cap} {t("confirmed")}</span>
+                  {buf > 0 && <span className="text-xs text-white/60">{buffered}/{buf} {t("buffer")}</span>}
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                    isFull ? "bg-red-500/15 text-red-400 border-red-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
+                  }`}>
+                    {isFull ? t("full") : t("open")}
+                  </span>
+                  <span className="text-xs text-white/30 ml-auto">
+                    {Number(ss.registrationCount)} {t("registrationCount")}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {visibleRegistrations.length === 0 && !loading ? (
+        <motion.div className="glass rounded-2xl p-12 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Inbox size={48} className="text-white/20 mx-auto mb-4" />
+          <p className="text-white/40">{t("noRegistrations")}</p>
+        </motion.div>
+      ) : (
+        <div className="space-y-4">
+          {visibleRegistrations.map((reg, idx) => (
+            <motion.div
+              key={reg.id}
+              className={`glass rounded-2xl p-5 ${reg.archived ? "opacity-60" : ""}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04 }}
+            >
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="text-white font-semibold text-lg truncate">{reg.name}</h3>
+                    {reg.personCount > 1 && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 border border-white/10">
+                        <Users size={10} />
+                        {reg.personCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    <span className="flex items-center gap-1.5 text-sm text-white/40">
+                      <Mail size={13} />
+                      <a href={`mailto:${reg.email}`} className="hover:text-primary transition-colors">{reg.email}</a>
+                    </span>
+                    {reg.phone && (
+                      <span className="flex items-center gap-1.5 text-sm text-white/40" dir="ltr">
+                        <Phone size={13} />
+                        {reg.phone}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-xs text-white/30">{formatDate(reg.createdAt)}</span>
+                  <span className="text-xs font-mono text-primary/60">#{reg.id}</span>
+                  {reg.archived && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 border border-white/10">
+                      {t("archived")}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleArchive(reg)}
+                    title={reg.archived ? t("unarchive") : t("archive")}
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-colors"
+                  >
+                    {reg.archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
+                    {reg.archived ? t("unarchive") : t("archive")}
+                  </button>
+                </div>
+              </div>
+
+              {/* Session chips — show top-level union for shared-session mode,
+                  show per-member chips inside each member card for per-member mode. */}
+              {(() => {
+                const hasPerMemberSessions = reg.members.some((m) => m.selectedSessions.length > 0);
+                if (hasPerMemberSessions) return null;
+                if (reg.selectedSessions.length === 0) return null;
+                return (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {reg.selectedSessions.map((ss) => {
+                      const isBuffer = ss.status === "buffer";
+                      return (
+                        <span
+                          key={ss.sessionId}
+                          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
+                            isBuffer
+                              ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                              : "bg-white/[0.06] text-white/60 border-white/10"
+                          }`}
+                        >
+                          {resolveSessionName(ss.sessionId, ss.sessionName)}
+                          {isBuffer && (
+                            <span className="text-[10px] uppercase tracking-wide font-semibold">
+                              {t("buffer")}
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {reg.fieldValues.length > 0 && (
+                <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                  {reg.fieldValues.map((fv, fvIdx) => {
+                    // Hide boolean-false values (checkbox unchecked stores "" or "false").
+                    if (fv.value === "" || fv.value === "false") return null;
+                    const isTrue = fv.value === "true";
+                    return (
+                      <div key={fvIdx} className="flex items-start gap-2 text-sm">
+                        <span className="text-white/40 shrink-0 min-w-[100px]">{resolveFieldLabel(fv.fieldId, fv.fieldLabel)}:</span>
+                        {isTrue ? (
+                          <Check size={14} className="text-green-400 mt-0.5" />
+                        ) : (
+                          <span className="text-white/70 break-words" dir="ltr">{fv.value}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {reg.members.length > 0 && (
+                <div className="rounded-xl bg-white/[0.03] border border-white/5 my-1 min-h-[32px]">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedMembers((prev) => ({ ...prev, [reg.id]: !prev[reg.id] }))}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 hover:bg-white/[0.02] transition-colors rounded-xl"
+                  >
+                    <span className="text-xs text-white/40 uppercase tracking-wide">
+                      {t("perMemberFields")} <span className="text-white/30">({reg.members.length})</span>
+                    </span>
+                    {expandedMembers[reg.id]
+                      ? <ChevronUp size={14} className="text-white/40" />
+                      : <ChevronDown size={14} className="text-white/40" />}
+                  </button>
+                  {expandedMembers[reg.id] && (
+                    <ul className="space-y-2 px-3 pb-3">
+                      {reg.members.map((m, mIdx) => (
+                        <li key={mIdx} className="text-sm text-white/70 border-l border-white/10 pl-3">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-white/40">#{mIdx + 1}</span>
+                            {!m.countsTowardCapacity && (
+                              <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-white/40">
+                                {t("notCountedTowardCapacity")}
+                              </span>
+                            )}
+                          </div>
+                          <div className="space-y-0.5">
+                            {m.values.map((v, vIdx) => {
+                              if (v.value === "" || v.value === "false") return null;
+                              const isTrue = v.value === "true";
+                              return (
+                                <div key={vIdx} className="flex items-start gap-2">
+                                  <span className="text-white/40 shrink-0 min-w-[100px]">{resolveFieldLabel(v.fieldId, v.fieldLabel)}:</span>
+                                  {isTrue ? (
+                                    <Check size={14} className="text-green-400 mt-0.5" />
+                                  ) : (
+                                    <span className="text-white/70 break-words" dir="ltr">{v.value}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {m.selectedSessions.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {m.selectedSessions.map((ss) => (
+                                <span
+                                  key={ss.sessionId}
+                                  className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                                    ss.status === "confirmed"
+                                      ? "bg-green-500/15 text-green-400 border-green-500/20"
+                                      : "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                                  }`}
+                                >
+                                  {resolveSessionName(ss.sessionId, ss.sessionName)} · {ss.status === "confirmed" ? t("confirmedStatus") : t("bufferStatus")}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        visible={toast.visible}
+        onClose={() => setToast({ ...toast, visible: false })}
+      />
+    </div>
+  );
+}

@@ -1,0 +1,13 @@
+{
+  "name": "kanon",
+  "private": true,
+  "scripts": {
+    "deploy:local": "icp deploy --identity ${ICP_IDENTITY:-anonymous}",
+    "reinstall": "scripts/reinstall.sh",
+    "dev": "npm --prefix canisters/frontend run dev",
+    "build": "npm --prefix canisters/frontend run build",
+    "seed": "npm --prefix canisters/frontend run seed",
+    "prerender": "npm --prefix canisters/frontend run prerender",
+    "check": "cd canisters/backend && mops check && cd ../frontend && npm run lint && npx tsc -b"
+  }
+}

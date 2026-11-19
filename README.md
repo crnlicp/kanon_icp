@@ -27,20 +27,19 @@ A bilingual (Persian / Swedish) cultural, educational, and sports institution we
 
 ```
 kanon/
-├── backend/           # Motoko canister
-│   ├── src/main.mo    # Persistent actor with all endpoints
-│   └── backend.did    # Candid interface
-├── frontend/
-│   └── app/           # React SPA
-│       ├── src/
-│       │   ├── components/   # Header, Footer, GlassCard, HeroSlider, etc.
-│       │   ├── pages/        # Landing, Topics, TopicHome, ActivityDetail
-│       │   ├── pages/admin/  # AdminLogin, AdminDashboard, CRUD sections
-│       │   ├── i18n/         # Translations & context provider
-│       │   ├── auth/         # Auth context
-│       │   └── actor.ts      # Backend canister connection
-│       └── public/.ic-assets.json5  # SPA routing config
-└── icp.yaml           # ICP project config
+├── icp.yaml                 # networks, environments, canisters/*
+├── package.json             # root commands (delegate into canisters/)
+├── scripts/reinstall.sh     # local wipe + redeploy + seed
+├── docs/prerender.md
+└── canisters/
+    ├── backend/             # Motoko canister
+    │   ├── mops.toml
+    │   └── src/             # main.mo, Types.mo, Helpers.mo, backend.did
+    └── frontend/            # React SPA (asset canister)
+        ├── app/             # components/, pages/, pages/admin/, i18n/, auth/, actor.ts
+        │   └── bindings/    # generated from backend.did (not committed)
+        ├── public/          # .ic-assets.json5, .well-known/, favicons
+        └── scripts/         # seed, prerender, seo-check
 ```
 
 ## Prerequisites
@@ -54,12 +53,14 @@ kanon/
 # Start the local ICP network
 icp network start -d
 
-# Deploy backend + frontend canisters
-icp deploy
+# Deploy backend + frontend canisters (anonymous identity unless ICP_IDENTITY is set)
+npm run deploy:local
 
 # Start Vite dev server (with hot-reload)
-cd frontend/app
 npm run dev
+
+# Wipe local state and reseed
+npm run reinstall
 ```
 
 The dev server reads canister IDs from `icp canister status` and proxies `/api` calls to the local replica.
