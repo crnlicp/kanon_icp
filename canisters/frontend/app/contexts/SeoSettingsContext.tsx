@@ -39,6 +39,7 @@ export function SeoSettingsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook belongs with its context
 export function useSeoSettingsContext() {
   return useContext(SeoSettingsContext);
 }

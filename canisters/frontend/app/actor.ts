@@ -78,7 +78,7 @@ export const backend: backendInterface = new Proxy(realBackend, {
     // Auth & setMockMode always go to the real backend
     if (realOnlyMethods.has(prop)) {
       const val = (target as unknown as Record<string, unknown>)[prop];
-      return typeof val === "function" ? (val as Function).bind(target) : val;
+      return typeof val === "function" ? (val as (...a: unknown[]) => unknown).bind(target) : val;
     }
 
     // All other methods: route based on mock mode

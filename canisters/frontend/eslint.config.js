@@ -22,5 +22,9 @@ export default defineConfig([
         projectService: true,
       }
     },
+    rules: {
+      // Mock implementations keep the real signature; unused params are prefixed with _
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
 ])

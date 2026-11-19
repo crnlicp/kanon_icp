@@ -2202,7 +2202,7 @@ persistent actor {
 
   let maxAssetSize : Nat = 1_500_000;
 
-  public func uploadAsset(token : Text, name : Text, contentType : Text, data : Blob) : async Text {
+  public func uploadAsset(token : Text, name : Text, _contentType : Text, data : Blob) : async Text {
     requireAuth(token);
     if (data.size() > maxAssetSize) {
       Runtime.trap("Asset too large: max " # Nat.toText(maxAssetSize) # " bytes");
