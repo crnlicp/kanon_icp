@@ -1,5 +1,5 @@
 /// Pure conversion helpers: domain types → flat Candid return types.
-import T "./Types";
+import T "../types";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
 import Nat "mo:core/Nat";
@@ -301,7 +301,7 @@ module {
       func (snap) {
         var cap : Nat = 0;
         var buf : Nat = 0;
-        for (s in sessions.vals()) {
+        for (s in sessions.values()) {
           if (s.id == snap.sessionId) {
             cap := s.capacity;
             buf := s.bufferCapacity;
@@ -386,7 +386,7 @@ module {
           };
           Array.map<T.RegistrationSessionSnapshot, T.SessionStatusReturn>(sessList, func (snap) {
             var cap : Nat = 0;
-            for (s in sessions.vals()) {
+            for (s in sessions.values()) {
               if (s.id == snap.sessionId) { cap := s.capacity };
             };
             let status = if (not m.countsTowardCapacity) {
@@ -425,7 +425,7 @@ module {
   public func regUsesPerMemberSessions(reg : T.Registration) : Bool {
     switch (reg.members) {
       case (?ms) {
-        for (m in ms.vals()) {
+        for (m in ms.values()) {
           switch (m.selectedSessions) { case (?_) { return true }; case null {} };
         };
         false
@@ -442,13 +442,13 @@ module {
       var n : Nat = 0;
       switch (reg.members) {
         case (?ms) {
-          for (m in ms.vals()) {
+          for (m in ms.values()) {
             if (m.countsTowardCapacity) {
               let sessList = switch (m.selectedSessions) {
                 case (?ss) ss;
                 case null reg.selectedSessions;
               };
-              for (snap in sessList.vals()) {
+              for (snap in sessList.values()) {
                 if (snap.sessionId == sessionId) { n += 1 };
               };
             };
@@ -460,7 +460,7 @@ module {
     };
     // Legacy / shared-sessions: whole personCount applies if reg has the session
     var has = false;
-    for (snap in reg.selectedSessions.vals()) {
+    for (snap in reg.selectedSessions.values()) {
       if (snap.sessionId == sessionId) { has := true };
     };
     if (has) { { count = reg.personCount; atomic = true } } else { { count = 0; atomic = true } }
@@ -474,7 +474,7 @@ module {
       case (?ss) ss;
       case null reg.selectedSessions;
     };
-    for (snap in sessList.vals()) {
+    for (snap in sessList.values()) {
       if (snap.sessionId == sessionId) { return true };
     };
     false
@@ -501,7 +501,7 @@ module {
     var confirmed : Nat = 0;
     var buffer : Nat = 0;
 
-    for (slot in slots.vals()) {
+    for (slot in slots.values()) {
       let shouldSkip = switch (excludeRegId) {
         case (?eid) { slot.regId == eid };
         case null   { false };
@@ -594,7 +594,7 @@ module {
     lookup    : JoinedAtLookup,
   ) : [SessionSlot] {
     let buf = List.empty<SessionSlot>();
-    for (reg in regs.vals()) {
+    for (reg in regs.values()) {
       if (regUsesPerMemberSessions(reg)) {
         switch (reg.members) {
           case (?ms) {
@@ -606,7 +606,7 @@ module {
                   case (?ss) ss;
                   case null reg.selectedSessions;
                 };
-                for (snap in sessList.vals()) {
+                for (snap in sessList.values()) {
                   if (snap.sessionId == sessionId) {
                     buf.add({
                       regId    = reg.id;
@@ -623,7 +623,7 @@ module {
           case null {};
         };
       } else {
-        for (snap in reg.selectedSessions.vals()) {
+        for (snap in reg.selectedSessions.values()) {
           if (snap.sessionId == sessionId and reg.personCount > 0) {
             buf.add({
               regId    = reg.id;
@@ -655,7 +655,7 @@ module {
   ) : Nat {
     let slots = sessionSlotsSorted(regsForActivity, sessionId, lookup);
     var running : Nat = 0;
-    for (slot in slots.vals()) {
+    for (slot in slots.values()) {
       let shouldSkip = switch (excludeRegId) {
         case (?eid) { slot.regId == eid };
         case null   { false };

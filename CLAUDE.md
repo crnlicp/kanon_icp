@@ -12,7 +12,7 @@ Flat layout: one backend, one frontend.
 
 | Canister | Folder | Stack | Mainnet ID |
 |---|---|---|---|
-| `backend` | `canisters/backend` | Motoko (mo:core, persistent actor) | `iooqr-rqaaa-aaaae-qkfia-cai` |
+| `backend` | `canisters/backend` | Motoko (moc 1.16, mo:core 2.7, mixins) | `iooqr-rqaaa-aaaae-qkfia-cai` |
 | `frontend` | `canisters/frontend` | React 19 + Vite 7 SPA, legacy `@dfinity/asset-canister` recipe | `ktt6z-cyaaa-aaaae-qkfhq-cai` |
 
 - Candid: `canisters/backend/src/backend.did` (single source; frontend generates
@@ -30,6 +30,9 @@ Flat layout: one backend, one frontend.
 ## Boundaries
 
 - Mainnet deploys (`-e ic`) only with explicit approval.
-- Backend has no migration chain yet; stable-type changes currently use side
-  tables (see `.claude/rules/backend.md`).
+- Backend uses the mops migration chain (`canisters/backend/src/migrations/`).
+  Pending: `20261119_120000.mo` converts the pre-chain mainnet canister. Until it is
+  deployed to mainnet, local **fresh installs trap** (`npm run reinstall`); upgrades work.
+  After that deploy: `mops deployed backend`, then add an earlier-dated `{}` → initial-state
+  migration so fresh installs work again (verified approach).
 - Docs: `docs/prerender.md` (SEO prerendering).

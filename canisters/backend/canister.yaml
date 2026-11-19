@@ -1,9 +1,6 @@
 # yaml-language-server: $schema=https://github.com/dfinity/icp-cli/raw/refs/tags/v0.1.0/docs/schemas/canister-yaml-schema.json
 
+# Built with `mops build backend`: main, candid and the migration chain are in mops.toml.
 name: backend
 recipe:
-  type: "@dfinity/motoko@v4.1.0"
-  configuration:
-    main: src/main.mo
-    candid: src/backend.did
-
+  type: "@dfinity/motoko@v5.0.0"

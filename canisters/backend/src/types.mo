@@ -518,4 +518,55 @@ module {
     sitemapChangefreq : Text; // "weekly", "monthly", etc.
     lastModified : Text;      // ISO date string
   };
-}
+
+
+  // ─── Actor state shared between mixins ────────────────────────────────────
+  // Mixins receive these records by reference; plain actor `var`s would be
+  // copied into a mixin and its writes lost.
+
+  public type Counters = {
+    var nextTopicId : Nat;
+    var nextSlideId : Nat;
+    var nextActivityId : Nat;
+    var nextRegistrationId : Nat;
+    var nextFormTemplateId : Nat;
+    var nextEventRegTemplateId : Nat;
+    var nextSocialLinkId : Nat;
+    var nextContactMessageId : Nat;
+    var assetCounter : Nat;
+  };
+
+  public type Config = {
+    var siteSettings : SiteSettings;
+    // Separate from SiteSettings to keep that record upgrade-compatible.
+    var mockMode : Bool;
+    // SHA-256 hex of the admin password.
+    var adminPasswordHash : Text;
+    var aboutContent : AboutContent;
+    var contactIntroContent : LocalizedText;
+    var seoSettings : SeoSettings;
+  };
+
+  // ─── IC HTTP gateway ──────────────────────────────────────────────────────
+
+  public type HttpToken = {};
+  public type StreamingCallbackResponse = { body : Blob; token : ?HttpToken };
+  public type StreamingStrategy = {
+    #Callback : {
+      callback : shared query HttpToken -> async StreamingCallbackResponse;
+      token : HttpToken;
+    };
+  };
+  public type HttpRequest = {
+    method : Text;
+    url : Text;
+    headers : [(Text, Text)];
+    body : Blob;
+  };
+  public type HttpResponse = {
+    status_code : Nat16;
+    headers : [(Text, Text)];
+    body : Blob;
+    streaming_strategy : ?StreamingStrategy;
+  };
+};

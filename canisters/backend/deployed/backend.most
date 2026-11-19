@@ -1,0 +1,279 @@
+// Version: 1.0.0
+type Activity__400837452 =
+  {
+    body : LocalizedText__744544770;
+    createdAt : Int;
+    customFormFields : [FormField__797619014];
+    eventTemplateId : ?Nat;
+    excerpt : LocalizedText__744544770;
+    formTemplateId : ?Nat;
+    hasRegistration : Bool;
+    highlighted : ?Bool;
+    icon : Text;
+    id : Nat;
+    imageUrl : Text;
+    registrationMode : Text;
+    sessions : [EventSession__983361768];
+    slug : Text;
+    sortOrder : Nat;
+    title : LocalizedText__744544770;
+    topicId : Nat
+  };
+type Activity__882606624 = Activity__400837452;
+type ContactMessage__467718405 =
+  {
+    createdAt : Int;
+    email : Text;
+    id : Nat;
+    message : Text;
+    name : Text;
+    phone : Text
+  };
+type ContactMessage__615433029 = ContactMessage__467718405;
+type Data__917616847<K, V> =
+  {var count : Nat__1011761150; kvs : [var ?(K, V)]};
+type EventRegistrationTemplate__693951837 =
+  {
+    createdAt : Int;
+    description : LocalizedText__744544770;
+    fields : [FormField__797619014];
+    id : Nat;
+    maxMembers : ?Nat;
+    minMembers : ?Nat;
+    name : LocalizedText__744544770;
+    perMemberMode : ?Bool;
+    perMemberSessionSelection : ?Bool;
+    sessions : [EventSession__983361768]
+  };
+type EventRegistrationTemplate__966153403 =
+  EventRegistrationTemplate__693951837;
+type EventSession__983361768 =
+  {
+    bufferCapacity : Nat;
+    capacity : Nat;
+    date : Text;
+    id : Nat;
+    name : LocalizedText__744544770;
+    sortOrder : Nat
+  };
+type FormFieldType__38886089 =
+  {
+    #checkbox;
+    #date;
+    #email;
+    #number;
+    #phone;
+    #radio;
+    #select;
+    #text;
+    #textarea
+  };
+type FormField__797619014 =
+  {
+    allowedValues : ?[Text];
+    excludeFromCapacityWhenChecked : ?Bool;
+    fieldLabel : LocalizedText__744544770;
+    fieldType : FormFieldType__38886089;
+    id : Nat;
+    isLookupField : Bool;
+    maxValue : ?Int;
+    minValue : ?Int;
+    options : [LocalizedText__744544770];
+    perMember : ?Bool;
+    placeholder : LocalizedText__744544770;
+    required : Bool;
+    sortOrder : Nat;
+    unique : ?Bool
+  };
+type FormTemplate__1039334168 = FormTemplate__636501411;
+type FormTemplate__636501411 =
+  {
+    createdAt : Int;
+    description : LocalizedText__744544770;
+    fields : [FormField__797619014];
+    id : Nat;
+    maxMembers : ?Nat;
+    minMembers : ?Nat;
+    name : LocalizedText__744544770
+  };
+type HeroSlide__1009035709 = HeroSlide__731092354;
+type HeroSlide__731092354 =
+  {
+    ctaLink : Text;
+    ctaText : LocalizedText__744544770;
+    id : Nat;
+    imageUrl : Text;
+    sortOrder : Nat;
+    subtitle : LocalizedText__744544770;
+    title : LocalizedText__744544770;
+    topicId : Nat
+  };
+type Internal__150062700<K, V> =
+  {children : [var ?Node__362690243<K, V>]; data : Data__917616847<K, V>};
+type Leaf__147444601<K, V> = {data : Data__917616847<K, V>};
+type LocalizedText__744544770 = {fa : Text; sv : Text};
+type Nat__1011761150 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__362690243<K, V> =
+  {#internal : Internal__150062700<K, V>; #leaf : Leaf__147444601<K, V>};
+type PageSeoOverride__864898380 = PageSeoOverride__963822878;
+type PageSeoOverride__963822878 =
+  {
+    canonicalUrl : Text;
+    description : Text;
+    jsonLd : Text;
+    lastModified : Text;
+    noFollow : Bool;
+    noIndex : Bool;
+    ogImage : Text;
+    sitemapChangefreq : Text;
+    sitemapInclude : Bool;
+    sitemapPriority : Text;
+    slug : Text;
+    title : Text
+  };
+type RegistrationFieldValue__381585081 =
+  {fieldId : Nat; fieldLabel : Text; value : Text};
+type RegistrationMember__987086432 =
+  {
+    countsTowardCapacity : Bool;
+    selectedSessions : ?[RegistrationSessionSnapshot__61297427];
+    values : [RegistrationFieldValue__381585081]
+  };
+type RegistrationSessionSnapshot__61297427 =
+  {sessionId : Nat; sessionName : Text};
+type Registration__702490100 = Registration__96338732;
+type Registration__96338732 =
+  {
+    activityId : Nat;
+    archived : ?Bool;
+    createdAt : Int;
+    email : Text;
+    fieldValues : [RegistrationFieldValue__381585081];
+    id : Nat;
+    members : ?[RegistrationMember__987086432];
+    message : Text;
+    name : Text;
+    personCount : Nat;
+    phone : Text;
+    selectedSessions : [RegistrationSessionSnapshot__61297427]
+  };
+type SessionJoinedRecord__174000639 =
+  {joinedAt : Int; memberIndex : ?Nat; sessionId : Nat};
+type SocialLink__43536989 = SocialLink__90875963;
+type SocialLink__90875963 =
+  {id : Nat; platform : Text; sortOrder : Nat; url : Text};
+type Topic__827129908 = Topic__993779767;
+type Topic__993779767 =
+  {
+    backgroundUrl : Text;
+    createdAt : Int;
+    description : LocalizedText__744544770;
+    icon : Text;
+    id : Nat;
+    slug : Text;
+    sortOrder : Nat;
+    title : LocalizedText__744544770
+  };
+actor {
+  stable var aboutContent :
+    {body : LocalizedText__744544770; headerImageUrl : Text};
+  stable activities :
+    {
+      var root : Node__362690243<Nat, Activity__882606624>;
+      var size : Nat__1011761150
+    };
+  stable var adminPasswordHash : Text;
+  stable var assetCounter : Nat;
+  stable assets :
+    {var root : Node__362690243<Text, Blob>; var size : Nat__1011761150};
+  stable var contactIntroContent : {fa : Text; sv : Text};
+  stable contactMessages :
+    {
+      var root : Node__362690243<Nat, ContactMessage__615433029>;
+      var size : Nat__1011761150
+    };
+  stable eventRegTemplates :
+    {
+      var root : Node__362690243<Nat, EventRegistrationTemplate__966153403>;
+      var size : Nat__1011761150
+    };
+  stable formTemplates :
+    {
+      var root : Node__362690243<Nat, FormTemplate__1039334168>;
+      var size : Nat__1011761150
+    };
+  stable heroSlides :
+    {
+      var root : Node__362690243<Nat, HeroSlide__1009035709>;
+      var size : Nat__1011761150
+    };
+  stable maxAssetSize : Nat;
+  stable maxEmailLen : Nat;
+  stable maxFieldValueLen : Nat;
+  stable maxFieldValues : Nat;
+  stable maxMessageLen : Nat;
+  stable maxNameLen : Nat;
+  stable maxPersonCount : Nat;
+  stable maxPhoneLen : Nat;
+  stable maxSessions : Nat;
+  stable var mockMode : Bool;
+  stable var nextActivityId : Nat;
+  stable var nextContactMessageId : Nat;
+  stable var nextEventRegTemplateId : Nat;
+  stable var nextFormTemplateId : Nat;
+  stable var nextRegistrationId : Nat;
+  stable var nextSlideId : Nat;
+  stable var nextSocialLinkId : Nat;
+  stable var nextTopicId : Nat;
+  stable pageOverrides :
+    {
+      var root : Node__362690243<Text, PageSeoOverride__864898380>;
+      var size : Nat__1011761150
+    };
+  stable registrations :
+    {
+      var root : Node__362690243<Nat, Registration__702490100>;
+      var size : Nat__1011761150
+    };
+  stable var seoSettings :
+    {
+      bingVerification : Text;
+      canonicalBaseUrl : Text;
+      defaultDescription : Text;
+      defaultLang : Text;
+      defaultOgImage : Text;
+      defaultTitle : Text;
+      googleAnalyticsId : Text;
+      googleVerification : Text;
+      robotsTxtExtra : Text;
+      siteName : Text;
+      titleTemplate : Text;
+      twitterCardType : Text;
+      twitterHandle : Text
+    };
+  stable sessionJoinedAt :
+    {
+      var root : Node__362690243<Nat, [SessionJoinedRecord__174000639]>;
+      var size : Nat__1011761150
+    };
+  stable var siteSettings :
+    {
+      landingBackgroundUrl : Text;
+      logoUrl : Text;
+      subtitle : LocalizedText__744544770;
+      title : LocalizedText__744544770;
+      topicsBackgroundUrl : Text
+    };
+  stable socialLinks :
+    {
+      var root : Node__362690243<Nat, SocialLink__43536989>;
+      var size : Nat__1011761150
+    };
+  stable topics :
+    {
+      var root : Node__362690243<Nat, Topic__827129908>;
+      var size : Nat__1011761150
+    }
+};
+
