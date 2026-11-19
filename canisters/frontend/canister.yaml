@@ -1,9 +1,10 @@
 # yaml-language-server: $schema=https://github.com/dfinity/icp-cli/raw/refs/tags/v0.1.0/docs/schemas/canister-yaml-schema.json
 
+# Certified-assets canister. Routing and headers: public/_redirects, public/_headers.
 name: frontend
 
 recipe:
-  type: "@dfinity/asset-canister@v2.2.1"
+  type: "@dfinity/static-site@v1.0.0"
   configuration:
     build:
       - npm ci

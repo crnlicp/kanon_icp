@@ -13,7 +13,7 @@ Flat layout: one backend, one frontend.
 | Canister | Folder | Stack | Mainnet ID |
 |---|---|---|---|
 | `backend` | `canisters/backend` | Motoko (moc 1.16, mo:core 2.7, mixins) | `iooqr-rqaaa-aaaae-qkfia-cai` |
-| `frontend` | `canisters/frontend` | React 19 + Vite 7 SPA, legacy `@dfinity/asset-canister` recipe | `ktt6z-cyaaa-aaaae-qkfhq-cai` |
+| `frontend` | `canisters/frontend` | React 19 + Vite 7 SPA, `@dfinity/static-site` (certified assets) | `ktt6z-cyaaa-aaaae-qkfhq-cai` |
 
 - Candid: `canisters/backend/src/backend.did` (single source; frontend generates
   `app/bindings/` from it via `npm run generate` / the vite plugin).
@@ -35,4 +35,7 @@ Flat layout: one backend, one frontend.
   deployed to mainnet, local **fresh installs trap** (`npm run reinstall`); upgrades work.
   After that deploy: `mops deployed backend`, then add an earlier-dated `{}` → initial-state
   migration so fresh installs work again (verified approach).
+- Frontend moved from the legacy asset canister to static-site: the **first** mainnet
+  deploy must be `icp deploy frontend -e ic --mode reinstall` (different canister, plain
+  deploy fails the Candid check). The ID stays the same; assets re-upload from `dist/`.
 - Docs: `docs/prerender.md` (SEO prerendering).

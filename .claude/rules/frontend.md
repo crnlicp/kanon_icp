@@ -13,5 +13,6 @@ paths:
   work in both RTL (fa) and LTR (sv).
 - Per-page SEO uses `react-helmet-async`; routes to prerender are listed in
   `scripts/prerender-routes.ts` (see `docs/prerender.md`).
-- SPA routing and headers: `public/.ic-assets.json5`.
+- SPA routing and headers: `public/_redirects`, `public/_headers` (static-site recipe;
+  `.ic-assets.json5` is not read). No default security headers: keep the CSP in `_headers`.
 - `scripts/seed.ts` wipes and reseeds the local backend; seed data in `scripts/seed-data.ts`.

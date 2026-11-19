@@ -38,7 +38,7 @@ kanon/
     └── frontend/            # React SPA (asset canister)
         ├── app/             # components/, pages/, pages/admin/, i18n/, auth/, actor.ts
         │   └── bindings/    # generated from backend.did (not committed)
-        ├── public/          # .ic-assets.json5, .well-known/, favicons
+        ├── public/          # _redirects, _headers, .well-known/, favicons
         └── scripts/         # seed, prerender, seo-check
 ```
 

@@ -15,8 +15,9 @@ for social sharing crawlers (Facebook, LinkedIn, Twitter) which do not run JS.
 2. `scripts/prerender.ts` starts a headless Puppeteer browser and visits every route.
 3. It waits for the React tree to settle (canister calls complete, Helmet updates `<head>`).
 4. The fully rendered HTML is written to `dist/{route}/index.html`.
-5. The ICP asset canister's `enable_aliasing: true` config ensures these per-route files
-   are served at their exact paths before falling back to `dist/index.html`.
+5. The certified-assets canister serves a real file before the `/*` SPA rewrite in
+   `public/_redirects`, so `dist/{route}/index.html` wins for that route. Its clean-URL
+   rule makes `/{route}/` canonical: `/{route}` gets a `307` to the trailing-slash form.
 
 ## Prerequisites
 

@@ -1,0 +1,2 @@
+# SPA fallback: any path without a real (or prerendered) file gets the app shell.
+/*  /index.html  200
